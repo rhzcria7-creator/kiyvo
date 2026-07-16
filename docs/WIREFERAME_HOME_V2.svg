@@ -1,0 +1,519 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 4200" width="1600" height="4200">
+  <defs>
+    <linearGradient id="heroBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0F172A"/>
+      <stop offset="50%" style="stop-color:#1E3A8A"/>
+      <stop offset="100%" style="stop-color:#0F172A"/>
+    </linearGradient>
+    <linearGradient id="blueGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2563EB"/>
+      <stop offset="100%" style="stop-color:#60A5FA"/>
+    </linearGradient>
+    <linearGradient id="purpleGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#7C3AED"/>
+      <stop offset="100%" style="stop-color:#A78BFA"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#0002"/>
+    </filter>
+    <style>
+      text { font-family: 'Inter','Segoe UI',system-ui,sans-serif; }
+      .section-label { font-size: 10px; font-weight: 700; fill: #94A3B8; letter-spacing: 2px; text-transform: uppercase; }
+      .section-title { font-size: 28px; font-weight: 900; fill: #0F172A; }
+      .section-subtitle { font-size: 14px; fill: #64748B; }
+      .card-title { font-size: 12px; font-weight: 700; fill: #0F172A; }
+      .card-price { font-size: 16px; font-weight: 900; fill: #2563EB; }
+      .card-meta { font-size: 9px; fill: #94A3B8; }
+      .badge-new { font-size: 8px; font-weight: 700; fill: white; }
+    </style>
+  </defs>
+
+  <!-- ==================== TOP NAV ==================== -->
+  <rect width="1600" height="64" fill="rgba(255,255,255,0.9)"/>
+  <line x1="0" y1="64" x2="1600" y2="64" stroke="#E2E8F0" stroke-width="1"/>
+  <!-- Logo -->
+  <rect x="32" y="14" width="36" height="36" rx="8" fill="url(#blueGlow)"/>
+  <text x="50" y="38" text-anchor="middle" font-size="18" font-weight="900" fill="white">P</text>
+  <text x="82" y="38" font-size="20" font-weight="900" fill="#0F172A">Play</text><text x="130" y="38" font-size="20" font-weight="900" fill="#2563EB">dex</text>
+  <!-- Nav Links -->
+  <text x="240" y="38" font-size="13" font-weight="600" fill="#64748B">Categorias</text>
+  <text x="340" y="38" font-size="13" font-weight="600" fill="#64748B">Ofertas</text>
+  <text x="420" y="38" font-size="13" font-weight="600" fill="#64748B">Planos</text>
+  <text x="490" y="38" font-size="13" font-weight="600" fill="#64748B">Blog</text>
+  <text x="550" y="38" font-size="13" font-weight="600" fill="#64748B">Comunidade</text>
+  <!-- Search -->
+  <rect x="680" y="14" width="400" height="36" rx="18" fill="#F1F5F9" stroke="#E2E8F0"/>
+  <text x="710" y="36" font-size="12" fill="#94A3B8">🔍  Buscar jogos, contas, keys...</text>
+  <!-- Actions -->
+  <rect x="1120" y="14" width="80" height="36" rx="10" fill="#EFF6FF" stroke="#BFDBFE"/>
+  <text x="1160" y="36" text-anchor="middle" font-size="11" font-weight="600" fill="#2563EB">Anunciar</text>
+  <rect x="1220" y="16" width="28" height="28" rx="8" fill="#F1F5F9"/><text x="1234" y="34" text-anchor="middle" font-size="14">🔔</text>
+  <rect x="1260" y="16" width="28" height="28" rx="8" fill="#F1F5F9"/><text x="1274" y="34" text-anchor="middle" font-size="14">❤️</text>
+  <rect x="1310" y="14" width="90" height="36" rx="10" fill="#2563EB"/>
+  <text x="1355" y="36" text-anchor="middle" font-size="11" font-weight="700" fill="white">Entrar</text>
+  <!-- Dark mode toggle -->
+  <circle cx="1440" cy="32" r="14" fill="#F1F5F9" stroke="#E2E8F0"/>
+  <text x="1440" y="37" text-anchor="middle" font-size="12">🌙</text>
+
+  <!-- ==================== HERO 3D SECTION ==================== -->
+  <rect y="64" width="1600" height="600" fill="url(#heroBg)"/>
+  <!-- 3D Gem placeholder -->
+  <g transform="translate(1000, 200)">
+    <!-- Glow effect -->
+    <circle cx="200" cy="160" r="180" fill="#2563EB" opacity="0.08" filter="url(#glow)"/>
+    <circle cx="200" cy="160" r="120" fill="#2563EB" opacity="0.06"/>
+    <!-- Gem shape -->
+    <polygon points="200,30 320,100 280,220 120,220 80,100" fill="url(#blueGlow)" opacity="0.8" stroke="#60A5FA" stroke-width="2"/>
+    <polygon points="200,30 280,220 200,280 120,220" fill="#1D4ED8" opacity="0.6"/>
+    <polygon points="200,30 320,100 280,220 200,180" fill="#60A5FA" opacity="0.4"/>
+    <!-- Orbit ring 1 -->
+    <ellipse cx="200" cy="160" rx="240" ry="50" fill="none" stroke="#60A5FA" stroke-width="1.5" opacity="0.3" transform="rotate(-15,200,160)"/>
+    <!-- Orbit ring 2 -->
+    <ellipse cx="200" cy="160" rx="280" ry="60" fill="none" stroke="#A78BFA" stroke-width="1" opacity="0.2" transform="rotate(10,200,160)"/>
+    <!-- Particles -->
+    <circle cx="80" cy="60" r="3" fill="#60A5FA" opacity="0.6"/>
+    <circle cx="340" cy="80" r="2" fill="#A78BFA" opacity="0.5"/>
+    <circle cx="60" cy="200" r="2.5" fill="#60A5FA" opacity="0.4"/>
+    <circle cx="360" cy="240" r="2" fill="#A78BFA" opacity="0.3"/>
+    <circle cx="150" cy="40" r="1.5" fill="#60A5FA" opacity="0.5"/>
+    <circle cx="300" cy="300" r="2" fill="#60A5FA" opacity="0.4"/>
+    <circle cx="100" cy="280" r="1.5" fill="#A78BFA" opacity="0.3"/>
+    <circle cx="370" cy="140" r="2" fill="#60A5FA" opacity="0.5"/>
+    <!-- Label -->
+    <text x="200" y="320" text-anchor="middle" font-size="10" fill="#60A5FA" font-weight="600">[ React Three Fiber — Gem Isométrico 3D ]</text>
+    <text x="200" y="338" text-anchor="middle" font-size="9" fill="#475569">Float + OrbitRing + Particles + MeshDistort</text>
+  </g>
+
+  <!-- Hero Content -->
+  <g transform="translate(80, 130)">
+    <rect width="220" height="32" rx="16" fill="rgba(37,99,235,0.15)" stroke="rgba(96,165,250,0.3)"/>
+    <circle cx="20" cy="16" r="4" fill="#60A5FA"><animate attributeName="opacity" values="1;0.3;1" dur="2s" repeatCount="indefinite"/></circle>
+    <text x="32" y="20" font-size="12" font-weight="600" fill="#60A5FA">+1M jogadores confiam</text>
+
+    <text x="0" y="70" font-size="52" font-weight="900" fill="white" line-height="1.1">Compre e venda</text>
+    <text x="0" y="128" font-size="52" font-weight="900" fill="url(#blueGlow)">ativos digitais</text>
+    <text x="0" y="186" font-size="52" font-weight="900" fill="white">com segurança</text>
+
+    <text x="0" y="228" font-size="16" fill="#94A3B8" max-width="500">Contas, keys, itens, gold e gift cards para seus</text>
+    <text x="0" y="250" font-size="16" fill="#94A3B8">jogos favoritos. Tudo intermediado com garantia.</text>
+
+    <!-- CTAs -->
+    <rect x="0" y="280" width="220" height="52" rx="14" fill="#2563EB" filter="url(#glow)"/>
+    <text x="110" y="310" text-anchor="middle" font-size="15" font-weight="700" fill="white">Explorar Catálogo →</text>
+
+    <rect x="240" y="280" width="200" height="52" rx="14" fill="transparent" stroke="#334155" stroke-width="2"/>
+    <text x="340" y="310" text-anchor="middle" font-size="15" font-weight="600" fill="#94A3B8">Comece a Vender</text>
+
+    <!-- Trust badges -->
+    <g transform="translate(0, 360)">
+      <rect width="130" height="50" rx="10" fill="rgba(255,255,255,0.05)"/>
+      <text x="16" y="22" font-size="20">🛡️</text>
+      <text x="44" y="20" font-size="10" font-weight="700" fill="white">Compra Segura</text>
+      <text x="44" y="34" font-size="8" fill="#64748B">Dinheiro de volta</text>
+
+      <rect x="140" width="130" height="50" rx="10" fill="rgba(255,255,255,0.05)"/>
+      <text x="156" y="22" font-size="20">⚡</text>
+      <text x="184" y="20" font-size="10" font-weight="700" fill="white">Entrega Rápida</text>
+      <text x="184" y="34" font-size="8" fill="#64748B">Em segundos</text>
+
+      <rect x="280" width="130" height="50" rx="10" fill="rgba(255,255,255,0.05)"/>
+      <text x="296" y="22" font-size="20">🏆</text>
+      <text x="324" y="20" font-size="10" font-weight="700" fill="white">PD Points</text>
+      <text x="324" y="34" font-size="8" fill="#64748B">Recompensas</text>
+    </g>
+  </g>
+
+  <!-- ==================== CATEGORIAS POPULARES ==================== -->
+  <g transform="translate(80, 700)">
+    <text x="0" y="0" class="section-label">NAVEGUE POR JOGO</text>
+    <text x="0" y="30" class="section-title">Categorias Populares</text>
+    <text x="0" y="50" class="section-subtitle">Encontre os jogos mais negociados na plataforma</text>
+    <text x="1400" y="30" font-size="13" font-weight="600" fill="#2563EB">Ver todas →</text>
+
+    <!-- Category Cards Grid -->
+    <g transform="translate(0, 70)">
+      <!-- Card 1 -->
+      <rect width="185" height="130" rx="14" fill="white" stroke="#E2E8F0" filter="url(#shadow)"/>
+      <rect x="4" y="4" width="177" height="70" rx="10" fill="#E2E8F0"/>
+      <rect x="120" y="8" width="55" height="20" rx="4" fill="#2563EB"/><text x="148" y="22" text-anchor="middle" class="badge-new">342</text>
+      <text x="14" y="94" class="card-title">Valorant</text>
+      <text x="14" y="112" class="card-meta">Contas • Keys • Skins</text>
+
+      <!-- Card 2 -->
+      <g transform="translate(200, 0)">
+        <rect width="185" height="130" rx="14" fill="white" stroke="#E2E8F0" filter="url(#shadow)"/>
+        <rect x="4" y="4" width="177" height="70" rx="10" fill="#E2E8F0"/>
+        <rect x="120" y="8" width="55" height="20" rx="4" fill="#2563EB"/><text x="148" y="22" text-anchor="middle" class="badge-new">287</text>
+        <text x="14" y="94" class="card-title">Minecraft</text>
+        <text x="14" y="112" class="card-meta">Contas • Premium • Mods</text>
+      </g>
+
+      <!-- Card 3 -->
+      <g transform="translate(400, 0)">
+        <rect width="185" height="130" rx="14" fill="white" stroke="#E2E8F0" filter="url(#shadow)"/>
+        <rect x="4" y="4" width="177" height="70" rx="10" fill="#E2E8F0"/>
+        <rect x="120" y="8" width="55" height="20" rx="4" fill="#2563EB"/><text x="148" y="22" text-anchor="middle" class="badge-new">456</text>
+        <text x="14" y="94" class="card-title">Free Fire</text>
+        <text x="14" y="112" class="card-meta">Contas • Diamantes</text>
+      </g>
+
+      <!-- Card 4 -->
+      <g transform="translate(600, 0)">
+        <rect width="185" height="130" rx="14" fill="white" stroke="#E2E8F0" filter="url(#shadow)"/>
+        <rect x="4" y="4" width="177" height="70" rx="10" fill="#E2E8F0"/>
+        <rect x="120" y="8" width="55" height="20" rx="4" fill="#2563EB"/><text x="148" y="22" text-anchor="middle" class="badge-new">806</text>
+        <text x="14" y="94" class="card-title">Steam</text>
+        <text x="14" y="112" class="card-meta">Keys • Contas • Wallet</text>
+      </g>
+
+      <!-- Card 5 -->
+      <g transform="translate(800, 0)">
+        <rect width="185" height="130" rx="14" fill="white" stroke="#E2E8F0" filter="url(#shadow)"/>
+        <rect x="4" y="4" width="177" height="70" rx="10" fill="#E2E8F0"/>
+        <rect x="120" y="8" width="55" height="20" rx="4" fill="#2563EB"/><text x="148" y="22" text-anchor="middle" class="badge-new">521</text>
+        <text x="14" y="94" class="card-title">League of Legends</text>
+        <text x="14" y="112" class="card-meta">Contas • Skins • RP</text>
+      </g>
+
+      <!-- Card 6 -->
+      <g transform="translate(1000, 0)">
+        <rect width="185" height="130" rx="14" fill="white" stroke="#E2E8F0" filter="url(#shadow)"/>
+        <rect x="4" y="4" width="177" height="70" rx="10" fill="#E2E8F0"/>
+        <rect x="120" y="8" width="55" height="20" rx="4" fill="#2563EB"/><text x="148" y="22" text-anchor="middle" class="badge-new">234</text>
+        <text x="14" y="94" class="card-title">Roblox</text>
+        <text x="14" y="112" class="card-meta">Robux • Contas • Gamepass</text>
+      </g>
+
+      <!-- Card 7 -->
+      <g transform="translate(1200, 0)">
+        <rect width="185" height="130" rx="14" fill="white" stroke="#E2E8F0" filter="url(#shadow)"/>
+        <rect x="4" y="4" width="177" height="70" rx="10" fill="#E2E8F0"/>
+        <rect x="120" y="8" width="55" height="20" rx="4" fill="#2563EB"/><text x="148" y="22" text-anchor="middle" class="badge-new">198</text>
+        <text x="14" y="94" class="card-title">Fortnite</text>
+        <text x="14" y="112" class="card-meta">V-Bucks • Skins • Contas</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- ==================== OFERTA RELÂMPAGO ==================== -->
+  <g transform="translate(80, 960)">
+    <rect width="1440" height="160" rx="20" fill="url(#heroBg)" filter="url(#shadow)"/>
+    <!-- Flame emoji -->
+    <text x="40" y="90" font-size="48">🔥</text>
+    <text x="100" y="60" font-size="24" font-weight="900" fill="white">OFERTA RELÂMPAGO</text>
+    <text x="100" y="85" font-size="13" fill="#94A3B8">Até 70% OFF em contas premium. Acaba em:</text>
+    <!-- Timer -->
+    <g transform="translate(460, 50)">
+      <rect width="60" height="50" rx="8" fill="#1E293B"/><text x="30" y="30" text-anchor="middle" font-size="22" font-weight="800" fill="#60A5FA">02</text><text x="30" y="44" text-anchor="middle" font-size="7" fill="#64748B">HORAS</text>
+      <text x="72" y="28" font-size="20" font-weight="800" fill="#60A5FA">:</text>
+      <rect x="82" width="60" height="50" rx="8" fill="#1E293B"/><text x="112" y="30" text-anchor="middle" font-size="22" font-weight="800" fill="#60A5FA">14</text><text x="112" y="44" text-anchor="middle" font-size="7" fill="#64748B">MIN</text>
+      <text x="154" y="28" font-size="20" font-weight="800" fill="#60A5FA">:</text>
+      <rect x="164" width="60" height="50" rx="8" fill="#1E293B"/><text x="194" y="30" text-anchor="middle" font-size="22" font-weight="800" fill="#60A5FA">37</text><text x="194" y="44" text-anchor="middle" font-size="7" fill="#64748B">SEG</text>
+    </g>
+    <rect x="1200" y="50" width="200" height="48" rx="12" fill="#2563EB"/>
+    <text x="1300" y="78" text-anchor="middle" font-size="14" font-weight="700" fill="white">Ver Ofertas →</text>
+  </g>
+
+  <!-- ==================== PRODUTOS EM DESTAQUE ==================== -->
+  <g transform="translate(80, 1160)">
+    <text x="0" y="0" class="section-label">MAIS VENDIDOS</text>
+    <text x="0" y="30" class="section-title">Em Destaque</text>
+    <text x="0" y="50" class="section-subtitle">Os melhores anúncios selecionados pra você</text>
+    <text x="1400" y="30" font-size="13" font-weight="600" fill="#2563EB">Ver mais →</text>
+
+    <g transform="translate(0, 70)">
+      <!-- Product 1 -->
+      <rect width="280" height="320" rx="16" fill="white" stroke="#E2E8F0" filter="url(#shadow)"/>
+      <rect x="4" y="4" width="272" height="150" rx="12" fill="#F1F5F9"/>
+      <rect x="8" y="8" width="52" height="22" rx="4" fill="#EF4444"/><text x="34" y="22" text-anchor="middle" class="badge-new">-31%</text>
+      <rect x="200" y="8" width="68" height="22" rx="4" fill="#059669"/><text x="234" y="22" text-anchor="middle" class="badge-new">⚡ Auto</text>
+      <text x="14" y="176" font-size="10" font-weight="600" fill="#2563EB">Valorant</text>
+      <text x="14" y="196" class="card-title" font-size="13">Conta Valorant – Diamante</text>
+      <text x="14" y="212" class="card-title" font-size="13">1 + 40 Skins Epicas</text>
+      <circle cx="26" cy="240" r="10" fill="#F1F5F9"/><text x="26" y="244" text-anchor="middle" font-size="8">👤</text>
+      <text x="42" y="244" font-size="10" fill="#64748B">PixelKing ✓</text>
+      <text x="200" y="244" font-size="10" fill="#F59E0B">⭐ 4.9</text>
+      <text x="14" y="272" font-size="11" fill="#94A3B8" text-decoration="line-through">R$ 129,90</text>
+      <text x="14" y="296" class="card-price">R$ 89,90</text>
+      <rect x="168" y="280" width="100" height="32" rx="8" fill="#2563EB"/><text x="218" y="300" text-anchor="middle" font-size="11" font-weight="600" fill="white">Comprar</text>
+
+      <!-- Product 2 -->
+      <g transform="translate(300, 0)">
+        <rect width="280" height="320" rx="16" fill="white" stroke="#E2E8F0" filter="url(#shadow)"/>
+        <rect x="4" y="4" width="272" height="150" rx="12" fill="#F1F5F9"/>
+        <rect x="8" y="8" width="52" height="22" rx="4" fill="#EF4444"/><text x="34" y="22" text-anchor="middle" class="badge-new">-50%</text>
+        <rect x="200" y="8" width="68" height="22" rx="4" fill="#059669"/><text x="234" y="22" text-anchor="middle" class="badge-new">⚡ Auto</text>
+        <text x="14" y="176" font-size="10" font-weight="600" fill="#2563EB">Steam</text>
+        <text x="14" y="196" class="card-title" font-size="13">Key Steam – Elden Ring</text>
+        <text x="14" y="212" class="card-title" font-size="13">Deluxe Edition</text>
+        <circle cx="26" cy="240" r="10" fill="#F1F5F9"/><text x="26" y="244" text-anchor="middle" font-size="8">👤</text>
+        <text x="42" y="244" font-size="10" fill="#64748B">GameVault ✓</text>
+        <text x="200" y="244" font-size="10" fill="#F59E0B">⭐ 4.8</text>
+        <text x="14" y="272" font-size="11" fill="#94A3B8" text-decoration="line-through">R$ 299,90</text>
+        <text x="14" y="296" class="card-price">R$ 149,90</text>
+        <rect x="168" y="280" width="100" height="32" rx="8" fill="#2563EB"/><text x="218" y="300" text-anchor="middle" font-size="11" font-weight="600" fill="white">Comprar</text>
+      </g>
+
+      <!-- Product 3 -->
+      <g transform="translate(600, 0)">
+        <rect width="280" height="320" rx="16" fill="white" stroke="#E2E8F0" filter="url(#shadow)"/>
+        <rect x="4" y="4" width="272" height="150" rx="12" fill="#F1F5F9"/>
+        <rect x="200" y="8" width="68" height="22" rx="4" fill="#059669"/><text x="234" y="22" text-anchor="middle" class="badge-new">⚡ Auto</text>
+        <text x="14" y="176" font-size="10" font-weight="600" fill="#2563EB">Fortnite</text>
+        <text x="14" y="196" class="card-title" font-size="13">10.000 V-Bucks –</text>
+        <text x="14" y="212" class="card-title" font-size="13">Entrega Imediata</text>
+        <circle cx="26" cy="240" r="10" fill="#F1F5F9"/><text x="26" y="244" text-anchor="middle" font-size="8">👤</text>
+        <text x="42" y="244" font-size="10" fill="#64748B">DiamondHands ✓</text>
+        <text x="200" y="244" font-size="10" fill="#F59E0B">⭐ 5.0</text>
+        <text x="14" y="296" class="card-price">R$ 34,90</text>
+        <rect x="168" y="280" width="100" height="32" rx="8" fill="#2563EB"/><text x="218" y="300" text-anchor="middle" font-size="11" font-weight="600" fill="white">Comprar</text>
+      </g>
+
+      <!-- Product 4 -->
+      <g transform="translate(900, 0)">
+        <rect width="280" height="320" rx="16" fill="white" stroke="#E2E8F0" filter="url(#shadow)"/>
+        <rect x="4" y="4" width="272" height="150" rx="12" fill="#F1F5F9"/>
+        <rect x="200" y="8" width="68" height="22" rx="4" fill="#059669"/><text x="234" y="22" text-anchor="middle" class="badge-new">⚡ Auto</text>
+        <text x="14" y="176" font-size="10" font-weight="600" fill="#2563EB">Xbox Game Pass</text>
+        <text x="14" y="196" class="card-title" font-size="13">Game Pass Ultimate 1 Mês</text>
+        <text x="14" y="212" class="card-title" font-size="13">Xbox/PC/Cloud</text>
+        <circle cx="26" cy="240" r="10" fill="#F1F5F9"/><text x="26" y="244" text-anchor="middle" font-size="8">👤</text>
+        <text x="42" y="244" font-size="10" fill="#64748B">PixelKing ✓</text>
+        <text x="200" y="244" font-size="10" fill="#F59E0B">⭐ 4.9</text>
+        <text x="14" y="296" class="card-price">R$ 14,90</text>
+        <rect x="168" y="280" width="100" height="32" rx="8" fill="#2563EB"/><text x="218" y="300" text-anchor="middle" font-size="11" font-weight="600" fill="white">Comprar</text>
+      </g>
+
+      <!-- Product 5 -->
+      <g transform="translate(1200, 0)">
+        <rect width="280" height="320" rx="16" fill="white" stroke="#E2E8F0" filter="url(#shadow)"/>
+        <rect x="4" y="4" width="272" height="150" rx="12" fill="#F1F5F9"/>
+        <rect x="8" y="8" width="52" height="22" rx="4" fill="#EF4444"/><text x="34" y="22" text-anchor="middle" class="badge-new">-28%</text>
+        <text x="14" y="176" font-size="10" font-weight="600" fill="#2563EB">League of Legends</text>
+        <text x="14" y="196" class="card-title" font-size="13">Conta LoL – Esmeralda</text>
+        <text x="14" y="212" class="card-title" font-size="13">+ 120 Skins</text>
+        <circle cx="26" cy="240" r="10" fill="#F1F5F9"/><text x="26" y="244" text-anchor="middle" font-size="8">👤</text>
+        <text x="42" y="244" font-size="10" fill="#64748B">GameVault ✓</text>
+        <text x="200" y="244" font-size="10" fill="#F59E0B">⭐ 4.8</text>
+        <text x="14" y="272" font-size="11" fill="#94A3B8" text-decoration="line-through">R$ 279,90</text>
+        <text x="14" y="296" class="card-price">R$ 199,90</text>
+        <rect x="168" y="280" width="100" height="32" rx="8" fill="#2563EB"/><text x="218" y="300" text-anchor="middle" font-size="11" font-weight="600" fill="white">Comprar</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- ==================== AVALIAÇÕES ==================== -->
+  <g transform="translate(80, 1600)">
+    <text x="720" y="0" text-anchor="middle" class="section-label">O QUE DIZEM</text>
+    <text x="720" y="30" text-anchor="middle" class="section-title">Avaliações Recentes</text>
+
+    <g transform="translate(0, 50)">
+      <rect width="340" height="120" rx="14" fill="white" stroke="#E2E8F0" filter="url(#shadow)"/>
+      <circle cx="30" cy="30" r="16" fill="#DBEAFE"/><text x="30" y="34" text-anchor="middle" font-size="10">👤</text>
+      <text x="54" y="28" font-size="11" font-weight="700" fill="#0F172A">PedroH22</text>
+      <text x="54" y="42" font-size="9" fill="#F59E0B">★★★★★</text>
+      <text x="14" y="66" font-size="10" fill="#334155">Conta veio exatamente como descrito.</text>
+      <text x="14" y="82" font-size="10" fill="#334155">Vendedor rápido e confiável!</text>
+      <text x="14" y="104" font-size="8" fill="#94A3B8">Valorant • há 2h</text>
+
+      <g transform="translate(360, 0)">
+        <rect width="340" height="120" rx="14" fill="white" stroke="#E2E8F0" filter="url(#shadow)"/>
+        <circle cx="30" cy="30" r="16" fill="#FEF3C7"/><text x="30" y="34" text-anchor="middle" font-size="10">👤</text>
+        <text x="54" y="28" font-size="11" font-weight="700" fill="#0F172A">AnaGamer</text>
+        <text x="54" y="42" font-size="9" fill="#F59E0B">★★★★★</text>
+        <text x="14" y="66" font-size="10" fill="#334155">Entrega automática em segundos!</text>
+        <text x="14" y="82" font-size="10" fill="#334155">Produto perfeito, já estou jogando.</text>
+        <text x="14" y="104" font-size="8" fill="#94A3B8">Steam • há 5h</text>
+      </g>
+
+      <g transform="translate(720, 0)">
+        <rect width="340" height="120" rx="14" fill="white" stroke="#E2E8F0" filter="url(#shadow)"/>
+        <circle cx="30" cy="30" r="16" fill="#D1FAE5"/><text x="30" y="34" text-anchor="middle" font-size="10">👤</text>
+        <text x="54" y="28" font-size="11" font-weight="700" fill="#0F172A">RickPlay</text>
+        <text x="54" y="42" font-size="9" fill="#F59E0B">★★★★★</text>
+        <text x="14" y="66" font-size="10" fill="#334155">V-Bucks entregues em menos de 1</text>
+        <text x="14" y="82" font-size="10" fill="#334155">minuto. Impressionante!</text>
+        <text x="14" y="104" font-size="8" fill="#94A3B8">Fortnite • há 3 dias</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- ==================== COMO FUNCIONA ==================== -->
+  <g transform="translate(80, 1840)">
+    <text x="720" y="0" text-anchor="middle" class="section-label">SIMPLES E SEGURO</text>
+    <text x="720" y="30" text-anchor="middle" class="section-title">Como Funciona</text>
+
+    <g transform="translate(100, 60)">
+      <!-- Step 1 -->
+      <rect width="380" height="160" rx="16" fill="#EFF6FF" stroke="#BFDBFE"/>
+      <circle cx="40" cy="40" r="24" fill="#2563EB"/><text x="40" y="46" text-anchor="middle" font-size="16" font-weight="800" fill="white">1</text>
+      <text x="80" y="36" font-size="16" font-weight="800" fill="#0F172A">Encontre o Produto</text>
+      <text x="80" y="56" font-size="12" fill="#64748B">Navegue pelo catálogo ou use a busca</text>
+      <text x="80" y="72" font-size="12" fill="#64748B">para encontrar contas, keys e mais.</text>
+      <text x="30" y="110" font-size="30">🔍</text>
+
+      <!-- Step 2 -->
+      <g transform="translate(420, 0)">
+        <rect width="380" height="160" rx="16" fill="#EFF6FF" stroke="#BFDBFE"/>
+        <circle cx="40" cy="40" r="24" fill="#2563EB"/><text x="40" y="46" text-anchor="middle" font-size="16" font-weight="800" fill="white">2</text>
+        <text x="80" y="36" font-size="16" font-weight="800" fill="#0F172A">Compra Segura</text>
+        <text x="80" y="56" font-size="12" fill="#64748B">A Playdex intermedeia o pagamento,</text>
+        <text x="80" y="72" font-size="12" fill="#64748B">garantindo segurança total.</text>
+        <text x="30" y="110" font-size="30">🛡️</text>
+      </g>
+
+      <!-- Step 3 -->
+      <g transform="translate(840, 0)">
+        <rect width="380" height="160" rx="16" fill="#EFF6FF" stroke="#BFDBFE"/>
+        <circle cx="40" cy="40" r="24" fill="#2563EB"/><text x="40" y="46" text-anchor="middle" font-size="16" font-weight="800" fill="white">3</text>
+        <text x="80" y="36" font-size="16" font-weight="800" fill="#0F172A">Receba o Produto</text>
+        <text x="80" y="56" font-size="12" fill="#64748B">O vendedor entrega via chat ou</text>
+        <text x="80" y="72" font-size="12" fill="#64748B">automaticamente. Confirme e avalie!</text>
+        <text x="30" y="110" font-size="30">✅</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- ==================== BLOG SECTION ==================== -->
+  <g transform="translate(80, 2100)">
+    <text x="0" y="0" class="section-label">BLOG PLAYDEX</text>
+    <text x="0" y="30" class="section-title">Dicas, Guias e Novidades</text>
+    <text x="1400" y="30" font-size="13" font-weight="600" fill="#2563EB">Ver mais →</text>
+
+    <g transform="translate(0, 50)">
+      <!-- Blog 1 -->
+      <rect width="460" height="280" rx="16" fill="white" stroke="#E2E8F0" filter="url(#shadow)"/>
+      <rect x="4" y="4" width="452" height="150" rx="12" fill="#F1F5F9"/>
+      <rect x="12" y="12" width="60" height="20" rx="4" fill="#8B5CF6"/><text x="42" y="26" text-anchor="middle" class="badge-new">GUIA</text>
+      <text x="14" y="178" class="card-title" font-size="15">Black Myth: Wukong — Guia dos</text>
+      <text x="14" y="198" class="card-title" font-size="15">Chefes Secretos</text>
+      <text x="14" y="220" font-size="10" fill="#64748B">Descubra como encontrar e derrotar todos os chefes</text>
+      <text x="14" y="260" font-size="9" fill="#94A3B8">Marina Costa • 8 min • 12/07/26</text>
+
+      <!-- Blog 2 -->
+      <g transform="translate(490, 0)">
+        <rect width="460" height="280" rx="16" fill="white" stroke="#E2E8F0" filter="url(#shadow)"/>
+        <rect x="4" y="4" width="452" height="150" rx="12" fill="#F1F5F9"/>
+        <rect x="12" y="12" width="60" height="20" rx="4" fill="#F59E0B"/><text x="42" y="26" text-anchor="middle" class="badge-new">DICAS</text>
+        <text x="14" y="178" class="card-title" font-size="15">5 Dicas para Vender Sua</text>
+        <text x="14" y="198" class="card-title" font-size="15">Conta com Segurança</text>
+        <text x="14" y="220" font-size="10" fill="#64748B">Aprenda as melhores práticas para negociar</text>
+        <text x="14" y="260" font-size="9" fill="#94A3B8">Rafael Mendes • 5 min • 10/07/26</text>
+      </g>
+
+      <!-- Blog 3 -->
+      <g transform="translate(980, 0)">
+        <rect width="460" height="280" rx="16" fill="white" stroke="#E2E8F0" filter="url(#shadow)"/>
+        <rect x="4" y="4" width="452" height="150" rx="12" fill="#F1F5F9"/>
+        <rect x="12" y="12" width="68" height="20" rx="4" fill="#2563EB"/><text x="46" y="26" text-anchor="middle" class="badge-new">NOTÍCIA</text>
+        <text x="14" y="178" class="card-title" font-size="15">Elden Ring DLC — Tudo que</text>
+        <text x="14" y="198" class="card-title" font-size="15">Sabemos Até Agora</text>
+        <text x="14" y="220" font-size="10" fill="#64748B">Novos mapas, chefes e mecânicas confirmadas</text>
+        <text x="14" y="260" font-size="9" fill="#94A3B8">Lucas Andrade • 6 min • 08/07/26</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- ==================== STATS BAR ==================== -->
+  <g transform="translate(80, 2470)">
+    <rect width="1440" height="120" rx="20" fill="#0F172A" filter="url(#shadow)"/>
+    <g transform="translate(100, 20)">
+      <text x="0" y="30" font-size="36" font-weight="900" fill="#60A5FA">1M+</text>
+      <text x="0" y="52" font-size="11" font-weight="600" fill="#94A3B8">Jogadores ativos</text>
+      <text x="0" y="68" font-size="9" fill="#475569">na plataforma</text>
+
+      <text x="300" y="30" font-size="36" font-weight="900" fill="#F59E0B">500K+</text>
+      <text x="300" y="52" font-size="11" font-weight="600" fill="#94A3B8">Transações seguras</text>
+      <text x="300" y="68" font-size="9" fill="#475569">realizadas</text>
+
+      <text x="620" y="30" font-size="36" font-weight="900" fill="#10B981">4.8★</text>
+      <text x="620" y="52" font-size="11" font-weight="600" fill="#94A3B8">Avaliação média</text>
+      <text x="620" y="68" font-size="9" fill="#475569">dos usuários</text>
+
+      <text x="920" y="30" font-size="36" font-weight="900" fill="#A78BFA">150+</text>
+      <text x="920" y="52" font-size="11" font-weight="600" fill="#94A3B8">Categorias de jogos</text>
+      <text x="920" y="68" font-size="9" fill="#475569">disponíveis</text>
+    </g>
+  </g>
+
+  <!-- ==================== CTA FINAL ==================== -->
+  <g transform="translate(80, 2630)">
+    <rect width="1440" height="200" rx="20" fill="url(#heroBg)" filter="url(#shadow)"/>
+    <text x="720" y="60" text-anchor="middle" font-size="32" font-weight="900" fill="white">Pronto para começar?</text>
+    <text x="720" y="90" text-anchor="middle" font-size="14" fill="#94A3B8">Junte-se a mais de 1 milhão de jogadores que já negociam com segurança na Playdex.</text>
+    <rect x="520" y="110" width="220" height="52" rx="14" fill="#2563EB" filter="url(#glow)"/>
+    <text x="630" y="140" text-anchor="middle" font-size="15" font-weight="700" fill="white">Explorar Catálogo</text>
+    <rect x="760" y="110" width="200" height="52" rx="14" fill="transparent" stroke="white" stroke-width="2"/>
+    <text x="860" y="140" text-anchor="middle" font-size="15" font-weight="600" fill="white">Comece a Vender</text>
+  </g>
+
+  <!-- ==================== FOOTER ==================== -->
+  <g transform="translate(0, 2870)">
+    <rect width="1600" height="200" fill="#0F172A"/>
+    <g transform="translate(80, 30)">
+      <rect width="36" height="36" rx="8" fill="url(#blueGlow)"/>
+      <text x="18" y="24" text-anchor="middle" font-size="18" font-weight="900" fill="white">P</text>
+      <text x="50" y="24" font-size="20" font-weight="900" fill="white">Play</text><text x="98" y="24" font-size="20" font-weight="900" fill="#60A5FA">dex</text>
+      <text x="0" y="50" font-size="11" fill="#64748B">O marketplace líder em ativos digitais</text>
+      <text x="0" y="66" font-size="11" fill="#64748B">para jogos. Compre e venda com segurança.</text>
+
+      <text x="300" y="20" font-size="11" font-weight="700" fill="white">Plataforma</text>
+      <text x="300" y="40" font-size="10" fill="#64748B">Como Funciona</text>
+      <text x="300" y="56" font-size="10" fill="#64748B">Categorias</text>
+      <text x="300" y="72" font-size="10" fill="#64748B">Planos</text>
+      <text x="300" y="88" font-size="10" fill="#64748B">Ofertas</text>
+
+      <text x="500" y="20" font-size="11" font-weight="700" fill="white">Suporte</text>
+      <text x="500" y="40" font-size="10" fill="#64748B">FAQ</text>
+      <text x="500" y="56" font-size="10" fill="#64748B">Central de Ajuda</text>
+      <text x="500" y="72" font-size="10" fill="#64748B">Contato</text>
+
+      <text x="700" y="20" font-size="11" font-weight="700" fill="white">Legal</text>
+      <text x="700" y="40" font-size="10" fill="#64748B">Termos de Uso</text>
+      <text x="700" y="56" font-size="10" fill="#64748B">Privacidade</text>
+      <text x="700" y="72" font-size="10" fill="#64748B">Reembolso</text>
+    </g>
+    <line x1="80" y1="150" x2="1520" y2="150" stroke="#1E293B"/>
+    <text x="800" y="175" text-anchor="middle" font-size="10" fill="#475569">© 2026 Playdex. Todos os direitos reservados. 🔒 Pagamentos seguros • ⚡ PIX instantâneo</text>
+  </g>
+
+  <!-- ==================== ANNOTATIONS ==================== -->
+  <g transform="translate(80, 3110)">
+    <rect width="1440" height="280" rx="16" fill="white" stroke="#E2E8F0" filter="url(#shadow)"/>
+    <text x="720" y="28" text-anchor="middle" font-size="16" font-weight="800" fill="#0F172A">📌 ANOTAÇÕES DE DESIGN — Home V2</text>
+
+    <g transform="translate(30, 50)">
+      <text x="0" y="0" font-size="11" font-weight="700" fill="#2563EB">🎨 ANIMAÇÕES (Framer Motion)</text>
+      <text x="0" y="18" font-size="10" fill="#64748B">• Hero: fade-in com stagger (text → badge → CTA → trust badges) — delay 0.1s entre cada</text>
+      <text x="0" y="34" font-size="10" fill="#64748B">• 3D Gem: Float(2s) + auto-rotate + MeshDistort + orbit rings com velocidade diferente</text>
+      <text x="0" y="50" font-size="10" fill="#64748B">• Categorias: slide-up com stagger 0.05s por card, hover scale(1.03) + shadow-blue</text>
+      <text x="0" y="66" font-size="10" fill="#64748B">• Produtos: fade-up stagger, hover translateY(-4px) + tilt 3D, badge pulse</text>
+      <text x="0" y="82" font-size="10" fill="#64748B">• Oferta Timer: countdown animado com shake nos números no último minuto</text>
+
+      <text x="0" y="112" font-size="11" font-weight="700" fill="#8B5CF6">💎 3D (React Three Fiber)</text>
+      <text x="0" y="130" font-size="10" fill="#64748B">• IcosahedronGeometry(1, 1) + MeshDistortMaterial(distort=0.25, speed=3)</text>
+      <text x="0" y="146" font-size="10" fill="#64748B">• 2 TorusGeometry orbit rings com rotação em Y e Z</text>
+      <text x="0" y="162" font-size="10" fill="#64748B">• 40 pontos (Particles) com PointsMaterial(size=0.04, transparent)</text>
+      <text x="0" y="178" font-size="10" fill="#64748B">• dynamic import com SSR:false — carrega só no client, não trava mobile</text>
+
+      <text x="750" y="0" font-size="11" font-weight="700" fill="#10B981">🌗 DARK/LIGHT MODE</text>
+      <text x="750" y="18" font-size="10" fill="#64748B">• next-themes com transition CSS em background-color 0.3s</text>
+      <text x="750" y="34" font-size="10" fill="#64748B">• Hero: dark=#0F172A, light=#EFF6FF (troca gradiente)</text>
+      <text x="750" y="50" font-size="10" fill="#64748B">• Cards: dark=bg-gray-900, light=bg-white (seamless switch)</text>
+
+      <text x="750" y="80" font-size="11" font-weight="700" fill="#F59E0B">⚡ PERFORMANCE</text>
+      <text x="750" y="98" font-size="10" fill="#64748B">• 3D: lazy loaded, dpr=[1,1.5], sem antialias no mobile</text>
+      <text x="750" y="114" font-size="10" fill="#64748B">• Images: next/image com sizes, AVIF/WebP priority</text>
+      <text x="750" y="130" font-size="10" fill="#64748B">• Skeleton loading em todas as seções abaixo do fold</text>
+      <text x="750" y="146" font-size="10" fill="#64748B">• Intersection Observer para animações on-scroll</text>
+
+      <text x="750" y="176" font-size="11" font-weight="700" fill="#EF4444">🎯 CONVERSÃO</text>
+      <text x="750" y="194" font-size="10" fill="#64748B">• CTA "Explorar Catálogo" com glow azul — chama atenção</text>
+      <text x="750" y="210" font-size="10" fill="#64748B">• Oferta timer cria urgência (FOMO)</text>
+    </g>
+  </g>
+</svg>
