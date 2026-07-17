@@ -39,7 +39,7 @@ export default function ChangelogPage() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-16">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <h1 className="font-display font-extrabold text-3xl text-surface-900 dark:text-white flex items-center gap-3"><Rocket size={32} className="text-brand-600 dark:text-brand-400" /> Changelog</h1>
-          <p className="text-surface-500 dark:text-surface-400 text-sm mt-1">Histórico de todas as atualizações da Playdex</p>
+          <p className="text-surface-500 dark:text-surface-400 text-sm mt-1">Histórico de todas as atualizações da Kiyvo</p>
         </motion.div>
         <div className="mt-10 space-y-8">
           {versions.map((v, vi) => (

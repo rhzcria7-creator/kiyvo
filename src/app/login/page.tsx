@@ -60,7 +60,7 @@ function LoginForm() {
             <span className="text-white font-display font-extrabold text-2xl">P</span>
           </motion.div>
           <h1 className="font-display font-extrabold text-2xl text-surface-900 dark:text-white">Bem-vindo de volta</h1>
-          <p className="text-surface-500 dark:text-surface-400 text-sm mt-1">Entre na sua conta Playdex</p>
+          <p className="text-surface-500 dark:text-surface-400 text-sm mt-1">Entre na sua conta Kiyvo</p>
         </div>
 
         <div className="card-base p-8">

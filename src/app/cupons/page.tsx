@@ -11,7 +11,7 @@ import toast from 'react-hot-toast'
 const coupons = [
   { code: 'WELCOME10', discount: '10%', type: 'percentage', desc: 'Desconto na primeira compra', minOrder: 0, validUntil: '31/08/26', maxUses: 1000, usedCount: 456, category: 'Todos' },
   { code: 'DIGITAL20', discount: '20%', type: 'percentage', desc: '20% off em produtos digitais', minOrder: 50, validUntil: '31/07/26', maxUses: 500, usedCount: 234, category: 'Digital' },
-  { code: 'PLAYDEX15', discount: '15%', type: 'percentage', desc: '15% off em qualquer produto', minOrder: 30, validUntil: '15/08/26', maxUses: 2000, usedCount: 1234, category: 'Todos' },
+  { code: 'KIYVO15', discount: '15%', type: 'percentage', desc: '15% off em qualquer produto', minOrder: 30, validUntil: '15/08/26', maxUses: 2000, usedCount: 1234, category: 'Todos' },
   { code: 'SOFTWARE25', discount: '25%', type: 'percentage', desc: 'Super desconto em software e licenças', minOrder: 40, validUntil: '30/07/26', maxUses: 300, usedCount: 189, category: 'Software' },
   { code: 'CURSO10', discount: 'R$ 10', type: 'fixed', desc: 'R$ 10 de desconto em cursos', minOrder: 25, validUntil: '31/08/26', maxUses: 800, usedCount: 567, category: 'Cursos' },
   { code: 'DESIGN30', discount: '30%', type: 'percentage', desc: '30% off em templates e designs', minOrder: 20, validUntil: '20/07/26', maxUses: 200, usedCount: 178, category: 'Design' },

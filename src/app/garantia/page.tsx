@@ -8,14 +8,14 @@ import { AnimatedShield, AnimatedHandshake } from '@/components/svgs/AnimatedSVG
 import Link from 'next/link'
 
 const guarantees = [
-  { icon: Shield, title: 'Pagamento Seguro', desc: 'Seu dinheiro fica retido pela Playdex e só é liberado ao vendedor após a confirmação de entrega. Se o produto não for entregue, você recebe 100% do valor de volta.' },
+  { icon: Shield, title: 'Pagamento Seguro', desc: 'Seu dinheiro fica retido pela Kiyvo e só é liberado ao vendedor após a confirmação de entrega. Se o produto não for entregue, você recebe 100% do valor de volta.' },
   { icon: RefreshCcw, title: 'Reembolso Garantido', desc: 'Se o produto não corresponder à descrição ou não for entregue, você pode abrir uma disputa e solicitar reembolso integral.' },
   { icon: HeadphonesIcon, title: 'Suporte 24/7', desc: 'Nossa equipe de moderação está disponível para resolver qualquer problema entre comprador e vendedor.' },
   { icon: Lock, title: 'Dados Protegidos', desc: 'Suas informações pessoais e de pagamento são criptografadas e protegidas com os mais altos padrões de segurança.' },
 ]
 
 const steps = [
-  { step: '1', title: 'Você compra', desc: 'O pagamento fica retido pela Playdex' },
+  { step: '1', title: 'Você compra', desc: 'O pagamento fica retido pela Kiyvo' },
   { step: '2', title: 'Vendedor entrega', desc: 'Produto é enviado via chat ou automaticamente' },
   { step: '3', title: 'Você confirma', desc: 'Confirma o recebimento e libera o pagamento' },
 ]
@@ -27,10 +27,10 @@ export default function GarantiaPage() {
         <FadeInOnScroll className="text-center mb-12">
           <AnimatedShield className="w-20 h-20 mx-auto mb-4" />
           <h1 className="font-display font-extrabold text-3xl lg:text-4xl text-surface-900">
-            Compra Garantida Playdex
+            Compra Garantida Kiyvo
           </h1>
           <p className="text-surface-500 mt-3 max-w-lg mx-auto">
-            Todas as transações na Playdex são protegidas. Seu dinheiro e seus dados estão sempre seguros.
+            Todas as transações na Kiyvo são protegidas. Seu dinheiro e seus dados estão sempre seguros.
           </p>
         </FadeInOnScroll>
 
@@ -76,7 +76,7 @@ export default function GarantiaPage() {
           <div className="p-8 bg-surface-900 rounded-3xl text-center">
             <AnimatedHandshake className="w-16 h-16 mx-auto mb-4" />
             <h2 className="font-display font-extrabold text-2xl text-white mb-2">Dados que Geram Confiança</h2>
-            <p className="text-surface-400 mb-8 max-w-md mx-auto">Mais de 1 milhão de usuários confiam na Playdex para comprar e vender com segurança</p>
+            <p className="text-surface-400 mb-8 max-w-md mx-auto">Mais de 1 milhão de usuários confiam na Kiyvo para comprar e vender com segurança</p>
             <div className="grid grid-cols-3 gap-6 max-w-lg mx-auto">
               {[
                 { value: '99.2%', label: 'Taxa de entrega' },

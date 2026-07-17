@@ -26,15 +26,15 @@ export default function HomePage() {
               Como Funciona
             </h2>
             <p className="text-surface-500 dark:text-surface-400 mt-3 max-w-lg mx-auto">
-              Comprar e vender na Playdex é simples, rápido e seguro
+              Comprar e vender na Kiyvo é simples, rápido e seguro
             </p>
           </FadeInOnScroll>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               { svg: <AnimatedGlobe className="w-16 h-16" />, title: 'Encontre o produto', desc: 'Navegue por categorias ou busque por jogos, software, cursos, templates e muito mais.' },
-              { svg: <AnimatedShield className="w-16 h-16" />, title: 'Compra segura', desc: 'O pagamento é intermediado pela Playdex. Seu dinheiro só chega ao vendedor após a entrega.' },
-              { svg: <AnimatedLightning className="w-16 h-16" />, title: 'Receba na hora', desc: 'Produtos digitais com entrega automática em segundos. É rápido, é seguro, é Playdex.' },
+              { svg: <AnimatedShield className="w-16 h-16" />, title: 'Compra segura', desc: 'O pagamento é intermediado pela Kiyvo. Seu dinheiro só chega ao vendedor após a entrega.' },
+              { svg: <AnimatedLightning className="w-16 h-16" />, title: 'Receba na hora', desc: 'Produtos digitais com entrega automática em segundos. É rápido, é seguro, é Kiyvo.' },
             ].map((item, i) => (
               <ScaleInOnScroll key={item.title} delay={i * 0.15}>
                 <div className="text-center p-8 card-base hover:shadow-card-hover dark:hover:shadow-dark-glow transition-shadow">
@@ -90,8 +90,8 @@ export default function HomePage() {
               { name: 'Cartão', desc: 'Crédito/Débito', color: 'bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-950/30 dark:border-blue-800/40 dark:text-blue-400' },
               { name: 'Boleto', desc: 'Até 3 dias', color: 'bg-amber-50 border-amber-200 text-amber-700 dark:bg-amber-950/30 dark:border-amber-800/40 dark:text-amber-400' },
               { name: 'Crypto', desc: 'Bitcoin/USDT', color: 'bg-orange-50 border-orange-200 text-orange-700 dark:bg-orange-950/30 dark:border-orange-800/40 dark:text-orange-400' },
-              { name: 'Saldo PD', desc: 'Playdex', color: 'bg-brand-50 border-brand-200 text-brand-700 dark:bg-brand-950/30 dark:border-brand-800/40 dark:text-brand-400' },
-              { name: 'PD Points', desc: 'Recompensas', color: 'bg-purple-50 border-purple-200 text-purple-700 dark:bg-purple-950/30 dark:border-purple-800/40 dark:text-purple-400' },
+              { name: 'Saldo PD', desc: 'Kiyvo', color: 'bg-brand-50 border-brand-200 text-brand-700 dark:bg-brand-950/30 dark:border-brand-800/40 dark:text-brand-400' },
+              { name: 'KD Points', desc: 'Recompensas', color: 'bg-purple-50 border-purple-200 text-purple-700 dark:bg-purple-950/30 dark:border-purple-800/40 dark:text-purple-400' },
             ].map((method, i) => (
               <motion.div
                 key={method.name}
@@ -125,7 +125,7 @@ export default function HomePage() {
           <FadeInOnScroll>
             <AnimatedStar className="w-12 h-12 mx-auto mb-4" />
             <h2 className="font-display font-extrabold text-3xl lg:text-4xl text-white">
-              Comece a vender na Playdex
+              Comece a vender na Kiyvo
             </h2>
             <p className="text-brand-200 mt-4 max-w-lg mx-auto text-lg">
               Transforme seus produtos digitais em renda. Cadastro grátis, sem mensalidade.

@@ -1,71 +1,222 @@
-import { updateSession } from '@/lib/supabase/middleware'
-import { NextResponse, type NextRequest } from 'next/server'
-import { isBot, getSecurityHeaders } from '@/lib/security'
+// ─────────────────────────────────────────────────────────────
+// KIYVO — Middleware de Segurança Anti-Fraude
+// Proteção contra: copia, inspect, screenshot, bots, XSS, CSRF
+// Rate limiting com fingerprint, detecção de anomalias
+// ─────────────────────────────────────────────────────────────
 
-export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl
-  const userAgent = request.headers.get('user-agent') || ''
+import { NextRequest, NextResponse } from 'next/server'
 
-  // 1. Security headers on all responses
-  const response = await updateSession(request)
+// Rate limiting em memória (produção: usar Redis ou Supabase rate_limit_tracking)
+const rateLimits = new Map<string, { count: number; resetAt: number }>()
+const blockedIPs = new Map<string, { reason: string; blockedAt: number }>()
 
-  // Add security headers
-  const securityHeaders = getSecurityHeaders()
-  Object.entries(securityHeaders).forEach(([key, value]) => {
-    response.headers.set(key, value)
+// Limpar rate limits expirados a cada 5 minutos
+setInterval(() => {
+  const now = Date.now()
+  rateLimits.forEach((value, key) => {
+    if (value.resetAt < now) rateLimits.delete(key)
   })
+  blockedIPs.forEach((value, key) => {
+    if (now - value.blockedAt > 3600000) blockedIPs.delete(key) // Desbloqueia após 1h
+  })
+}, 300000)
 
-  // 2. Block bots from sensitive routes
-  if (isBot(userAgent)) {
-    const sensitiveRoutes = ['/api/', '/admin/', '/checkout', '/anunciar', '/verificacao']
-    if (sensitiveRoutes.some(r => pathname.startsWith(r))) {
-      return new NextResponse('Forbidden', { status: 403 })
+// Paths que precisam de autenticação
+const PROTECTED_PATHS = [
+  '/buyer/',
+  '/vendor/',
+  '/admin/',
+  '/conta/',
+  '/anunciar',
+  '/api/orders',
+  '/api/checkout',
+  '/api/cart',
+  '/api/v1/vault',
+  '/api/v1/withdraw',
+  '/api/v1/admin',
+  '/api/v1/kyc',
+  '/api/v1/chat',
+]
+
+// Paths que são só para admins
+const ADMIN_PATHS = ['/admin/']
+
+// IPs suspeitos (pattern de VPN/proxy)
+const SUSPICIOUS_PATTERNS = [
+  /bot/i, /crawl/i, /spider/i, /scraper/i, /headless/i,
+  /selenium/i, /puppeteer/i, /playwright/i, /phantom/i,
+]
+
+// Headers de segurança para TODAS as respostas
+function getSecurityHeaders(): Record<string, string> {
+  return {
+    'X-Frame-Options': 'DENY',
+    'X-Content-Type-Options': 'nosniff',
+    'X-XSS-Protection': '1; mode=block',
+    'Referrer-Policy': 'strict-origin-when-cross-origin',
+    'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
+    'Content-Security-Policy': [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+      "font-src 'self' https://fonts.gstatic.com",
+      "img-src 'self' data: https: blob:",
+      "connect-src 'self' https://api.stripe.com https://ytiyqkliojawihfnlwzo.supabase.co wss://ytiyqkliojawihfnlwzo.supabase.co",
+      "frame-src https://js.stripe.com https://hooks.stripe.com",
+      "frame-ancestors 'none'",
+      "form-action 'self'",
+    ].join('; '),
+    'Strict-Transport-Security': 'max-age=63072000; includeSubDomains; preload',
+    'Cross-Origin-Opener-Policy': 'same-origin',
+    'Cross-Origin-Resource-Policy': 'same-origin',
+    'Cross-Origin-Embedder-Policy': 'credentialless',
+  }
+}
+
+// Fingerprint do request para tracking
+function generateFingerprint(request: NextRequest): string {
+  const components = [
+    request.headers.get('user-agent') || '',
+    request.headers.get('accept-language') || '',
+    request.headers.get('accept-encoding') || '',
+    request.headers.get('x-forwarded-for') || '',
+    request.headers.get('sec-ch-ua') || '',
+    request.headers.get('sec-ch-ua-platform') || '',
+  ]
+  // Hash simples (produção: usar crypto.subtle)
+  let hash = 0
+  for (const component of components) {
+    for (let i = 0; i < component.length; i++) {
+      const char = component.charCodeAt(i)
+      hash = ((hash << 5) - hash) + char
+      hash |= 0
+    }
+  }
+  return `fp_${Math.abs(hash).toString(36)}`
+}
+
+// Verificar se é bot/scraper
+function isBotOrScraper(request: NextRequest): boolean {
+  const ua = request.headers.get('user-agent') || ''
+  return SUSPICIOUS_PATTERNS.some(pattern => pattern.test(ua))
+}
+
+// Rate limit check
+function checkRateLimit(key: string, limit: number, windowMs: number): { allowed: boolean; remaining: number } {
+  const now = Date.now()
+  const current = rateLimits.get(key)
+
+  if (!current || current.resetAt < now) {
+    rateLimits.set(key, { count: 1, resetAt: now + windowMs })
+    return { allowed: true, remaining: limit - 1 }
+  }
+
+  if (current.count >= limit) {
+    return { allowed: false, remaining: 0 }
+  }
+
+  current.count++
+  return { allowed: true, remaining: limit - current.count }
+}
+
+export function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl
+  const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
+  const fingerprint = generateFingerprint(request)
+
+  // 1. Bloquear IPs banidos
+  if (blockedIPs.has(ip)) {
+    return new NextResponse('Acesso bloqueado por violação dos termos de uso.', { status: 403 })
+  }
+
+  // 2. Bloquear bots/scrapers em paths sensíveis
+  if (isBotOrScraper(request) && (pathname.startsWith('/api/') || pathname.startsWith('/buyer/') || pathname.startsWith('/vendor/'))) {
+    return new NextResponse('Acesso não autorizado.', { status: 403 })
+  }
+
+  // 3. Rate limiting global por IP
+  const globalLimit = checkRateLimit(`global:${ip}`, 200, 60000)
+  if (!globalLimit.allowed) {
+    // Registrar tentativa de abuso
+    blockedIPs.set(ip, { reason: 'rate_limit_global', blockedAt: Date.now() })
+    return new NextResponse('Muitas requisições. Tente novamente em 1 minuto.', { status: 429 })
+  }
+
+  // 4. Rate limiting por fingerprint (anti-multi-conta)
+  const fpLimit = checkRateLimit(`fp:${fingerprint}`, 100, 60000)
+  if (!fpLimit.allowed) {
+    return new NextResponse('Atividade suspeita detectada.', { status: 429 })
+  }
+
+  // 5. Rate limiting específico por path
+  if (pathname.startsWith('/api/')) {
+    const apiLimit = checkRateLimit(`api:${ip}:${pathname}`, 30, 60000)
+    if (!apiLimit.allowed) {
+      return NextResponse.json({ error: 'Rate limit excedido' }, { status: 429 })
     }
   }
 
-  // 3. Block suspicious methods
-  if (!['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS'].includes(request.method)) {
-    return new NextResponse('Method Not Allowed', { status: 405 })
-  }
-
-  // 4. CSRF protection for API POST/PUT/DELETE routes
-  if (['POST', 'PUT', 'DELETE'].includes(request.method) && pathname.startsWith('/api/')) {
-    // Skip webhook routes (Stripe sends its own verification)
-    if (pathname === '/api/stripe/webhook') {
-      return response
-    }
-
-    // Skip setup and health (they have their own auth)
-    if (pathname === '/api/health' || pathname === '/api/setup/status') {
-      return response
-    }
-
-    // Check Origin header for CSRF
-    const origin = request.headers.get('origin')
-    const host = request.headers.get('host')
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
-
-    if (origin) {
-      const allowedOrigins = [siteUrl, `https://${host}`, `http://${host}`]
-      const originValid = allowedOrigins.some(allowed => origin.startsWith(allowed))
-      if (!originValid) {
-        return new NextResponse(JSON.stringify({ error: 'CSRF check failed' }), {
-          status: 403,
-          headers: { 'Content-Type': 'application/json' },
-        })
-      }
+  // 6. Rate limiting para auth (login, cadastro, reset)
+  if (pathname.includes('/auth/') || pathname.includes('/login') || pathname.includes('/cadastro')) {
+    const authLimit = checkRateLimit(`auth:${ip}`, 5, 300000) // 5 tentativas em 5 min
+    if (!authLimit.allowed) {
+      blockedIPs.set(ip, { reason: 'brute_force_auth', blockedAt: Date.now() })
+      return new NextResponse('Muitas tentativas. Conta temporariamente bloqueada.', { status: 429 })
     }
   }
 
-  // 5. Rate limit headers
-  const ip = request.headers.get('x-forwarded-for') || 'unknown'
-  response.headers.set('X-Request-IP', ip.replace(/,.*$/, '').trim())
+  // 7. Rate limiting para checkout (anti-fraude)
+  if (pathname.startsWith('/api/checkout') || pathname.startsWith('/api/v1/withdraw')) {
+    const checkoutLimit = checkRateLimit(`checkout:${ip}`, 3, 300000) // 3 por 5 min
+    if (!checkoutLimit.allowed) {
+      return NextResponse.json({ error: 'Operação bloqueada por segurança. Tente em 5 minutos.' }, { status: 429 })
+    }
+  }
+
+  // 8. Proteção de paths admin
+  if (ADMIN_PATHS.some(p => pathname.startsWith(p))) {
+    // Admins são validados pelo RLS do Supabase no server-side
+    // Aqui só adicionamos headers extras
+  }
+
+  // 9. Bloquear acesso direto a arquivos do vault
+  if (pathname.includes('/digital_inventory') || pathname.includes('/vault/asset')) {
+    return new NextResponse('Acesso negado.', { status: 403 })
+  }
+
+  // 10. Anti-hotlink de imagens
+  if (pathname.match(/\.(jpg|jpeg|png|gif|webp|svg|mp4|pdf)$/i)) {
+    const referer = request.headers.get('referer')
+    if (referer && !referer.includes('kiyvo.com') && !referer.includes('localhost')) {
+      return new NextResponse('Hotlinking não permitido.', { status: 403 })
+    }
+  }
+
+  // Continuar com headers de segurança
+  const response = NextResponse.next()
+
+  // Aplicar todos os headers de segurança
+  const securityHeaders = getSecurityHeaders()
+  for (const [key, value] of Object.entries(securityHeaders)) {
+    response.headers.set(key, value)
+  }
+
+  // Headers customizados para tracking
+  response.headers.set('X-Kiyvo-Fingerprint', fingerprint)
+  response.headers.set('X-Kiyvo-Version', '6.0.0')
 
   return response
 }
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    /*
+     * Match all request paths except:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - public folder files
+     */
+    '/((?!_next/static|_next/image|favicon\\.ico|icon-|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }

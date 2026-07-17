@@ -53,7 +53,7 @@ function CheckoutContent() {
   }
 
   const applyCoupon = () => {
-    const validCoupons: Record<string, number> = { 'WELCOME10': 10, 'DIGITAL20': 20, 'PLAYDEX15': 15, 'SOFTWARE25': 25 }
+    const validCoupons: Record<string, number> = { 'WELCOME10': 10, 'DIGITAL20': 20, 'KIYVO15': 15, 'SOFTWARE25': 25 }
     const discount = validCoupons[coupon.toUpperCase()]
     if (discount) {
       setCouponApplied(true)
@@ -76,7 +76,7 @@ function CheckoutContent() {
           product_id: product.id,
           product_title: product.title,
           price: finalPrice,
-          buyer_email: user?.email || 'guest@playdex.com',
+          buyer_email: user?.email || 'guest@kiyvo.com',
         }),
       })
 

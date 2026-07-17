@@ -22,7 +22,7 @@ export default function ParceirosPage() {
             <Handshake size={32} className="text-brand-600 dark:text-brand-400" /> Parceiros
           </h1>
           <p className="text-surface-500 dark:text-surface-400 text-lg mt-3 max-w-2xl mx-auto">
-            Empresas e plataformas que confiam na Playdex para entregar produtos digitais com segurança.
+            Empresas e plataformas que confiam na Kiyvo para entregar produtos digitais com segurança.
           </p>
         </motion.div>
 

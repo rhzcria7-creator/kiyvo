@@ -5,7 +5,7 @@ import { Search, Shield, CheckCircle, Zap } from 'lucide-react'
 
 const steps = [
   { icon: Search, step: '01', title: 'Encontre o Produto', desc: 'Navegue pelo catálogo ou use a busca para encontrar jogos, software, cursos, templates, gift cards e muito mais.' },
-  { icon: Shield, step: '02', title: 'Compra Segura', desc: 'A Playdex intermedia o pagamento, garantindo que seu dinheiro só chega ao vendedor após a entrega confirmada.' },
+  { icon: Shield, step: '02', title: 'Compra Segura', desc: 'A Kiyvo intermedia o pagamento, garantindo que seu dinheiro só chega ao vendedor após a entrega confirmada.' },
   { icon: CheckCircle, step: '03', title: 'Receba o Produto', desc: 'O vendedor entrega via chat ou automaticamente. Confirme o recebimento e avalie a experiência.' },
 ]
 
@@ -37,7 +37,7 @@ export default function ComoFuncionaPage() {
 
         <div className="mt-16 p-8 bg-surface-900 rounded-3xl text-center">
           <h2 className="font-display font-extrabold text-2xl text-white mb-3">Pronto para começar?</h2>
-          <p className="text-surface-400 mb-6 max-w-md mx-auto">Junte-se a mais de 1 milhão de usuários que já negociam com segurança na Playdex.</p>
+          <p className="text-surface-400 mb-6 max-w-md mx-auto">Junte-se a mais de 1 milhão de usuários que já negociam com segurança na Kiyvo.</p>
           <div className="flex justify-center gap-3">
             <a href="/categorias" className="btn-primary">Explorar Catálogo</a>
             <a href="/anunciar" className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white dark:bg-surface-900 text-surface-900 dark:text-white font-display font-semibold rounded-xl hover:bg-surface-50 dark:hover:bg-surface-800 dark:bg-surface-800 transition-colors">Comece a Vender</a>

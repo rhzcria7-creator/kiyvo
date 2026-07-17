@@ -17,7 +17,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       defaultTheme="system"
       enableSystem
       disableTransitionOnChange={false}
-      storageKey="playdex-theme"
+      storageKey="kiyvo-theme"
     >
       {children}
     </NextThemesProvider>

@@ -113,7 +113,7 @@ export default function ConfiguracoesPage() {
                 { label: 'Novas mensagens', desc: 'Receba notificações de chat', default: true },
                 { label: 'Atualizações de pedidos', desc: 'Status de compras e vendas', default: true },
                 { label: 'Promoções e ofertas', desc: 'Cupons e descontos exclusivos', default: false },
-                { label: 'Newsletter semanal', desc: 'Resumo de novidades da Playdex', default: false },
+                { label: 'Newsletter semanal', desc: 'Resumo de novidades da Kiyvo', default: false },
               ].map((item) => (
                 <div key={item.label} className="flex items-center justify-between p-3 bg-surface-50 dark:bg-surface-800 rounded-xl">
                   <div>

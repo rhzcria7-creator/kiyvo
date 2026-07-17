@@ -149,7 +149,7 @@ export default function VerificacaoPage() {
             <Shield className="text-white" size={28} />
           </motion.div>
           <h1 className="font-display font-extrabold text-2xl text-surface-900">Verificação de Identidade</h1>
-          <p className="text-surface-500 text-sm mt-1">Para vender na Playdex, precisamos verificar sua identidade</p>
+          <p className="text-surface-500 text-sm mt-1">Para vender na Kiyvo, precisamos verificar sua identidade</p>
         </motion.div>
 
         {isComplete ? (

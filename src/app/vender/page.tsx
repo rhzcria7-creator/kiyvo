@@ -19,7 +19,7 @@ const benefits = [
   'Checkout otimizado — 3x mais conversão',
   'Dashboard completo — métricas em tempo real',
   'Suporte prioritário — chat direto com a equipe',
-  'PD Points — ganhe recompensas em cada venda',
+  'KD Points — ganhe recompensas em cada venda',
 ]
 
 export default function VenderPage() {
@@ -66,7 +66,7 @@ export default function VenderPage() {
 
         {/* Benefits */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="card-base p-8 mb-16">
-          <h2 className="font-display font-extrabold text-2xl text-surface-900 dark:text-white text-center mb-6">Por que vender na Playdex?</h2>
+          <h2 className="font-display font-extrabold text-2xl text-surface-900 dark:text-white text-center mb-6">Por que vender na Kiyvo?</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {benefits.map((b, i) => (
               <motion.div key={i} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 + i * 0.05 }} className="flex items-center gap-3 p-3">
@@ -81,7 +81,7 @@ export default function VenderPage() {
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} className="text-center">
           <div className="card-base p-8 bg-gradient-to-br from-brand-600 to-brand-800 text-white border-0">
             <h2 className="font-display font-extrabold text-2xl">Pronto para começar?</h2>
-            <p className="text-brand-100 mt-2">Junte-se a +1M usuários que já confiam na Playdex.</p>
+            <p className="text-brand-100 mt-2">Junte-se a +1M usuários que já confiam na Kiyvo.</p>
             <Link href="/cadastro"><Button size="lg" className="mt-6 bg-white text-brand-600 hover:bg-brand-50">Criar Conta Grátis <ArrowRight size={16} /></Button></Link>
           </div>
         </motion.div>

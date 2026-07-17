@@ -88,7 +88,7 @@ export default function PlanosPage() {
             {[
               { q: 'Posso trocar de plano depois?', a: 'Sim! Você pode fazer upgrade ou downgrade a qualquer momento.' },
               { q: 'A taxa é cobrada mesmo se não vender?', a: 'Não. A taxa só é descontada quando uma venda é concluída.' },
-              { q: 'Qual a diferença entre Prata e Diamante?', a: 'O plano Diamante dá máximo destaque nos resultados, badge exclusiva, suporte prioritário e mais PD Points.' },
+              { q: 'Qual a diferença entre Prata e Diamante?', a: 'O plano Diamante dá máximo destaque nos resultados, badge exclusiva, suporte prioritário e mais KD Points.' },
               { q: 'Posso testar o plano Ouro?', a: 'Sim, todos os planos são grátis. A taxa só incide sobre vendas efetivadas.' },
             ].map((item) => (
               <div key={item.q} className="card-base p-5">

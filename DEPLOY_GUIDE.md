@@ -1,10 +1,10 @@
-# 🚀 Playdex v2.0 — Guia de Deploy Completo
+# 🚀 Kiyvo v2.0 — Guia de Deploy Completo
 
 ## Passo 1: Criar Projeto no Supabase
 
 1. Acesse [supabase.com](https://supabase.com) e crie uma conta
 2. Clique em **New Project**
-3. Nome: `playdex`, Senha: (escolha uma forte), Região: **South America (São Paulo)**
+3. Nome: `kiyvo`, Senha: (escolha uma forte), Região: **South America (São Paulo)**
 4. Aguarde o projeto ser criado (~2 min)
 
 ## Passo 2: Executar o Schema SQL
@@ -96,7 +96,7 @@
 - + todas as outras mantidas intactas
 
 ### Rebrand Completo
-- **Playdex = TUDO digital** (não só jogos)
+- **Kiyvo = TUDO digital** (não só jogos)
 - 20 categorias diversificadas
 - 15 produtos de todas as categorias
 - Textos, FAQ, reviews, blog — tudo atualizado

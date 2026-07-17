@@ -29,7 +29,7 @@ export default function AcessibilidadePage() {
             <Accessibility size={32} className="text-brand-600 dark:text-brand-400" /> Acessibilidade
           </h1>
           <p className="text-surface-500 dark:text-surface-400 text-lg mt-3 max-w-2xl mx-auto">
-            A Playdex está comprometida com a acessibilidade digital. Todos devem poder comprar e vender com facilidade.
+            A Kiyvo está comprometida com a acessibilidade digital. Todos devem poder comprar e vender com facilidade.
           </p>
         </motion.div>
 

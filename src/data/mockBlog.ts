@@ -41,7 +41,7 @@ export const mockBlog: BlogPost[] = [
     id: 'b4',
     title: 'Top 10 Cursos Online Mais Vendidos em 2026',
     slug: 'top-cursos-online-2026',
-    excerpt: 'Programação, design e marketing lideram as vendas. Veja o ranking completo dos cursos que mais faturam na Playdex.',
+    excerpt: 'Programação, design e marketing lideram as vendas. Veja o ranking completo dos cursos que mais faturam na Kiyvo.',
     image: 'https://picsum.photos/seed/blog4/600/340',
     author: 'Marina Costa',
     authorAvatar: 'https://picsum.photos/seed/av1/80/80',

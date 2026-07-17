@@ -70,7 +70,7 @@ export default function CadastroPage() {
             <span className="text-white font-display font-extrabold text-2xl">P</span>
           </motion.div>
           <h1 className="font-display font-extrabold text-2xl text-surface-900">Crie sua conta</h1>
-          <p className="text-surface-500 text-sm mt-1">Comece a comprar e vender na Playdex</p>
+          <p className="text-surface-500 text-sm mt-1">Comece a comprar e vender na Kiyvo</p>
         </div>
 
         {/* Step indicator */}

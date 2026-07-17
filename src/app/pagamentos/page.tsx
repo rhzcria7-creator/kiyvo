@@ -6,8 +6,8 @@ import { QrCode, CreditCard, Wallet, Coins, FileText, Award } from 'lucide-react
 const methods = [
   { icon: QrCode, name: 'PIX', desc: 'Pagamento instantâneo. Confirmação em segundos.', speed: 'Instantâneo' },
   { icon: CreditCard, name: 'Cartão de Crédito', desc: 'Visa, Mastercard, Elo. Até 12x sem juros.', speed: '10 min a 1 dia útil' },
-  { icon: Wallet, name: 'Saldo Playdex', desc: 'Use seu saldo disponível na plataforma.', speed: 'Instantâneo' },
-  { icon: Award, name: 'PD Points', desc: 'Use seus pontos de recompensa. 77 pts = R$1.', speed: 'Instantâneo' },
+  { icon: Wallet, name: 'Saldo Kiyvo', desc: 'Use seu saldo disponível na plataforma.', speed: 'Instantâneo' },
+  { icon: Award, name: 'KD Points', desc: 'Use seus pontos de recompensa. 77 pts = R$1.', speed: 'Instantâneo' },
   { icon: Coins, name: 'Criptomoeda', desc: 'USDT, BTC, ETH e mais via parceiro.', speed: 'Até 2 horas' },
   { icon: FileText, name: 'Boleto Bancário', desc: 'Pague em qualquer banco ou lotérica.', speed: '1 dia útil' },
 ]

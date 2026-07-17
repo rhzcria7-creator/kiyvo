@@ -1,20 +1,91 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server';
+import { createClient, createAdminClient } from '@/lib/supabase/server';
 
-// GET /api/notifications
-export async function GET() {
-  const notifications = [
-    { id: '1', type: 'order', title: 'Novo pedido!', message: 'Você recebeu um pedido de Windows 11 Pro', is_read: false, created_at: '2 min atrás' },
-    { id: '2', type: 'review', title: 'Nova avaliação', message: 'SoftVault avaliou sua entrega com 5 estrelas', is_read: false, created_at: '15 min atrás' },
-    { id: '3', type: 'system', title: 'Verificação aprovada', message: 'Sua verificação de identidade foi aprovada', is_read: true, created_at: '1h atrás' },
-    { id: '4', type: 'promotion', title: 'Cupom disponível!', message: 'Use DIGITAL20 para 20% de desconto', is_read: true, created_at: '3h atrás' },
-    { id: '5', type: 'withdrawal', title: 'Saque processado', message: 'Seu saque de R$ 450,00 foi processado com sucesso', is_read: true, created_at: '1 dia atrás' },
-  ]
-
-  return NextResponse.json({ data: notifications, unread: notifications.filter(n => !n.is_read).length })
+function getAdmin() {
+  const client = createAdminClient();
+  if (!client) throw new Error("Admin client não configurado");
+  return client;
 }
 
-// PUT /api/notifications — Mark as read
-export async function PUT(request: Request) {
-  const body = await request.json()
-  return NextResponse.json({ success: true, id: body.id })
+// ═══════════════════════════════════════════════════════════════
+// GET /api/notifications — Notificações reais do utilizador
+// PUT /api/notifications — Marcar como lida
+// ═══════════════════════════════════════════════════════════════
+
+export async function GET(request: NextRequest) {
+  try {
+    const supabase = createClient();
+    const admin = getAdmin();
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(request.url);
+    const limit = parseInt(searchParams.get('limit') || '20');
+    const unreadOnly = searchParams.get('unread') === 'true';
+
+    let query = admin
+      .from('notifications')
+      .select('*', { count: 'exact' })
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    if (unreadOnly) {
+      query = query.eq('is_read', false);
+    }
+
+    const { data: notifications, error, count } = await query;
+
+    if (error) {
+      return NextResponse.json({ error: 'Erro ao buscar notificações' }, { status: 500 });
+    }
+
+    const unread = (notifications || []).filter((n: { is_read: boolean }) => !n.is_read).length;
+
+    return NextResponse.json({
+      data: notifications || [],
+      unread,
+      total: count || 0,
+    });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Erro interno';
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
+
+export async function PUT(request: NextRequest) {
+  try {
+    const supabase = createClient();
+    const admin = getAdmin();
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
+    }
+
+    const body = await request.json();
+    const { id, mark_all } = body as { id?: string; mark_all?: boolean };
+
+    if (mark_all) {
+      await admin
+        .from('notifications')
+        .update({ is_read: true })
+        .eq('user_id', user.id)
+        .eq('is_read', false);
+    } else if (id) {
+      await admin
+        .from('notifications')
+        .update({ is_read: true })
+        .eq('id', id)
+        .eq('user_id', user.id);
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Erro interno';
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 }

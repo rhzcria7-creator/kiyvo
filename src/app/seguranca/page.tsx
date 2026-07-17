@@ -72,10 +72,10 @@ export default function SegurancaPage() {
         {/* Purchase Protection */}
         <FadeInOnScroll className="mb-16">
           <div className="p-8 bg-gradient-to-br from-brand-600 to-brand-800 rounded-3xl text-white">
-            <h2 className="font-display font-extrabold text-2xl mb-4">Proteção de Compra Playdex</h2>
+            <h2 className="font-display font-extrabold text-2xl mb-4">Proteção de Compra Kiyvo</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
               {[
-                { title: 'Dinheiro Seguro', desc: 'Seu pagamento fica retido pela Playdex e só é liberado após você confirmar o recebimento do produto.' },
+                { title: 'Dinheiro Seguro', desc: 'Seu pagamento fica retido pela Kiyvo e só é liberado após você confirmar o recebimento do produto.' },
                 { title: 'Reembolso Garantido', desc: 'Se o produto não for entregue ou não corresponder à descrição, você recebe 100% do valor de volta.' },
                 { title: 'Mediação Justa', desc: 'Em caso de disputa, nossa equipe analisa as evidências de ambos os lados e toma uma decisão justa.' },
               ].map((item) => (

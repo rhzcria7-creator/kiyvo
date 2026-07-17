@@ -14,7 +14,7 @@ const Hero3D = dynamic(() => import('./Hero3D').then((mod) => ({ default: mod.He
 const features = [
   { icon: Shield, label: 'Compra Segura', desc: 'Dinheiro de volta garantido' },
   { icon: Zap, label: 'Entrega Rápida', desc: 'Produtos digitais em segundos' },
-  { icon: Award, label: 'PD Points', desc: 'Recompensas em toda compra' },
+  { icon: Award, label: 'KD Points', desc: 'Recompensas em toda compra' },
 ]
 
 const categories = [
@@ -48,7 +48,7 @@ export function Hero() {
             className="inline-flex items-center gap-2 px-3 py-1.5 bg-brand-50 dark:bg-brand-950/60 border border-brand-100 dark:border-brand-800/40 rounded-full mb-6"
           >
             <span className="w-2 h-2 bg-brand-500 rounded-full animate-pulse" />
-            <span className="text-sm font-medium text-brand-700 dark:text-brand-300 font-display">+1M usuários confiam</span>
+            <span className="text-sm font-medium text-brand-700 dark:text-brand-300 font-display">+1M usuários confiam no Kiyvo</span>
           </motion.div>
 
           {/* Heading */}
@@ -69,7 +69,7 @@ export function Hero() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="mt-5 text-lg text-surface-500 dark:text-surface-400 leading-relaxed max-w-lg"
           >
-            Jogos, software, cursos, e-books, templates, gift cards, domínios, APIs e muito mais. Compre e venda qualquer produto digital com total segurança.
+            Jogos, software, cursos, e-books, templates, gift cards e muito mais. Compre e venda com segurança nível bancário no Kiyvo.
           </motion.p>
 
           {/* CTA */}

@@ -31,14 +31,14 @@ export default function ApiDocsPage() {
         <FadeInOnScroll className="text-center mb-12">
           <AnimatedDocument className="w-16 h-16 mx-auto mb-3" />
           <h1 className="font-display font-extrabold text-3xl lg:text-4xl text-surface-900">API Documentation</h1>
-          <p className="text-surface-500 mt-2 max-w-md mx-auto">Integre a Playdex ao seu sistema. RESTful API com autenticação.</p>
+          <p className="text-surface-500 mt-2 max-w-md mx-auto">Integre a Kiyvo ao seu sistema. RESTful API com autenticação.</p>
         </FadeInOnScroll>
 
         {/* Base URL */}
         <FadeInOnScroll className="mb-8">
           <div className="card-base p-5">
             <p className="text-xs font-semibold text-surface-500 uppercase mb-1">Base URL</p>
-            <code className="text-sm font-mono text-brand-700 bg-brand-50 px-3 py-1.5 rounded-lg">https://api.playdex.com.br/v1</code>
+            <code className="text-sm font-mono text-brand-700 bg-brand-50 px-3 py-1.5 rounded-lg">https://api.kiyvo.com.br/v1</code>
           </div>
         </FadeInOnScroll>
 

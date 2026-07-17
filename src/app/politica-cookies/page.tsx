@@ -53,7 +53,7 @@ export default function PoliticaCookiesPage() {
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
             <h2 className="font-display font-bold text-xl text-surface-900 dark:text-white">Contato</h2>
-            <p className="text-surface-600 dark:text-surface-400">Para dúvidas sobre cookies, entre em contato: <span className="text-brand-600 dark:text-brand-400">privacidade@playdex.com.br</span></p>
+            <p className="text-surface-600 dark:text-surface-400">Para dúvidas sobre cookies, entre em contato: <span className="text-brand-600 dark:text-brand-400">privacidade@kiyvo.com.br</span></p>
           </motion.div>
         </div>
       </div>

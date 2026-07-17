@@ -1,5 +1,5 @@
 -- =============================================
--- PLAYDEX — Schema Completo Supabase v3.0
+-- KIYVO — Schema Completo Supabase v3.0
 -- 100% IDEMPOTENTE — Pode rodar quantas vezes quiser
 -- Execute no SQL Editor do Supabase
 -- =============================================

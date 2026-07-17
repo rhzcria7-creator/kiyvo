@@ -14,13 +14,16 @@ interface Profile {
   cpf: string | null
   birth_date: string | null
   verification_status: 'unverified' | 'pending' | 'verified' | 'rejected'
+  role: 'buyer' | 'vendor' | 'admin'
+  kyc_status?: string
   seller_plan: 'silver' | 'gold' | 'diamond'
-  pd_points: number
+  kd_points: number
   total_sales: number
   total_purchases: number
   rating: number
   is_admin: boolean
   is_banned: boolean
+  two_factor_enabled?: boolean
   created_at: string
 }
 

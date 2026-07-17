@@ -1,7 +1,7 @@
 // robots.txt para SEO
 import { MetadataRoute } from 'next'
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://playdex.com.br'
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://kiyvo.com.br'
 
 export default function robots(): MetadataRoute.Robots {
   return {

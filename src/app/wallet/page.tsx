@@ -17,7 +17,7 @@ const mockTransactions = [
   { id: 5, type: 'received', desc: 'Venda — Templates Canva', amount: 19.90, status: 'completed', date: '14/07/26' },
   { id: 6, type: 'withdrawal', desc: 'Saque via PIX', amount: -300.00, status: 'completed', date: '13/07/26' },
   { id: 7, type: 'received', desc: 'Venda — Netflix Gift Card', amount: 45.00, status: 'pending', date: '13/07/26' },
-  { id: 8, type: 'fee', desc: 'Taxa Playdex (9.99%)', amount: -5.00, status: 'completed', date: '14/07/26' },
+  { id: 8, type: 'fee', desc: 'Taxa Kiyvo (9.99%)', amount: -5.00, status: 'completed', date: '14/07/26' },
 ]
 
 export default function WalletPage() {

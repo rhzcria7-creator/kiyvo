@@ -16,7 +16,7 @@ const categories = [
 ]
 
 const popularArticles = [
-  { q: 'Como comprar na Playdex?', href: '/como-funciona' },
+  { q: 'Como comprar na Kiyvo?', href: '/como-funciona' },
   { q: 'Como funciona a garantia?', href: '/garantia' },
   { q: 'Quais as formas de pagamento?', href: '/pagamentos' },
   { q: 'Como me tornar vendedor verificado?', href: '/verificacao' },

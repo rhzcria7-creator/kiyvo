@@ -10,7 +10,7 @@ const steps = [
   { icon: Heart, title: 'Escolha e proteja', desc: 'Compare preços, leia avaliações e adicione aos favoritos.' },
   { icon: CreditCard, title: 'Pague com segurança', desc: 'PIX, cartão de crédito ou boleto. Pagamento retido até a entrega.' },
   { icon: Zap, title: 'Receba instantaneamente', desc: 'Produtos digitais entregues em segundos após a confirmação.' },
-  { icon: Star, title: 'Avalie e ganhe', desc: 'Avalie o vendedor e ganhe PD Points em cada compra.' },
+  { icon: Star, title: 'Avalie e ganhe', desc: 'Avalie o vendedor e ganhe KD Points em cada compra.' },
 ]
 
 const guarantees = [
@@ -58,7 +58,7 @@ export default function ComprarPage() {
         </div>
 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="card-base p-8 mb-16">
-          <h2 className="font-display font-extrabold text-2xl text-surface-900 dark:text-white text-center mb-6">🛡️ Garantia Playdex</h2>
+          <h2 className="font-display font-extrabold text-2xl text-surface-900 dark:text-white text-center mb-6">🛡️ Garantia Kiyvo</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {guarantees.map((g, i) => (
               <motion.div key={i} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 + i * 0.05 }} className="flex items-center gap-3 p-3">

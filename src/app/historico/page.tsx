@@ -12,7 +12,7 @@ const transactions = [
   { id: 'TX-003', type: 'withdrawal', title: 'Saque via PIX', amount: -450.00, method: 'PIX', status: 'completed', date: '12/07/26', time: '09:15' },
   { id: 'TX-004', type: 'purchase', title: 'Curso Full Stack 120h', amount: -34.90, method: 'Cartão', status: 'completed', date: '11/07/26', time: '16:45' },
   { id: 'TX-005', type: 'sale', title: 'Conta Valorant Diamante', amount: 80.91, method: 'PIX', status: 'completed', date: '10/07/26', time: '22:10' },
-  { id: 'TX-006', type: 'bonus', title: 'PD Points — Bônus semanal', amount: 5.00, method: 'Sistema', status: 'completed', date: '10/07/26', time: '00:00' },
+  { id: 'TX-006', type: 'bonus', title: 'KD Points — Bônus semanal', amount: 5.00, method: 'Sistema', status: 'completed', date: '10/07/26', time: '00:00' },
   { id: 'TX-007', type: 'purchase', title: 'Netflix Premium 1 Ano', amount: -79.90, method: 'PIX', status: 'pending', date: '15/07/26', time: '15:30' },
   { id: 'TX-008', type: 'refund', title: 'Reembolso — Key Steam', amount: 149.90, method: 'PIX', status: 'completed', date: '08/07/26', time: '12:00' },
 ]

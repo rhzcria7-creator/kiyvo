@@ -4,6 +4,11 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
+/* ═══════════════════════════════════════════════════════════════
+   KIYVO — Design System Global
+   Apple + Netflix quality. Premium, clean, with depth.
+   ═══════════════════════════════════════════════════════════════ */
+
 @layer base {
   * {
     -webkit-font-smoothing: antialiased;
@@ -14,8 +19,21 @@
     scroll-behavior: smooth;
   }
 
+  /* Respeitar preferência de redução de movimento */
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
   body {
-    @apply bg-surface-0 text-surface-900 font-body transition-colors duration-300;
+    @apply bg-surface-50 text-surface-900 font-body transition-colors duration-300;
   }
 
   .dark body {
@@ -29,125 +47,214 @@
   .dark ::selection {
     @apply bg-brand-900/60 text-brand-100;
   }
+
+  /* Focus visível para acessibilidade */
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-brand-500;
+  }
 }
 
 @layer components {
-  /* Glassmorphism card */
+  /* ── Glassmorphism ────────────────────────────────────── */
   .glass {
     @apply bg-white/70 backdrop-blur-xl border border-white/20;
   }
-
   .dark .glass {
     @apply bg-surface-900/70 backdrop-blur-xl border border-white/10;
   }
-
   .glass-dark {
     @apply bg-surface-900/80 backdrop-blur-xl border border-white/10;
   }
 
-  /* Neumorphism subtle */
+  /* ── Neumorphism sutil ────────────────────────────────── */
   .neu-raised {
     @apply bg-surface-50 shadow-[4px_4px_12px_rgba(0,0,0,0.05),-4px_-4px_12px_rgba(255,255,255,0.9)];
   }
-
   .dark .neu-raised {
     @apply bg-surface-800 shadow-[4px_4px_12px_rgba(0,0,0,0.3),-4px_-4px_12px_rgba(255,255,255,0.03)];
   }
-
   .neu-pressed {
     @apply bg-surface-50 shadow-[inset_4px_4px_12px_rgba(0,0,0,0.05),inset_-4px_-4px_12px_rgba(255,255,255,0.9)];
   }
-
   .dark .neu-pressed {
     @apply bg-surface-800 shadow-[inset_4px_4px_12px_rgba(0,0,0,0.3),inset_-4px_-4px_12px_rgba(255,255,255,0.03)];
   }
 
-  /* Skeleton shimmer */
+  /* ── Skeleton shimmer ─────────────────────────────────── */
   .skeleton {
     @apply bg-gradient-to-r from-surface-100 via-surface-200 to-surface-100 bg-[length:200%_100%] animate-shimmer rounded-lg;
   }
-
   .dark .skeleton {
     @apply from-surface-800 via-surface-700 to-surface-800;
   }
 
-  /* Focus ring */
+  /* ── Focus ring ───────────────────────────────────────── */
   .focus-ring {
     @apply focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:ring-offset-2 focus:ring-offset-white;
   }
-
   .dark .focus-ring {
     @apply focus:ring-offset-surface-950;
   }
 
-  /* Gradient text */
+  /* ── Gradient text (marca KIYVO) ──────────────────────── */
   .gradient-text {
     @apply bg-clip-text text-transparent bg-gradient-to-r from-brand-600 to-brand-400;
   }
-
   .dark .gradient-text {
     @apply from-brand-400 to-brand-300;
   }
 
-  /* Smooth hover lift */
+  /* ── Hover lift sutil ─────────────────────────────────── */
   .hover-lift {
     @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-card-hover;
   }
-
   .dark .hover-lift {
     @apply hover:shadow-dark-glow;
   }
 
-  /* Card base */
+  /* ── Card base ────────────────────────────────────────── */
   .card-base {
     @apply bg-white rounded-2xl border border-surface-200/60 shadow-card transition-all duration-300;
   }
-
   .dark .card-base {
     @apply bg-surface-900 border-surface-700/60 shadow-dark-card;
   }
 
-  /* Button primary */
-  .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 px-6 py-3 bg-brand-600 text-white font-display font-semibold rounded-xl
-           transition-all duration-200 hover:bg-brand-700 hover:shadow-glow active:scale-[0.98] focus-ring;
+  /* ── Card elevado (hover interativo) ──────────────────── */
+  .card-elevated {
+    @apply card-base hover:shadow-card-hover hover:-translate-y-0.5;
+  }
+  .dark .card-elevated {
+    @apply hover:shadow-dark-glow;
   }
 
+  /* ── Button primary ───────────────────────────────────── */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 bg-brand-600 text-white font-display font-semibold rounded-xl
+           transition-all duration-200 hover:bg-brand-700 hover:shadow-glow active:scale-[0.98] focus-ring
+           disabled:opacity-50 disabled:pointer-events-none disabled:cursor-not-allowed;
+  }
   .dark .btn-primary {
     @apply hover:shadow-dark-glow;
   }
 
-  /* Button secondary */
+  /* ── Button secondary ─────────────────────────────────── */
   .btn-secondary {
     @apply inline-flex items-center justify-center gap-2 px-6 py-3 bg-white text-brand-600 font-display font-semibold rounded-xl
-           border-2 border-brand-200 transition-all duration-200 hover:bg-brand-50 hover:border-brand-300 active:scale-[0.98] focus-ring;
+           border-2 border-brand-200 transition-all duration-200 hover:bg-brand-50 hover:border-brand-300 active:scale-[0.98] focus-ring
+           disabled:opacity-50 disabled:pointer-events-none disabled:cursor-not-allowed;
   }
-
   .dark .btn-secondary {
     @apply bg-surface-800 text-brand-400 border-brand-700 hover:bg-surface-700 hover:border-brand-600;
   }
 
-  /* Input base */
+  /* ── Button ghost ─────────────────────────────────────── */
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 text-surface-600 font-display font-medium rounded-xl
+           transition-all duration-200 hover:bg-surface-100 active:scale-[0.98] focus-ring
+           disabled:opacity-50 disabled:pointer-events-none disabled:cursor-not-allowed;
+  }
+  .dark .btn-ghost {
+    @apply text-surface-400 hover:bg-surface-800;
+  }
+
+  /* ── Button danger ────────────────────────────────────── */
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 bg-red-600 text-white font-display font-semibold rounded-xl
+           transition-all duration-200 hover:bg-red-700 active:scale-[0.98] focus-ring
+           disabled:opacity-50 disabled:pointer-events-none disabled:cursor-not-allowed;
+  }
+
+  /* ── Input base ───────────────────────────────────────── */
   .input-base {
     @apply w-full px-4 py-3 bg-surface-50 border border-surface-200 rounded-xl font-body text-surface-900
            placeholder:text-surface-400 transition-all duration-200
-           focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-400 focus:bg-white;
+           focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-400 focus:bg-white
+           disabled:opacity-50 disabled:cursor-not-allowed;
   }
-
   .dark .input-base {
     @apply bg-surface-800 border-surface-700 text-surface-100 placeholder:text-surface-500
            focus:ring-brand-500/30 focus:border-brand-500 focus:bg-surface-900;
   }
 
-  /* Badge */
+  /* ── Input erro ───────────────────────────────────────── */
+  .input-error {
+    @apply input-base border-red-400 focus:ring-red-500/20 focus:border-red-500;
+  }
+  .dark .input-error {
+    @apply border-red-500 focus:ring-red-500/30;
+  }
+
+  /* ── Badge ────────────────────────────────────────────── */
   .badge {
     @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold font-display;
   }
 
-  /* Page container */
+  /* ── Page container ───────────────────────────────────── */
   .page-container {
     @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
   }
+
+  /* ── Status dots ──────────────────────────────────────── */
+  .status-dot {
+    @apply w-2 h-2 rounded-full;
+  }
+  .status-dot-success { @apply bg-emerald-500; }
+  .status-dot-warning { @apply bg-amber-500; }
+  .status-dot-danger  { @apply bg-red-500; }
+  .status-dot-info    { @apply bg-brand-500; }
+
+  /* ── Dividers ─────────────────────────────────────────── */
+  .divider {
+    @apply border-t border-surface-200;
+  }
+  .dark .divider {
+    @apply border-surface-800;
+  }
+
+  /* ── Text helpers ─────────────────────────────────────── */
+  .text-muted {
+    @apply text-surface-500;
+  }
+  .dark .text-muted {
+    @apply text-surface-400;
+  }
+
+  /* ── Empty state ──────────────────────────────────────── */
+  .empty-state {
+    @apply flex flex-col items-center justify-center py-20 text-center;
+  }
+  .empty-state-icon {
+    @apply w-16 h-16 rounded-2xl bg-surface-100 flex items-center justify-center mb-4;
+  }
+  .dark .empty-state-icon {
+    @apply bg-surface-800;
+  }
+  .empty-state-title {
+    @apply font-display font-bold text-lg text-surface-900 mb-1;
+  }
+  .dark .empty-state-title {
+    @apply text-white;
+  }
+  .empty-state-desc {
+    @apply text-sm text-surface-500 max-w-sm;
+  }
+  .dark .empty-state-desc {
+    @apply text-surface-400;
+  }
+
+  /* ── Loading spinner ──────────────────────────────────── */
+  .spinner {
+    @apply w-6 h-6 border-2 border-surface-200 border-t-brand-600 rounded-full animate-spin;
+  }
+  .dark .spinner {
+    @apply border-surface-700 border-t-brand-400;
+  }
+
+  /* ── Toast overrides (react-hot-toast) ────────────────── */
+  .toast-success { @apply bg-emerald-600 text-white; }
+  .toast-error   { @apply bg-red-600 text-white; }
+  .toast-info    { @apply bg-brand-600 text-white; }
 }
 
 @layer utilities {
@@ -165,9 +272,9 @@
   }
 }
 
-/* Custom scrollbar for the site */
+/* Custom scrollbar — elegante e minimalista */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -202,15 +309,44 @@
   transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
-/* Dark mode transition overlay */
+/* Dark mode */
 html.dark {
   color-scheme: dark;
 }
 
-/* Theme transition */
+/* Theme transition — suave ao trocar tema */
 html.theme-transition,
 html.theme-transition *,
 html.theme-transition *::before,
 html.theme-transition *::after {
   transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease !important;
+}
+
+/* Seleção de texto mais elegante */
+::selection {
+  @apply bg-brand-100 text-brand-900;
+}
+
+/* Links: underline sutil em hover */
+a {
+  @apply transition-colors duration-150;
+}
+
+/* Tabelas com linhas alternadas */
+.table-striped tr:nth-child(even) {
+  @apply bg-surface-50;
+}
+.dark .table-striped tr:nth-child(even) {
+  @apply bg-surface-800/50;
+}
+
+/* Print: esconder elementos desnecessários */
+@media print {
+  nav, footer, .no-print, button {
+    display: none !important;
+  }
+  .card-base {
+    box-shadow: none !important;
+    border: 1px solid #e5e7eb !important;
+  }
 }

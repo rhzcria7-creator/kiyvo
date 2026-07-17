@@ -77,7 +77,7 @@ export function Footer() {
       <div className="border-t border-surface-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <p className="text-xs text-surface-500">
-            © 2026 Playdex. Todos os direitos reservados. Playdex Tecnologia da Informação Ltda.
+            © 2026 Kiyvo. Todos os direitos reservados. Kiyvo Tecnologia da Informação Ltda.
           </p>
           <div className="flex items-center gap-4 text-xs text-surface-500">
             <span>🔒 Pagamentos seguros</span>

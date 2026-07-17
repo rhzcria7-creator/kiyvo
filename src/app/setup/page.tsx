@@ -195,7 +195,7 @@ export default function SetupPage() {
                     {seeding === 'seed_coupons' ? <Loader2 size={18} className="animate-spin text-brand-600" /> : <CreditCard size={18} className="text-brand-600 dark:text-brand-400" />}
                     <div className="text-left">
                       <p className="text-sm font-medium text-surface-900 dark:text-white">Criar 6 cupons de desconto</p>
-                      <p className="text-xs text-surface-400">WELCOME10, DIGITAL20, PLAYDEX15...</p>
+                      <p className="text-xs text-surface-400">WELCOME10, DIGITAL20, KIYVO15...</p>
                     </div>
                   </div>
                   <span className="text-sm font-medium text-brand-600 dark:text-brand-400">Criar</span>

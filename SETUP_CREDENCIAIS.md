@@ -1,4 +1,4 @@
-# 🔐 PLAYDEX — Guia de Configuração das Credenciais
+# 🔐 KIYVO — Guia de Configuração das Credenciais
 
 ## ✅ O que já está configurado
 

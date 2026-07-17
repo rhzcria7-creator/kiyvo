@@ -12,8 +12,8 @@ import toast from 'react-hot-toast'
 
 export default function AfiliadosPage() {
   const [copied, setCopied] = useState(false)
-  const referralCode = 'PLAYDEX10'
-  const referralLink = `https://playdex.com.br/r/${referralCode}`
+  const referralCode = 'KIYVO10'
+  const referralLink = `https://kiyvo.com.br/r/${referralCode}`
 
   const copyLink = () => {
     navigator.clipboard.writeText(referralLink)

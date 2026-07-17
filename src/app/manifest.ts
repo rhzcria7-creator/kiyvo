@@ -1,11 +1,11 @@
 import { MetadataRoute } from 'next'
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://playdex.com.br'
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://kiyvo.com.br'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Playdex — Marketplace de Produtos Digitais',
-    short_name: 'Playdex',
+    name: 'Kiyvo — Marketplace de Produtos Digitais',
+    short_name: 'Kiyvo',
     description: 'Compre e venda tudo que é digital: jogos, software, cursos, e-books, templates, gift cards e muito mais.',
     start_url: '/',
     display: 'standalone',

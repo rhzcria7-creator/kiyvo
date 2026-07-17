@@ -34,7 +34,7 @@ export default function AdminPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <h1 className="font-display font-extrabold text-3xl text-surface-900">Painel Administrativo</h1>
-          <p className="text-surface-500 text-sm mt-1">Gerencie a plataforma Playdex</p>
+          <p className="text-surface-500 text-sm mt-1">Gerencie a plataforma Kiyvo</p>
         </motion.div>
 
         {/* Stats */}

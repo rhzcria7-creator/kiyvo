@@ -47,7 +47,7 @@ export default function ComunidadePage() {
         {/* Header */}
         <FadeInOnScroll className="text-center mb-10">
           <AnimatedUsers className="w-16 h-16 mx-auto mb-3" />
-          <h1 className="font-display font-extrabold text-3xl lg:text-4xl text-surface-900">Comunidade Playdex</h1>
+          <h1 className="font-display font-extrabold text-3xl lg:text-4xl text-surface-900">Comunidade Kiyvo</h1>
           <p className="text-surface-500 mt-2 max-w-md mx-auto">Conecte-se, aprenda e compartilhe com outros vendedores e compradores</p>
         </FadeInOnScroll>
 

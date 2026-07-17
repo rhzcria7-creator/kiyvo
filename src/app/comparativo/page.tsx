@@ -10,7 +10,7 @@ const features = [
   { name: 'Destaque na página principal', silver: false, gold: true, diamond: true },
   { name: 'Maior visibilidade na busca', silver: false, gold: true, diamond: true },
   { name: 'Badge de vendedor', silver: 'Prata', gold: 'Ouro', diamond: 'Diamante' },
-  { name: 'PD Points por venda', silver: '1x', gold: '1.5x', diamond: '2x' },
+  { name: 'KD Points por venda', silver: '1x', gold: '1.5x', diamond: '2x' },
   { name: 'Suporte prioritário', silver: false, gold: false, diamond: true },
   { name: 'Destaque máximo nas pesquisas', silver: false, gold: false, diamond: true },
   { name: 'Relatórios avançados', silver: false, gold: false, diamond: true },

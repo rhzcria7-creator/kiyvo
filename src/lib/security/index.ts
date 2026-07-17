@@ -251,7 +251,7 @@ export function getSecurityHeaders() {
     'X-XSS-Protection': '1; mode=block',
     'Referrer-Policy': 'strict-origin-when-cross-origin',
     'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), payment=(self)',
-    'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' js.stripe.com; style-src 'self' 'unsafe-inline' fonts.googleapis.com; img-src 'self' data: blob: picsum.photos cdn.playdex.com.br; font-src 'self' fonts.gstatic.com; frame-src js.stripe.com; connect-src 'self' api.stripe.com ytiyqkliojawihfnlwzo.supabase.co",
+    'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' js.stripe.com; style-src 'self' 'unsafe-inline' fonts.googleapis.com; img-src 'self' data: blob: picsum.photos cdn.kiyvo.com.br; font-src 'self' fonts.gstatic.com; frame-src js.stripe.com; connect-src 'self' api.stripe.com ytiyqkliojawihfnlwzo.supabase.co",
     'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
     'X-Permitted-Cross-Domain-Policies': 'none',
     'Cross-Origin-Opener-Policy': 'same-origin',
@@ -311,7 +311,7 @@ export function generateDeviceFingerprint(): string {
 
   ctx.textBaseline = 'top'
   ctx.font = '14px Arial'
-  ctx.fillText('PlaydexFP', 2, 2)
+  ctx.fillText('KiyvoFP', 2, 2)
 
   const data = [
     navigator.userAgent,
@@ -338,7 +338,7 @@ export function generateDeviceFingerprint(): string {
 export function hashSensitiveData(data: string): string {
   // Simple hash for Edge runtime compatibility
   let hash = 0
-  const salt = process.env.NEXT_PUBLIC_SITE_URL || 'playdex'
+  const salt = process.env.NEXT_PUBLIC_SITE_URL || 'kiyvo'
   const combined = data + salt
   for (let i = 0; i < combined.length; i++) {
     const char = combined.charCodeAt(i)

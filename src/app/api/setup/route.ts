@@ -19,7 +19,7 @@ export async function GET(request: Request) {
     const requiredTables = [
       'profiles', 'categories', 'products', 'product_images', 'orders',
       'order_messages', 'reviews', 'favorites', 'verifications', 'withdrawals',
-      'coupons', 'notifications', 'pd_points_transactions', 'blog_posts',
+      'coupons', 'notifications', 'kd_points_transactions', 'blog_posts',
       'subscriptions', 'interventions', 'community_posts', 'community_comments',
       'community_likes', 'chat_conversations', 'chat_messages',
       'affiliate_referrals', 'search_history', 'stripe_payments', 'disputes',
@@ -99,7 +99,7 @@ export async function POST(request: Request) {
       const coupons = [
         { code: 'WELCOME10', description: '10% de desconto para novos usuários', discount_type: 'percentage', discount_value: 10, min_order_value: 20, max_uses: 1000, is_active: true },
         { code: 'DIGITAL20', description: '20% em produtos digitais', discount_type: 'percentage', discount_value: 20, min_order_value: 50, max_uses: 500, is_active: true },
-        { code: 'PLAYDEX15', description: '15% em toda a loja', discount_type: 'percentage', discount_value: 15, min_order_value: 30, max_uses: 800, is_active: true },
+        { code: 'KIYVO15', description: '15% em toda a loja', discount_type: 'percentage', discount_value: 15, min_order_value: 30, max_uses: 800, is_active: true },
         { code: 'SOFTWARE25', description: '25% em software e licenças', discount_type: 'percentage', discount_value: 25, min_order_value: 100, max_uses: 300, is_active: true },
         { code: 'FLAT5', description: 'R$ 5 de desconto fixo', discount_type: 'fixed', discount_value: 5, min_order_value: 25, max_uses: 2000, is_active: true },
         { code: 'FIRSTBUY', description: 'R$ 10 de desconto na primeira compra', discount_type: 'fixed', discount_value: 10, min_order_value: 30, max_uses: 5000, is_active: true },

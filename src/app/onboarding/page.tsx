@@ -10,14 +10,14 @@ import { Button } from '@/components/ui/Button'
 const steps = [
   {
     icon: User,
-    title: 'Bem-vindo à Playdex!',
+    title: 'Bem-vindo à Kiyvo!',
     desc: 'O marketplace de tudo que é digital. Vamos configurar sua conta em 2 minutos.',
     action: { label: 'Completar perfil', href: '/perfil' },
   },
   {
     icon: Shield,
     title: 'Verifique sua identidade',
-    desc: 'Para vender na Playdex, precisamos confirmar sua identidade. Processo rápido e seguro.',
+    desc: 'Para vender na Kiyvo, precisamos confirmar sua identidade. Processo rápido e seguro.',
     action: { label: 'Iniciar verificação', href: '/verificacao' },
   },
   {

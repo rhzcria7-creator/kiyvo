@@ -64,7 +64,7 @@ export async function GET() {
   return NextResponse.json({
     status: overall,
     timestamp: new Date().toISOString(),
-    version: '3.0.0',
+    version: '6.0.0',
     uptime: process.uptime(),
     checks,
     latency: Date.now() - startTime,

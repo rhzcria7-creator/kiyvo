@@ -17,7 +17,7 @@ export default function SuportePage() {
           {[
             { icon: HelpCircle, title: 'FAQ', desc: 'Respostas rápidas para as dúvidas mais comuns', href: '/faq', cta: 'Ver FAQ' },
             { icon: MessageSquare, title: 'Ticket de Suporte', desc: 'Abra um ticket e nossa equipe responde em até 24h', href: '#', cta: 'Abrir Ticket' },
-            { icon: Mail, title: 'E-mail Comercial', desc: 'Parcerias e assuntos comerciais', href: 'mailto:contato@playdex.com.br', cta: 'Enviar E-mail' },
+            { icon: Mail, title: 'E-mail Comercial', desc: 'Parcerias e assuntos comerciais', href: 'mailto:contato@kiyvo.com.br', cta: 'Enviar E-mail' },
           ].map((item) => (
             <Link key={item.title} href={item.href} className="card-base p-6 group hover:border-brand-200">
               <item.icon size={28} className="text-brand-600 mb-3" />

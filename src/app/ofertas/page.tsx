@@ -66,7 +66,7 @@ export default function OfertasPage() {
               {[
                 { code: 'WELCOME10', discount: '10%', desc: 'Primeira compra' },
                 { code: 'DIGITAL20', discount: '20%', desc: 'Produtos digitais' },
-                { code: 'PLAYDEX15', discount: '15%', desc: 'Qualquer produto' },
+                { code: 'KIYVO15', discount: '15%', desc: 'Qualquer produto' },
               ].map((coupon) => (
                 <motion.div
                   key={coupon.code}

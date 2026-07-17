@@ -8,19 +8,19 @@ import { Toaster } from 'react-hot-toast'
 import { ScrollProgress } from '@/components/ui/AdvancedAnimations'
 import { CommandK, CommandKButton } from '@/components/ui/CommandK'
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://playdex.com.br'
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://kiyvo.com.br'
 
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
   title: {
-    default: 'Playdex — Marketplace de Produtos Digitais',
-    template: '%s | Playdex',
+    default: 'Kiyvo — Marketplace de Produtos Digitais',
+    template: '%s | Kiyvo',
   },
-  description: 'Compre e venda tudo que é digital: jogos, software, cursos, e-books, templates, gift cards, domínios, APIs e muito mais. +1M usuários confiam na Playdex.',
+  description: 'Compre e venda tudo que é digital: jogos, software, cursos, e-books, templates, gift cards, domínios, APIs e muito mais. +1M usuários confiam na Kiyvo.',
   keywords: ['marketplace digital', 'produtos digitais', 'jogos', 'software', 'cursos online', 'e-books', 'templates', 'gift cards', 'licenças', 'streaming', 'APIs', 'domínios'],
-  authors: [{ name: 'Playdex', url: BASE_URL }],
-  creator: 'Playdex',
-  publisher: 'Playdex',
+  authors: [{ name: 'Kiyvo', url: BASE_URL }],
+  creator: 'Kiyvo',
+  publisher: 'Kiyvo',
   formatDetection: {
     email: false,
     address: false,
@@ -30,21 +30,21 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'pt_BR',
     url: BASE_URL,
-    siteName: 'Playdex',
-    title: 'Playdex — Marketplace de Produtos Digitais',
+    siteName: 'Kiyvo',
+    title: 'Kiyvo — Marketplace de Produtos Digitais',
     description: 'Compre e venda tudo que é digital: jogos, software, cursos, e-books, templates, gift cards, domínios, APIs e muito mais.',
     images: [
       {
         url: `${BASE_URL}/og-image.png`,
         width: 1200,
         height: 630,
-        alt: 'Playdex — Marketplace de Produtos Digitais',
+        alt: 'Kiyvo — Marketplace de Produtos Digitais',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Playdex — Marketplace de Produtos Digitais',
+    title: 'Kiyvo — Marketplace de Produtos Digitais',
     description: 'Compre e venda tudo que é digital: jogos, software, cursos, e-books, templates, gift cards e muito mais.',
     images: [`${BASE_URL}/og-image.png`],
   },
@@ -78,7 +78,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             __html: JSON.stringify({
               '@context': 'https://schema.org',
               '@type': 'WebSite',
-              name: 'Playdex',
+              name: 'Kiyvo',
               url: BASE_URL,
               description: 'Marketplace de produtos digitais — jogos, software, cursos, e-books, templates, gift cards e muito mais.',
               potentialAction: {
@@ -95,13 +95,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             __html: JSON.stringify({
               '@context': 'https://schema.org',
               '@type': 'Organization',
-              name: 'Playdex',
+              name: 'Kiyvo',
               url: BASE_URL,
               logo: `${BASE_URL}/logo.png`,
               sameAs: [
-                'https://twitter.com/playdex',
-                'https://discord.gg/playdex',
-                'https://youtube.com/@playdex',
+                'https://twitter.com/kiyvo',
+                'https://discord.gg/kiyvo',
+                'https://youtube.com/@kiyvo',
               ],
               contactPoint: {
                 '@type': 'ContactPoint',

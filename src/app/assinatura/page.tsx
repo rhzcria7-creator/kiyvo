@@ -31,7 +31,7 @@ export default function AssinaturaPage() {
                 {[
                   { label: 'Vendas este mês', value: 47 },
                   { label: 'Faturamento', value: 2847 },
-                  { label: 'PD Points ganhos', value: 342 },
+                  { label: 'KD Points ganhos', value: 342 },
                 ].map((stat) => (
                   <div key={stat.label}>
                     <p className="font-display font-extrabold text-xl"><NumberTicker value={stat.value} /></p>
@@ -48,8 +48,8 @@ export default function AssinaturaPage() {
           <h3 className="font-display font-bold text-lg text-surface-900 mb-4">Faça Upgrade</h3>
           <div className="grid grid-cols-2 gap-4">
             {[
-              { plan: 'Ouro', fee: '11.99%', price: 'Grátis', features: ['Destaque na home', 'Badge Ouro', '1.5x PD Points'], color: 'border-amber-300 hover:shadow-[0_0_30px_rgba(245,158,11,0.2)]' },
-              { plan: 'Diamante', fee: '12.99%', price: 'Grátis', features: ['Destaque máximo', 'Badge Diamante', '2x PD Points', 'Suporte prioritário', 'Relatórios avançados'], color: 'border-brand-300 hover:shadow-[0_0_30px_rgba(37,99,235,0.2)]' },
+              { plan: 'Ouro', fee: '11.99%', price: 'Grátis', features: ['Destaque na home', 'Badge Ouro', '1.5x KD Points'], color: 'border-amber-300 hover:shadow-[0_0_30px_rgba(245,158,11,0.2)]' },
+              { plan: 'Diamante', fee: '12.99%', price: 'Grátis', features: ['Destaque máximo', 'Badge Diamante', '2x KD Points', 'Suporte prioritário', 'Relatórios avançados'], color: 'border-brand-300 hover:shadow-[0_0_30px_rgba(37,99,235,0.2)]' },
             ].map((p) => (
               <motion.div key={p.plan} whileHover={{ y: -4 }} className={`card-base p-6 border-2 ${p.color} transition-all cursor-pointer`}>
                 <h4 className="font-display font-extrabold text-xl text-surface-900">{p.plan}</h4>

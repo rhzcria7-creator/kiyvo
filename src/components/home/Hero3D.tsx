@@ -5,7 +5,7 @@ import { Canvas, useFrame } from '@react-three/fiber'
 import { Float, MeshDistortMaterial } from '@react-three/drei'
 import * as THREE from 'three'
 
-/* ── Floating gem that represents the Playdex "dex/index" concept ── */
+/* ── Floating gem that represents the Kiyvo "dex/index" concept ── */
 function PlayGem() {
   const meshRef = useRef<THREE.Mesh>(null)
 

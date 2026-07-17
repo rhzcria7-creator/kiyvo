@@ -1,4 +1,4 @@
-# 🚀 PLAYDEX v2.0 — PLANO COMPLETO DE EXPANSÃO
+# 🚀 KIYVO v2.0 — PLANO COMPLETO DE EXPANSÃO
 
 > **Entregáveis prontos:** Wireframes ✅ | ERD ✅ | Mockup Home ✅
 > **Status:** Aguardando aprovação para iniciar código
@@ -190,4 +190,4 @@ categories 1:N products (subcategorias via parent_id)
 
 ---
 
-*Playdex v2.0 — Aguardando sinal verde 🟢*
+*Kiyvo v2.0 — Aguardando sinal verde 🟢*

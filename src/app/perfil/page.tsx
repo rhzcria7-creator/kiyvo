@@ -36,7 +36,7 @@ export default function PerfilPage() {
                   )}
                   {profile?.seller_plan === 'diamond' && <Crown size={18} className="text-brand-600 dark:text-brand-400" />}
                 </div>
-                <p className="text-surface-500 dark:text-surface-400 text-sm">{profile?.bio || 'Membro da Playdex'}</p>
+                <p className="text-surface-500 dark:text-surface-400 text-sm">{profile?.bio || 'Membro da Kiyvo'}</p>
               </div>
               <div className="flex items-center gap-4 text-sm text-surface-500 dark:text-surface-400">
                 <span className="flex items-center gap-1"><Calendar size={14} /> Desde {profile?.created_at?.slice(0, 4) || '2024'}</span>
@@ -49,7 +49,7 @@ export default function PerfilPage() {
                 { label: 'Vendas', value: profile?.total_sales || 0, icon: TrendingUp },
                 { label: 'Compras', value: profile?.total_purchases || 0, icon: ShoppingBag },
                 { label: 'Avaliação', value: profile?.rating || 0, icon: Star },
-                { label: 'PD Points', value: profile?.pd_points || 0, icon: Crown },
+                { label: 'KD Points', value: profile?.kd_points || 0, icon: Crown },
               ].map((stat) => (
                 <div key={stat.label} className="text-center p-3 bg-surface-50 dark:bg-surface-800 rounded-xl">
                   <stat.icon size={16} className="text-brand-600 dark:text-brand-400 mx-auto mb-1" />

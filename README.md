@@ -1,8 +1,8 @@
-# 🎮 PLAYDEX — Marketplace de Produtos Digitais
+# 🎮 KIYVO — Marketplace de Produtos Digitais
 
 > O marketplace de **tudo que é digital**. Compre e venda jogos, software, cursos, e-books, templates, gift cards, domínios, APIs e muito mais.
 
-![Playdex v3.1](https://img.shields.io/badge/version-3.1-blue?style=for-the-badge)
+![Kiyvo v3.1](https://img.shields.io/badge/version-3.1-blue?style=for-the-badge)
 ![Next.js 14](https://img.shields.io/badge/Next.js-14.2-black?style=flat-square&logo=next.js)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=flat-square&logo=typescript)
 ![Supabase](https://img.shields.io/badge/Supabase-Auth%20%2B%20DB-green?style=flat-square&logo=supabase)
@@ -39,8 +39,8 @@
 
 ```bash
 # Clone o repo
-git clone https://github.com/rhzcria7-creator/PLAYDEX.git
-cd PLAYDEX
+git clone https://github.com/rhzcria7-creator/KIYVO.git
+cd KIYVO
 
 # Instale dependências
 npm install
