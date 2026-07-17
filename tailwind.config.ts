@@ -1,6 +1,7 @@
 import type { Config } from 'tailwindcss'
 
 const config: Config = {
+  darkMode: 'class',
   content: [
     './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
@@ -34,6 +35,7 @@ const config: Config = {
           700: '#334155',
           800: '#1E293B',
           900: '#0F172A',
+          950: '#0A0F1C',
         },
       },
       fontFamily: {
@@ -52,6 +54,10 @@ const config: Config = {
         'elevated': '0 8px 30px rgba(0,0,0,0.08)',
         'glow': '0 0 20px rgba(59,130,246,0.3)',
         'glow-lg': '0 0 40px rgba(59,130,246,0.4), 0 0 80px rgba(59,130,246,0.1)',
+        // Dark mode specific shadows
+        'dark-card': '0 1px 3px rgba(0,0,0,0.2), 0 4px 12px rgba(0,0,0,0.3)',
+        'dark-glow': '0 0 20px rgba(59,130,246,0.5)',
+        'dark-glow-lg': '0 0 40px rgba(59,130,246,0.6), 0 0 80px rgba(59,130,246,0.2)',
       },
       keyframes: {
         'float': {
@@ -66,11 +72,16 @@ const config: Config = {
           '0%': { transform: 'translateY(20px)', opacity: '0' },
           '100%': { transform: 'translateY(0)', opacity: '1' },
         },
+        'theme-transition': {
+          '0%': { opacity: '0.8' },
+          '100%': { opacity: '1' },
+        },
       },
       animation: {
         'float': 'float 6s ease-in-out infinite',
         'shimmer': 'shimmer 2s ease-in-out infinite',
         'slide-up': 'slide-up 0.5s ease-out',
+        'theme-transition': 'theme-transition 0.3s ease-out',
       },
     },
   },
