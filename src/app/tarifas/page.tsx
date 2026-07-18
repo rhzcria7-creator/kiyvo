@@ -1,10 +1,53 @@
 'use client'
 
-import { sellerPlans } from '@/data/mockFAQ'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { PageTransition } from '@/components/shared/PageTransition'
 import { Check, Star } from 'lucide-react'
+
+// Planos definidos como dados estáticos — não dependem de banco de dados
+const sellerPlans = [
+  {
+    id: 'silver' as const,
+    name: 'Prata',
+    fee: 9.99,
+    price: 'Grátis',
+    features: [
+      'Anúncio padrão na listagem',
+      'Suporte por ticket',
+      'Pagamento via PIX',
+      'Retirada em até 2 dias úteis',
+    ],
+  },
+  {
+    id: 'gold' as const,
+    name: 'Ouro',
+    fee: 11.99,
+    price: 'Grátis',
+    popular: true,
+    features: [
+      'Tudo do Prata',
+      'Destaque na página principal',
+      'Maior visibilidade na busca',
+      'Badge de vendedor Ouro',
+      'Mais KD Points por venda',
+    ],
+  },
+  {
+    id: 'diamond' as const,
+    name: 'Diamante',
+    fee: 12.99,
+    price: 'Grátis',
+    features: [
+      'Tudo do Ouro',
+      'Destaque máximo nas pesquisas',
+      'Badge Diamante exclusiva',
+      'Suporte prioritário',
+      'Máx. KD Points por venda',
+      'Relatórios avançados',
+    ],
+  },
+]
 
 export default function TarifasPage() {
   return (

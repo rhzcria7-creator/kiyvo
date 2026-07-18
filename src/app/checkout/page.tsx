@@ -1,18 +1,14 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useAuth } from '@/lib/auth/context'
-import { getStripe } from '@/lib/stripe/client'
 import { motion, AnimatePresence } from 'framer-motion'
-import { CreditCard, Shield, Lock, ArrowRight, ArrowLeft, Loader2, CheckCircle, AlertTriangle, Clock, Tag, Zap } from 'lucide-react'
+import { CreditCard, Shield, Lock, ArrowRight, ArrowLeft, Loader2, CheckCircle, AlertTriangle, Clock, Tag, Zap, AlertCircle } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { PageTransition } from '@/components/shared/PageTransition'
-import { MorphingBlob, GlowCard, PulseRing, RevealText } from '@/components/ui/AdvancedAnimations'
-import { FloatingDots } from '@/components/svgs/AnimatedSVGs'
+import { MorphingBlob, GlowCard } from '@/components/ui/AdvancedAnimations'
 import { AnimatedShield } from '@/components/svgs/AnimatedSVGs'
-import { mockProducts } from '@/data/mockProducts'
 import toast from 'react-hot-toast'
-import { Suspense } from 'react'
 
 const paymentMethods = [
   { id: 'card', label: 'Cartão de Crédito', icon: '💳', desc: 'Visa, Mastercard, Elo', stripe: true },
@@ -20,13 +16,26 @@ const paymentMethods = [
   { id: 'boleto', label: 'Boleto', icon: '📄', desc: 'Até 3 dias', stripe: false },
 ]
 
+interface ProductData {
+  id: string
+  title: string
+  price: number
+  original_price: number | null
+  image_url: string | null
+  category_name: string
+  seller_name: string
+  delivery_type: string
+}
+
 function CheckoutContent() {
   const { user, profile } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
-  const productId = searchParams.get('product') || 'p1'
-  const product = mockProducts.find(p => p.id === productId) || mockProducts[0]
-  const discount = product.originalPrice ? Math.round((1 - product.price / product.originalPrice) * 100) : 0
+  const productId = searchParams.get('product') || ''
+
+  const [product, setProduct] = useState<ProductData | null>(null)
+  const [productLoading, setProductLoading] = useState(true)
+  const [productError, setProductError] = useState<string | null>(null)
 
   const [step, setStep] = useState(1)
   const [paymentMethod, setPaymentMethod] = useState('card')
@@ -39,7 +48,32 @@ function CheckoutContent() {
   const [cardCvc, setCardCvc] = useState('')
   const [cardName, setCardName] = useState('')
 
-  const finalPrice = couponApplied ? product.price * (1 - couponDiscount / 100) : product.price
+  // Buscar produto real do Supabase
+  useEffect(() => {
+    async function fetchProduct() {
+      if (!productId) {
+        setProductError('Produto não especificado')
+        setProductLoading(false)
+        return
+      }
+      try {
+        const res = await fetch(`/api/search?q=&product_id=${encodeURIComponent(productId)}`)
+        if (!res.ok) throw new Error('Produto não encontrado')
+        const data = await res.json()
+        const found = data.products?.[0] || null
+        if (!found) throw new Error('Produto não encontrado')
+        setProduct(found)
+      } catch (err) {
+        setProductError(err instanceof Error ? err.message : 'Erro ao carregar produto')
+      } finally {
+        setProductLoading(false)
+      }
+    }
+    fetchProduct()
+  }, [productId])
+
+  const discount = product?.original_price ? Math.round((1 - product.price / product.original_price) * 100) : 0
+  const finalPrice = product ? (couponApplied ? product.price * (1 - couponDiscount / 100) : product.price) : 0
 
   const formatCard = (v: string) => {
     const digits = v.replace(/\D/g, '').slice(0, 16)
@@ -52,23 +86,28 @@ function CheckoutContent() {
     return digits
   }
 
-  const applyCoupon = () => {
-    const validCoupons: Record<string, number> = { 'WELCOME10': 10, 'DIGITAL20': 20, 'KIYVO15': 15, 'SOFTWARE25': 25 }
-    const discount = validCoupons[coupon.toUpperCase()]
-    if (discount) {
-      setCouponApplied(true)
-      setCouponDiscount(discount)
-      toast.success(`Cupom aplicado! ${discount}% de desconto`)
-    } else {
-      toast.error('Cupom inválido')
+  const applyCoupon = async () => {
+    if (!coupon.trim()) return
+    try {
+      const res = await fetch(`/api/v1/coupons/validate?code=${encodeURIComponent(coupon)}&subtotal=${product?.price || 0}`)
+      const data = await res.json()
+      if (data.valid && data.coupon) {
+        setCouponApplied(true)
+        const discountVal = data.coupon.discount_type === 'percentage' ? data.coupon.discount_value : Math.round((data.coupon.calculated_discount / (product?.price || 1)) * 100)
+        setCouponDiscount(discountVal)
+        toast.success(`Cupom aplicado! ${discountVal}% de desconto`)
+      } else {
+        toast.error(data.error || 'Cupom inválido')
+      }
+    } catch {
+      toast.error('Erro ao validar cupom')
     }
   }
 
   const handlePayment = async () => {
+    if (!product) return
     setLoading(true)
-
     try {
-      // Create Stripe checkout session
       const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -79,11 +118,8 @@ function CheckoutContent() {
           buyer_email: user?.email || 'guest@kiyvo.com',
         }),
       })
-
       const data = await res.json()
-
       if (data.url) {
-        // If Stripe checkout URL, redirect
         if (data.demo_mode) {
           router.push(data.url)
         } else {
@@ -95,8 +131,36 @@ function CheckoutContent() {
     } catch {
       toast.error('Erro na conexão')
     }
-
     setLoading(false)
+  }
+
+  // Loading do produto
+  if (productLoading) {
+    return (
+      <PageTransition>
+        <div className="min-h-[80vh] flex items-center justify-center">
+          <div className="flex flex-col items-center gap-3">
+            <Loader2 size={32} className="animate-spin text-brand-600" />
+            <p className="text-surface-500 text-sm">Carregando produto...</p>
+          </div>
+        </div>
+      </PageTransition>
+    )
+  }
+
+  // Erro ao carregar produto
+  if (productError || !product) {
+    return (
+      <PageTransition>
+        <div className="min-h-[80vh] flex items-center justify-center">
+          <div className="flex flex-col items-center gap-3">
+            <AlertCircle size={32} className="text-red-500" />
+            <p className="text-surface-600 text-sm">{productError || 'Produto não encontrado'}</p>
+            <a href="/" className="btn-secondary text-sm mt-2">Voltar à loja</a>
+          </div>
+        </div>
+      </PageTransition>
+    )
   }
 
   return (
@@ -137,20 +201,26 @@ function CheckoutContent() {
                   {/* Product Card */}
                   <GlowCard color="brand" className="p-5">
                     <div className="flex gap-4">
-                      <img src={product.image} alt={product.title} className="w-24 h-20 rounded-xl object-cover shrink-0" />
+                      {product.image_url ? (
+                        <img src={product.image_url} alt={product.title} className="w-24 h-20 rounded-xl object-cover shrink-0" />
+                      ) : (
+                        <div className="w-24 h-20 rounded-xl bg-surface-100 flex items-center justify-center shrink-0">
+                          <CreditCard size={24} className="text-surface-300" />
+                        </div>
+                      )}
                       <div className="flex-1">
-                        <p className="text-xs text-surface-400">{product.category}</p>
+                        <p className="text-xs text-surface-400">{product.category_name}</p>
                         <h3 className="font-display font-bold text-surface-900">{product.title}</h3>
                         <div className="flex items-baseline gap-2 mt-1">
                           <span className="font-display font-extrabold text-lg text-brand-600">R$ {product.price.toFixed(2)}</span>
-                          {product.originalPrice && (
-                            <span className="text-sm text-surface-400 line-through">R$ {product.originalPrice.toFixed(2)}</span>
+                          {product.original_price && (
+                            <span className="text-sm text-surface-400 line-through">R$ {product.original_price.toFixed(2)}</span>
                           )}
                           {discount > 0 && <span className="text-xs font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded-full">-{discount}%</span>}
                         </div>
                         <div className="flex items-center gap-2 mt-1 text-xs text-surface-500">
                           <Zap size={12} className="text-amber-500" />
-                          Entrega {product.deliveryType === 'auto' ? 'automática instantânea' : 'via chat'}
+                          Entrega {product.delivery_type === 'auto' ? 'automática instantânea' : 'via chat'}
                         </div>
                       </div>
                     </div>
@@ -160,22 +230,13 @@ function CheckoutContent() {
                   <div className="card-base p-5">
                     <h3 className="font-display font-bold text-sm text-surface-900 flex items-center gap-2 mb-3"><Tag size={16} className="text-brand-600" /> Cupom de desconto</h3>
                     <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={coupon}
-                        onChange={(e) => setCoupon(e.target.value.toUpperCase())}
-                        placeholder="DIGITE SEU CUPOM"
-                        className="input-base flex-1 font-mono text-sm uppercase"
-                        disabled={couponApplied}
-                      />
+                      <input type="text" value={coupon} onChange={(e) => setCoupon(e.target.value.toUpperCase())} placeholder="DIGITE SEU CUPOM" className="input-base flex-1 font-mono text-sm uppercase" disabled={couponApplied} />
                       {couponApplied ? (
                         <div className="px-4 py-2 bg-emerald-50 text-emerald-700 font-semibold text-sm rounded-xl flex items-center gap-1">
                           <CheckCircle size={16} /> -{couponDiscount}%
                         </div>
                       ) : (
-                        <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} onClick={applyCoupon} className="btn-secondary text-sm py-2">
-                          Aplicar
-                        </motion.button>
+                        <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} onClick={applyCoupon} className="btn-secondary text-sm py-2">Aplicar</motion.button>
                       )}
                     </div>
                   </div>
@@ -205,54 +266,37 @@ function CheckoutContent() {
                 <motion.div key="step2" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="space-y-6">
                   <h2 className="font-display font-extrabold text-xl text-surface-900">Forma de Pagamento</h2>
 
-                  {/* Payment Methods */}
                   <div className="grid grid-cols-3 gap-3">
                     {paymentMethods.map((pm) => (
-                      <motion.button
-                        key={pm.id}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        onClick={() => setPaymentMethod(pm.id)}
-                        className={`p-4 rounded-xl border-2 text-center transition-all ${
-                          paymentMethod === pm.id ? 'border-brand-500 bg-brand-50' : 'border-surface-200 hover:border-surface-300'
-                        }`}
-                      >
+                      <motion.button key={pm.id} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={() => setPaymentMethod(pm.id)} className={`p-4 rounded-2xl border-2 text-center transition-all ${paymentMethod === pm.id ? 'border-brand-500 bg-brand-50' : 'border-surface-200 bg-white hover:border-surface-300'}`}>
                         <span className="text-2xl">{pm.icon}</span>
-                        <p className="text-sm font-semibold text-surface-900 mt-1">{pm.label}</p>
+                        <p className="font-display font-bold text-sm text-surface-900 mt-1">{pm.label}</p>
                         <p className="text-xs text-surface-400">{pm.desc}</p>
-                        {pm.stripe && <span className="text-[10px] text-brand-600 font-semibold mt-1 block">Stripe Secure</span>}
                       </motion.button>
                     ))}
                   </div>
 
-                  {/* Card Form */}
                   {paymentMethod === 'card' && (
-                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="card-base p-6">
-                      <div className="flex items-center gap-2 mb-4">
-                        <Lock size={16} className="text-emerald-500" />
-                        <span className="text-xs text-surface-500">Pagamento seguro via Stripe</span>
+                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="card-base p-6 space-y-4">
+                      <div>
+                        <label className="text-xs font-medium text-surface-600 mb-1 block">Número do cartão</label>
+                        <div className="relative">
+                          <CreditCard size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-surface-400" />
+                          <input type="text" value={cardNumber} onChange={(e) => setCardNumber(formatCard(e.target.value))} placeholder="0000 0000 0000 0000" className="input-base pl-10 font-mono" maxLength={19} />
+                        </div>
                       </div>
-                      <div className="space-y-4">
+                      <div>
+                        <label className="text-xs font-medium text-surface-600 mb-1 block">Nome no cartão</label>
+                        <input type="text" value={cardName} onChange={(e) => setCardName(e.target.value.toUpperCase())} placeholder="NOME COMO NO CARTÃO" className="input-base uppercase" />
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <label className="text-xs font-medium text-surface-600 mb-1 block">Número do cartão</label>
-                          <div className="relative">
-                            <CreditCard size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-surface-400" />
-                            <input type="text" value={cardNumber} onChange={(e) => setCardNumber(formatCard(e.target.value))} placeholder="0000 0000 0000 0000" className="input-base pl-10 font-mono" maxLength={19} />
-                          </div>
+                          <label className="text-xs font-medium text-surface-600 mb-1 block">Validade</label>
+                          <input type="text" value={cardExpiry} onChange={(e) => setCardExpiry(formatExpiry(e.target.value))} placeholder="MM/AA" className="input-base font-mono" maxLength={5} />
                         </div>
                         <div>
-                          <label className="text-xs font-medium text-surface-600 mb-1 block">Nome no cartão</label>
-                          <input type="text" value={cardName} onChange={(e) => setCardName(e.target.value.toUpperCase())} placeholder="NOME COMO NO CARTÃO" className="input-base uppercase" />
-                        </div>
-                        <div className="grid grid-cols-2 gap-3">
-                          <div>
-                            <label className="text-xs font-medium text-surface-600 mb-1 block">Validade</label>
-                            <input type="text" value={cardExpiry} onChange={(e) => setCardExpiry(formatExpiry(e.target.value))} placeholder="MM/AA" className="input-base font-mono" maxLength={5} />
-                          </div>
-                          <div>
-                            <label className="text-xs font-medium text-surface-600 mb-1 block">CVC</label>
-                            <input type="text" value={cardCvc} onChange={(e) => setCardCvc(e.target.value.replace(/\D/g, '').slice(0, 4))} placeholder="000" className="input-base font-mono" maxLength={4} />
-                          </div>
+                          <label className="text-xs font-medium text-surface-600 mb-1 block">CVC</label>
+                          <input type="text" value={cardCvc} onChange={(e) => setCardCvc(e.target.value.replace(/\D/g, '').slice(0, 4))} placeholder="000" className="input-base font-mono" maxLength={4} />
                         </div>
                       </div>
                     </motion.div>
@@ -289,8 +333,8 @@ function CheckoutContent() {
                     <h3 className="font-display font-bold text-sm text-surface-500 uppercase mb-3">Detalhes do pedido</h3>
                     <div className="space-y-3">
                       <div className="flex justify-between"><span className="text-sm text-surface-600">Produto</span><span className="text-sm font-semibold text-surface-900">{product.title}</span></div>
-                      <div className="flex justify-between"><span className="text-sm text-surface-600">Vendedor</span><span className="text-sm font-semibold text-surface-900">{product.seller.name}</span></div>
-                      <div className="flex justify-between"><span className="text-sm text-surface-600">Entrega</span><span className="text-sm font-semibold text-surface-900">{product.deliveryType === 'auto' ? 'Automática' : 'Via chat'}</span></div>
+                      <div className="flex justify-between"><span className="text-sm text-surface-600">Vendedor</span><span className="text-sm font-semibold text-surface-900">{product.seller_name}</span></div>
+                      <div className="flex justify-between"><span className="text-sm text-surface-600">Entrega</span><span className="text-sm font-semibold text-surface-900">{product.delivery_type === 'auto' ? 'Automática' : 'Via chat'}</span></div>
                       <div className="flex justify-between"><span className="text-sm text-surface-600">Pagamento</span><span className="text-sm font-semibold text-surface-900">{paymentMethods.find(p => p.id === paymentMethod)?.label}</span></div>
                       {couponApplied && <div className="flex justify-between"><span className="text-sm text-surface-600">Cupom</span><span className="text-sm font-semibold text-emerald-600">-{couponDiscount}%</span></div>}
                       <div className="border-t border-surface-200 pt-3 flex justify-between">
@@ -334,10 +378,16 @@ function CheckoutContent() {
             <div className="card-base p-5 sticky top-24">
               <h3 className="font-display font-bold text-sm text-surface-900 mb-4">Resumo</h3>
               <div className="flex gap-3 mb-4">
-                <img src={product.image} alt="" className="w-14 h-14 rounded-lg object-cover" />
+                {product.image_url ? (
+                  <img src={product.image_url} alt="" className="w-14 h-14 rounded-lg object-cover" />
+                ) : (
+                  <div className="w-14 h-14 rounded-lg bg-surface-100 flex items-center justify-center">
+                    <CreditCard size={20} className="text-surface-300" />
+                  </div>
+                )}
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-surface-900 line-clamp-2">{product.title}</p>
-                  <p className="text-xs text-surface-400">{product.category}</p>
+                  <p className="text-xs text-surface-400">{product.category_name}</p>
                 </div>
               </div>
               <div className="space-y-2 text-sm">
@@ -351,7 +401,7 @@ function CheckoutContent() {
               </div>
               <div className="mt-4 pt-4 border-t border-surface-100 space-y-2">
                 <div className="flex items-center gap-2 text-xs text-surface-500"><Shield size={14} className="text-emerald-500" /> Compra garantida</div>
-                <div className="flex items-center gap-2 text-xs text-surface-500"><Clock size={14} className="text-amber-500" /> Entrega {product.deliveryType === 'auto' ? 'instantânea' : 'via chat'}</div>
+                <div className="flex items-center gap-2 text-xs text-surface-500"><Clock size={14} className="text-amber-500" /> Entrega {product.delivery_type === 'auto' ? 'instantânea' : 'via chat'}</div>
                 <div className="flex items-center gap-2 text-xs text-surface-500"><Lock size={14} className="text-brand-500" /> Stripe Secure</div>
               </div>
             </div>
