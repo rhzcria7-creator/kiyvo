@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { formatPrice } from '@/lib/utils'
 import Image from 'next/image'
 import { Badge } from '@/components/ui/Badge'
 import { Star, Zap, PackageOpen } from 'lucide-react'
@@ -41,9 +42,6 @@ export function ProductCardAPI({
   index = 0,
 }: ProductCardAPIProps) {
   const discount = original_price ? Math.round((1 - price / original_price) * 100) : 0
-
-  const formatPrice = (v: number) =>
-    v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 
   return (
     <motion.div

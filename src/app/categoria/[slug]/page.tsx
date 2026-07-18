@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { formatPrice } from '@/lib/utils'
 import { useParams } from 'next/navigation'
 import { PageTransition } from '@/components/shared/PageTransition'
 import { Badge } from '@/components/ui/Badge'
@@ -87,7 +88,6 @@ export default function CategoryPage() {
   })
 
   // Formata preço
-  const formatPrice = (v: number) => `R$ ${v.toFixed(2).replace('.', ',')}`
 
   return (
     <PageTransition>

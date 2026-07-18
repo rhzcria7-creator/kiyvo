@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { formatPrice } from '@/lib/utils'
 import { motion } from 'framer-motion'
 import { PageTransition } from '@/components/shared/PageTransition'
 import { FadeInOnScroll } from '@/components/animations'
@@ -59,7 +60,6 @@ export default function AdminDisputasPage() {
     }
   }
 
-  const formatPrice = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 
   const statusBadge: Record<string, string> = {
     open: 'bg-red-100 text-red-700',

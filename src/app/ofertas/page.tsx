@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { formatPrice } from '@/lib/utils'
 import { motion } from 'framer-motion'
 import { Flame, Clock, Tag, ArrowRight, Loader2, AlertCircle, PackageOpen } from 'lucide-react'
 import { PageTransition } from '@/components/shared/PageTransition'
@@ -44,7 +45,6 @@ export default function OfertasPage() {
     fetchFeatured()
   }, [])
 
-  const formatPrice = (v: number) => `R$ ${v.toFixed(2).replace('.', ',')}`
 
   return (
     <PageTransition>

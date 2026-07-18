@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { formatPrice } from '@/lib/utils'
 import { useAuth } from '@/lib/auth/context'
 import { motion } from 'framer-motion'
 import { Star, Shield, Calendar, ShoppingBag, TrendingUp, Crown, Loader2, PackageOpen } from 'lucide-react'
@@ -48,7 +49,6 @@ export default function PerfilPage() {
     fetchSellerProducts()
   }, [])
 
-  const formatPrice = (v: number) => `R$ ${v.toFixed(2).replace('.', ',')}`
 
   return (
     <PageTransition>

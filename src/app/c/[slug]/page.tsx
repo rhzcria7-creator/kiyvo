@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { formatPrice } from '@/lib/utils';
 import { useParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
@@ -124,9 +125,6 @@ export default function CategoryPage() {
     }
   }
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(price);
-  };
 
   const deliveryLabels: Record<string, { label: string; color: string }> = {
     auto: { label: 'Auto-entrega', color: 'text-emerald-400 bg-emerald-400/10' },

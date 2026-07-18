@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { formatPrice } from '@/lib/utils';
 import { useParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
@@ -209,9 +210,6 @@ export default function ProductPage() {
     router.push(`/checkout?product=${product.id}${selectedVariant ? `&variant=${selectedVariant}` : ''}`);
   }, [user, product, selectedVariant, router]);
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(price);
-  };
 
   const currentPrice = product
     ? product.basePrice + (product.variants.find((v) => v.id === selectedVariant)?.priceAdjustment || 0)

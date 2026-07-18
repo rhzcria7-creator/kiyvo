@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { formatPrice } from '@/lib/utils';
 import { useParams, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
@@ -129,9 +130,6 @@ export default function VendorProfilePage() {
     }
   }
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(price);
-  };
 
   const levelConfig: Record<string, { label: string; emoji: string; color: string; bgGradient: string }> = {
     bronze: { label: 'Bronze', emoji: '🥉', color: 'text-amber-400', bgGradient: 'from-amber-600/20 to-amber-800/10' },
