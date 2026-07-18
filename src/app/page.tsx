@@ -90,7 +90,7 @@ export default function HomePage() {
               { name: 'Cartão', desc: 'Crédito/Débito', color: 'bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-950/30 dark:border-blue-800/40 dark:text-blue-400' },
               { name: 'Boleto', desc: 'Até 3 dias', color: 'bg-amber-50 border-amber-200 text-amber-700 dark:bg-amber-950/30 dark:border-amber-800/40 dark:text-amber-400' },
               { name: 'Crypto', desc: 'Bitcoin/USDT', color: 'bg-orange-50 border-orange-200 text-orange-700 dark:bg-orange-950/30 dark:border-orange-800/40 dark:text-orange-400' },
-              { name: 'Saldo PD', desc: 'Kiyvo', color: 'bg-brand-50 border-brand-200 text-brand-700 dark:bg-brand-950/30 dark:border-brand-800/40 dark:text-brand-400' },
+              { name: 'Saldo KD', desc: 'Kiyvo', color: 'bg-brand-50 border-brand-200 text-brand-700 dark:bg-brand-950/30 dark:border-brand-800/40 dark:text-brand-400' },
               { name: 'KD Points', desc: 'Recompensas', color: 'bg-purple-50 border-purple-200 text-purple-700 dark:bg-purple-950/30 dark:border-purple-800/40 dark:text-purple-400' },
             ].map((method, i) => (
               <motion.div

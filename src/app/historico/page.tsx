@@ -8,7 +8,7 @@ import { FadeInOnScroll, StaggerContainer, StaggerItem, NumberTicker } from '@/c
 
 const transactions = [
   { id: 'TX-001', type: 'purchase', title: 'Windows 11 Pro — Licença', amount: -49.90, method: 'PIX', status: 'completed', date: '15/07/26', time: '14:32' },
-  { id: 'TX-002', type: 'sale', title: 'Pack Templates Canva', amount: 17.91, method: 'Saldo PD', status: 'completed', date: '15/07/26', time: '11:20' },
+  { id: 'TX-002', type: 'sale', title: 'Pack Templates Canva', amount: 17.91, method: 'Saldo KD', status: 'completed', date: '15/07/26', time: '11:20' },
   { id: 'TX-003', type: 'withdrawal', title: 'Saque via PIX', amount: -450.00, method: 'PIX', status: 'completed', date: '12/07/26', time: '09:15' },
   { id: 'TX-004', type: 'purchase', title: 'Curso Full Stack 120h', amount: -34.90, method: 'Cartão', status: 'completed', date: '11/07/26', time: '16:45' },
   { id: 'TX-005', type: 'sale', title: 'Conta Valorant Diamante', amount: 80.91, method: 'PIX', status: 'completed', date: '10/07/26', time: '22:10' },
