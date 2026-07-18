@@ -448,8 +448,14 @@ export const feeEngine = new FeeEngine()
 // ─── FUNÇÕES HELPER ──────────────────────────────────────────
 
 /** Formata valor como moeda BRL */
+import { formatPrice } from '@/lib/utils'
+
+/**
+ * Formata valor em BRL (alias para formatPrice)
+ * Mantido para compatibilidade — novos imports devem usar formatPrice de @/lib/utils
+ */
 export function formatBRL(value: number): string {
-  return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+  return formatPrice(value)
 }
 
 /** Calcula KD Points ganhos em uma compra (1 point por real gasto) */
