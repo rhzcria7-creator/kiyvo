@@ -6,7 +6,7 @@
 // ─────────────────────────────────────────────────────────────
 
 import Link from 'next/link'
-import { ProductCard } from '@/components/product/ProductCard'
+import { ProductCardAPI } from '@/components/product/ProductCardAPI'
 import { ArrowRight } from 'lucide-react'
 import { motion } from 'framer-motion'
 
@@ -57,7 +57,23 @@ export function FeaturedProductsClient({ products }: { products: FeaturedProduct
         {products.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {products.map((product, i) => (
-              <ProductCard key={product.id} product={product as never} index={i} />
+              <ProductCardAPI
+                key={product.id}
+                id={product.id}
+                title={product.title}
+                slug={product.slug}
+                price={product.base_price}
+                original_price={product.original_price}
+                image_url={product.image}
+                category_name={product.category}
+                category_slug={product.categorySlug}
+                seller_name={product.seller.name}
+                seller_verified={product.seller.verified}
+                delivery_type={product.deliveryType}
+                sales_count={product.sales}
+                rating={product.rating}
+                index={i}
+              />
             ))}
           </div>
         ) : (

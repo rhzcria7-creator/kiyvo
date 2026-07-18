@@ -3,7 +3,6 @@
 import { motion } from 'framer-motion'
 import { PageTransition } from '@/components/shared/PageTransition'
 import { FadeInOnScroll } from '@/components/animations'
-import { FileText } from 'lucide-react'
 
 export default function Page() {
   return (
@@ -20,33 +19,24 @@ export default function Page() {
             transition={{ type: 'spring', stiffness: 200, delay: 0.2 }}
             className="w-20 h-20 bg-gradient-to-br from-brand-500 to-brand-700 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg"
           >
-            <FileText size={36} className="text-white" />
+            <span className="text-4xl">🎨</span>
           </motion.div>
           <h1 className="font-display font-extrabold text-4xl lg:text-5xl text-surface-900 dark:text-white mb-4">
-            Personalizar Loja
+            Personalizar sua Loja
           </h1>
-          <p className="text-lg text-surface-500 dark:text-surface-400 max-w-2xl mx-auto">
-            Informações sobre personalizar loja na Kiyvo
-          </p>
         </motion.div>
 
         <div className="space-y-4">
           <FadeInOnScroll delay={0}>
             <div className="card-base p-6">
-              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">O que é Personalizar Loja?</h3>
-              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">Na Kiyvo, personalizar loja é uma funcionalidade que permite aos usuários interagir com o marketplace de forma segura e eficiente.</p>
+              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">Elementos customizáveis</h3>
+              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">Logo da loja (quadrado, 200x200px mínimo). Banner da loja (1200x300px). Nome da loja (único na plataforma). Descrição/bio (até 500 caracteres). Cor de destaque (personalize o tema da loja). Redes sociais (Instagram, Twitter, Discord). Slug personalizado (ex: kiyvo.com/v/minha-loja).</p>
             </div>
           </FadeInOnScroll>
           <FadeInOnScroll delay={0.1}>
             <div className="card-base p-6">
-              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">Como funciona?</h3>
-              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">Acesse a área de personalizar loja através do menu de navegação. Siga as instruções para configurar ou utilizar os recursos disponíveis.</p>
-            </div>
-          </FadeInOnScroll>
-          <FadeInOnScroll delay={0.2}>
-            <div className="card-base p-6">
-              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">Precisa de ajuda?</h3>
-              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">Se tiver problemas, acesse nossa Central de Ajuda em /ajuda ou entre em contato com o suporte pelo chat 24/7.</p>
+              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">Dicas de personalização</h3>
+              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">Use logo profissional e em alta resolução. Banner deve comunicar o que você vende. Descrição curta e direta. Cor de destaque que combine com seu branding. Redes sociais ativas aumentam credibilidade. Slug fácil de lembrar e compartilhar.</p>
             </div>
           </FadeInOnScroll>
         </div>

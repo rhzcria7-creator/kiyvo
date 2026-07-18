@@ -171,12 +171,23 @@ export function validateText(
 }
 
 /**
- * Valida URL
+ * Valida URL — bloqueia protocolos perigosos (javascript:, data:, vbscript:)
  */
 export function validateURL(url: unknown): ValidationResult {
   if (typeof url !== 'string') return invalid({ url: 'URL deve ser texto' })
+  const trimmed = url.trim()
+  // Bloqueia protocolos perigosos (case-insensitive)
+  const dangerousProtocols = ['javascript:', 'data:', 'vbscript:', 'blob:', 'file:']
+  const lowerUrl = trimmed.toLowerCase()
+  for (const proto of dangerousProtocols) {
+    if (lowerUrl.startsWith(proto)) return invalid({ url: 'Protocolo não permitido' })
+  }
+  // Apenas http/https permitidos
+  if (!lowerUrl.startsWith('http://') && !lowerUrl.startsWith('https://')) {
+    return invalid({ url: 'Apenas URLs http/https são aceitas' })
+  }
   try {
-    new URL(url)
+    new URL(trimmed)
     return valid()
   } catch {
     return invalid({ url: 'URL inválida' })

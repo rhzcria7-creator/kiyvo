@@ -11,32 +11,24 @@ import { motion } from 'framer-motion'
 import { Heart } from 'lucide-react'
 import { PageTransition } from '@/components/shared/PageTransition'
 import { StaggerContainer, StaggerItem } from '@/components/animations'
-import { ProductCard } from '@/components/product/ProductCard'
+import { ProductCardAPI } from '@/components/product/ProductCardAPI'
 import Link from 'next/link'
 
 interface FavoriteProduct {
   id: string
   title: string
   slug: string
-  base_price: number
+  price: number
   original_price: number | null
-  image: string
-  category: string
-  categorySlug: string
-  type: string
-  deliveryType: string
+  image_url: string | null
+  category_name: string
+  category_slug: string
+  delivery_type: string
   rating: number
-  sales: number
-  reviews: number
-  seller: {
-    id: string
-    name: string
-    avatar: string
-    rating: number
-    sales: number
-    verified: boolean
-    memberSince: string
-  }
+  sales_count: number
+  reviews_count: number
+  seller_name: string
+  seller_verified: boolean
 }
 
 export default function FavoritosPage() {
@@ -57,30 +49,23 @@ export default function FavoritosPage() {
             const vendor = (product.vendors || {}) as Record<string, unknown>
             const images = (product.product_images || []) as Record<string, unknown>[]
             const primaryImage = images.find((img: Record<string, unknown>) => img.is_primary) || images[0]
+            const category = (product.categories || {}) as Record<string, unknown>
 
             return {
               id: f.product_id || product.id,
               title: product.title || '',
               slug: product.slug || '',
-              base_price: Number(product.base_price) || 0,
+              price: Number(product.base_price) || 0,
               original_price: product.original_price ? Number(product.original_price) : null,
-              image: primaryImage?.image_url || '',
-              category: (product.categories as Record<string, unknown>)?.name as string || '',
-              categorySlug: (product.categories as Record<string, unknown>)?.slug as string || '',
-              type: product.product_type as string || '',
-              deliveryType: product.delivery_type as string || 'auto',
+              image_url: primaryImage?.image_url || null,
+              category_name: (category.name as string) || '',
+              category_slug: (category.slug as string) || '',
+              delivery_type: product.delivery_type as string || 'auto',
               rating: Number(product.rating) || 0,
-              sales: Number(product.sales_count) || 0,
-              reviews: Number(product.review_count) || 0,
-              seller: {
-                id: vendor.id as string || '',
-                name: vendor.store_name as string || '',
-                avatar: vendor.logo_url as string || '',
-                rating: Number(vendor.rating_avg) || 0,
-                sales: Number(vendor.total_sales) || 0,
-                verified: vendor.is_verified as boolean || false,
-                memberSince: '',
-              },
+              sales_count: Number(product.sales_count) || 0,
+              reviews_count: Number(product.review_count) || 0,
+              seller_name: (vendor.store_name as string) || '',
+              seller_verified: (vendor.is_verified as boolean) || false,
             }
           })
           setFavorites(formatted)
@@ -123,7 +108,7 @@ export default function FavoritosPage() {
           <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 mt-8">
             {favorites.map((product) => (
               <StaggerItem key={product.id}>
-                <ProductCard product={product as never} index={0} />
+                <ProductCardAPI key={product.id} {...product} />
               </StaggerItem>
             ))}
           </StaggerContainer>

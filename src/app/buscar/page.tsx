@@ -10,7 +10,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Search, SlidersHorizontal, X } from 'lucide-react'
 import { PageTransition } from '@/components/shared/PageTransition'
 import { FadeInOnScroll, StaggerContainer, StaggerItem } from '@/components/ui/AdvancedAnimations'
-import { ProductCard } from '@/components/product/ProductCard'
+import { ProductCardAPI } from '@/components/product/ProductCardAPI'
 import { formatBRL } from '@/domain/fees/FeeEngine'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
@@ -291,7 +291,20 @@ export default function BuscarPage() {
           <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
             {products.map((product) => (
               <StaggerItem key={product.id}>
-                <ProductCard product={product as never} index={0} />
+                <ProductCardAPI
+                  id={product.id}
+                  title={product.title}
+                  slug={product.slug}
+                  price={product.base_price}
+                  original_price={product.original_price}
+                  image_url={product.image}
+                  category_name={product.category}
+                  category_slug={product.categorySlug}
+                  seller_name={product.vendor?.store_name}
+                  delivery_type={product.delivery_type}
+                  sales_count={product.sales_count}
+                  rating={product.rating}
+                />
               </StaggerItem>
             ))}
           </StaggerContainer>

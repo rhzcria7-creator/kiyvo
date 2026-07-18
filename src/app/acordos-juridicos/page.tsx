@@ -3,7 +3,6 @@
 import { motion } from 'framer-motion'
 import { PageTransition } from '@/components/shared/PageTransition'
 import { FadeInOnScroll } from '@/components/animations'
-import { FileText } from 'lucide-react'
 
 export default function Page() {
   return (
@@ -20,33 +19,30 @@ export default function Page() {
             transition={{ type: 'spring', stiffness: 200, delay: 0.2 }}
             className="w-20 h-20 bg-gradient-to-br from-brand-500 to-brand-700 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg"
           >
-            <FileText size={36} className="text-white" />
+            <span className="text-4xl">⚖️</span>
           </motion.div>
           <h1 className="font-display font-extrabold text-4xl lg:text-5xl text-surface-900 dark:text-white mb-4">
-            Acordos Juridicos
+            Acordos Jurídicos
           </h1>
-          <p className="text-lg text-surface-500 dark:text-surface-400 max-w-2xl mx-auto">
-            Informações sobre acordos juridicos na Kiyvo
-          </p>
         </motion.div>
 
         <div className="space-y-4">
           <FadeInOnScroll delay={0}>
             <div className="card-base p-6">
-              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">O que é Acordos Juridicos?</h3>
-              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">Na Kiyvo, acordos juridicos é uma funcionalidade que permite aos usuários interagir com o marketplace de forma segura e eficiente.</p>
+              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">Termos de Uso</h3>
+              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">Os Termos de Uso regulam o acesso e uso da plataforma KIYVO. Ao criar uma conta, você concorda com os termos vigentes. Principais pontos: responsabilidade sobre conteúdos publicados, obrigatoriedade de informações verdadeiras no cadastro, proibição de atividades ilegais e respeito aos direitos autorais. Os termos podem ser atualizados com aviso prévio de 30 dias.</p>
             </div>
           </FadeInOnScroll>
           <FadeInOnScroll delay={0.1}>
             <div className="card-base p-6">
-              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">Como funciona?</h3>
-              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">Acesse a área de acordos juridicos através do menu de navegação. Siga as instruções para configurar ou utilizar os recursos disponíveis.</p>
+              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">Política de Privacidade</h3>
+              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">A LGPD (Lei Geral de Proteção de Dados) é a base da nossa política de privacidade. Coletamos apenas dados necessários para operação da plataforma. Seus dados nunca são vendidos a terceiros. Você pode solicitar a qualquer momento: acesso aos seus dados, correção, exclusão ou portabilidade. Contate privacidade@kiyvo.com para exercer seus direitos.</p>
             </div>
           </FadeInOnScroll>
           <FadeInOnScroll delay={0.2}>
             <div className="card-base p-6">
-              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">Precisa de ajuda?</h3>
-              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">Se tiver problemas, acesse nossa Central de Ajuda em /ajuda ou entre em contato com o suporte pelo chat 24/7.</p>
+              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">Direitos autorais</h3>
+              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">O KIYVO respeita a propriedade intelectual. Vendedores declaram ter os direitos sobre os produtos digitais que anunciam. Denúncias de violação de direitos autorais são tratadas com prioridade. Se seu conteúdo foi copiado sem autorização, envie uma notificação DMCA para legal@kiyvo.com com: identificação do conteúdo, localização no KIYVO, e declaração de boa-fé.</p>
             </div>
           </FadeInOnScroll>
         </div>

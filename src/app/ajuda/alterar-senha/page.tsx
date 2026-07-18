@@ -3,7 +3,6 @@
 import { motion } from 'framer-motion'
 import { PageTransition } from '@/components/shared/PageTransition'
 import { FadeInOnScroll } from '@/components/animations'
-import { FileText } from 'lucide-react'
 
 export default function Page() {
   return (
@@ -20,33 +19,30 @@ export default function Page() {
             transition={{ type: 'spring', stiffness: 200, delay: 0.2 }}
             className="w-20 h-20 bg-gradient-to-br from-brand-500 to-brand-700 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg"
           >
-            <FileText size={36} className="text-white" />
+            <span className="text-4xl">🔑</span>
           </motion.div>
           <h1 className="font-display font-extrabold text-4xl lg:text-5xl text-surface-900 dark:text-white mb-4">
             Alterar Senha
           </h1>
-          <p className="text-lg text-surface-500 dark:text-surface-400 max-w-2xl mx-auto">
-            Informações sobre alterar senha na Kiyvo
-          </p>
         </motion.div>
 
         <div className="space-y-4">
           <FadeInOnScroll delay={0}>
             <div className="card-base p-6">
-              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">O que é Alterar Senha?</h3>
-              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">Na Kiyvo, alterar senha é uma funcionalidade que permite aos usuários interagir com o marketplace de forma segura e eficiente.</p>
+              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">Como alterar sua senha</h3>
+              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">Para alterar sua senha, acesse Minha Conta → Segurança → Alterar Senha. Digite sua senha atual e a nova senha. A nova senha deve ter no mínimo 8 caracteres, incluindo letras maiúsculas, minúsculas e números. Recomendamos usar um gerenciador de senhas para criar senhas fortes e únicas.</p>
             </div>
           </FadeInOnScroll>
           <FadeInOnScroll delay={0.1}>
             <div className="card-base p-6">
-              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">Como funciona?</h3>
-              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">Acesse a área de alterar senha através do menu de navegação. Siga as instruções para configurar ou utilizar os recursos disponíveis.</p>
+              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">Esqueceu a senha?</h3>
+              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">Se esqueceu sua senha, clique em "Esqueceu a senha?" na tela de login. Enviaremos um link de redefinição para seu email cadastrado. O link é válido por 1 hora. Se não receber o email, verifique a pasta de spam ou lixo eletrônico.</p>
             </div>
           </FadeInOnScroll>
           <FadeInOnScroll delay={0.2}>
             <div className="card-base p-6">
-              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">Precisa de ajuda?</h3>
-              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">Se tiver problemas, acesse nossa Central de Ajuda em /ajuda ou entre em contato com o suporte pelo chat 24/7.</p>
+              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">Segurança da senha</h3>
+              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">Nunca compartilhe sua senha com ninguém. O KIYVO nunca pedirá sua senha por email, chat ou telefone. Use uma senha diferente da que usa em outros sites. Ative a autenticação de dois fatores (2FA) para proteção extra — mesmo que alguém descubra sua senha, não conseguirá acessar sem o código do 2FA.</p>
             </div>
           </FadeInOnScroll>
         </div>

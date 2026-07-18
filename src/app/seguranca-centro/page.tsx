@@ -3,7 +3,6 @@
 import { motion } from 'framer-motion'
 import { PageTransition } from '@/components/shared/PageTransition'
 import { FadeInOnScroll } from '@/components/animations'
-import { Shield } from 'lucide-react'
 
 export default function Page() {
   return (
@@ -20,33 +19,30 @@ export default function Page() {
             transition={{ type: 'spring', stiffness: 200, delay: 0.2 }}
             className="w-20 h-20 bg-gradient-to-br from-brand-500 to-brand-700 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg"
           >
-            <Shield size={36} className="text-white" />
+            <span className="text-4xl">🏰</span>
           </motion.div>
           <h1 className="font-display font-extrabold text-4xl lg:text-5xl text-surface-900 dark:text-white mb-4">
-            Seguranca Centro
+            Centro de Segurança
           </h1>
-          <p className="text-lg text-surface-500 dark:text-surface-400 max-w-2xl mx-auto">
-            Informações sobre seguranca centro na Kiyvo
-          </p>
         </motion.div>
 
         <div className="space-y-4">
           <FadeInOnScroll delay={0}>
             <div className="card-base p-6">
-              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">O que é Seguranca Centro?</h3>
-              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">Na Kiyvo, seguranca centro é uma funcionalidade que permite aos usuários interagir com o marketplace de forma segura e eficiente.</p>
+              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">Sua segurança é prioridade</h3>
+              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">O KIYVO investe pesado em segurança para proteger seus dados e transações. Usamos criptografia de ponta, autenticação de dois fatores, escrow em todas as transações e monitoramento 24/7. Nossa infraestrutura segue as normas OWASP Top 10 e PCI DSS para proteger informações sensíveis.</p>
             </div>
           </FadeInOnScroll>
           <FadeInOnScroll delay={0.1}>
             <div className="card-base p-6">
-              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">Como funciona?</h3>
-              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">Acesse a área de seguranca centro através do menu de navegação. Siga as instruções para configurar ou utilizar os recursos disponíveis.</p>
+              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">Dicas de segurança</h3>
+              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">1) Ative o 2FA agora — é a proteção mais eficaz contra invasões. 2) Use senhas fortes e únicas — nunca reuse senhas entre sites. 3) Desconfie de emails suspeitos — o KIYVO nunca pede senha por email. 4) Verifique o URL antes de fazer login — certifique-se de que é kiyvo.com. 5) Não compartilhe códigos de verificação com ninguém.</p>
             </div>
           </FadeInOnScroll>
           <FadeInOnScroll delay={0.2}>
             <div className="card-base p-6">
-              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">Precisa de ajuda?</h3>
-              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">Se tiver problemas, acesse nossa Central de Ajuda em /ajuda ou entre em contato com o suporte pelo chat 24/7.</p>
+              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">Sessões ativas</h3>
+              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">Gerencie dispositivos conectados à sua conta em Minha Conta → Segurança → Sessões. Você pode desconectar qualquer dispositivo remotamente. Se notar atividade suspeita, desconecte todos os dispositivos e altere sua senha imediatamente.</p>
             </div>
           </FadeInOnScroll>
         </div>

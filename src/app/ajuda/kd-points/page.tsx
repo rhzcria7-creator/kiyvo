@@ -3,7 +3,6 @@
 import { motion } from 'framer-motion'
 import { PageTransition } from '@/components/shared/PageTransition'
 import { FadeInOnScroll } from '@/components/animations'
-import { FileText } from 'lucide-react'
 
 export default function Page() {
   return (
@@ -20,33 +19,30 @@ export default function Page() {
             transition={{ type: 'spring', stiffness: 200, delay: 0.2 }}
             className="w-20 h-20 bg-gradient-to-br from-brand-500 to-brand-700 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg"
           >
-            <FileText size={36} className="text-white" />
+            <span className="text-4xl">⭐</span>
           </motion.div>
           <h1 className="font-display font-extrabold text-4xl lg:text-5xl text-surface-900 dark:text-white mb-4">
-            Kd Points
+            KD Points — Programa de Recompensas
           </h1>
-          <p className="text-lg text-surface-500 dark:text-surface-400 max-w-2xl mx-auto">
-            Informações sobre kd points na Kiyvo
-          </p>
         </motion.div>
 
         <div className="space-y-4">
           <FadeInOnScroll delay={0}>
             <div className="card-base p-6">
-              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">O que é Kd Points?</h3>
-              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">Na Kiyvo, kd points é uma funcionalidade que permite aos usuários interagir com o marketplace de forma segura e eficiente.</p>
+              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">O que são KD Points</h3>
+              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">KD Points são pontos de recompensa que você acumula a cada compra no KIYVO. Cada R$ 1,00 gasto equivale a 1 KD Point. Os pontos podem ser trocados por descontos em compras futuras, produtos exclusivos ou cashback. Quanto mais você compra, mais pontos ganha — e membros com planos superiores ganham pontos em dobro.</p>
             </div>
           </FadeInOnScroll>
           <FadeInOnScroll delay={0.1}>
             <div className="card-base p-6">
-              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">Como funciona?</h3>
-              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">Acesse a área de kd points através do menu de navegação. Siga as instruções para configurar ou utilizar os recursos disponíveis.</p>
+              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">Como acumular</h3>
+              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">Compras: 1 KD Point por R$ 1 gasto. Avaliações: 10 KD Points por avaliação aprovada. Indicações: 50 KD Points quando seu indicado faz a primeira compra. Desafios: ganhe pontos extras em promoções sazonais. Login diário: 2 KD Points por dia de acesso consecutivo.</p>
             </div>
           </FadeInOnScroll>
           <FadeInOnScroll delay={0.2}>
             <div className="card-base p-6">
-              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">Precisa de ajuda?</h3>
-              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">Se tiver problemas, acesse nossa Central de Ajuda em /ajuda ou entre em contato com o suporte pelo chat 24/7.</p>
+              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">Como usar</h3>
+              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">No checkout, selecione "Usar KD Points" e escolha quantos pontos deseja aplicar. 100 KD Points = R$ 1,00 de desconto. Você pode combinar KD Points com cupons e promoções. Os pontos expiram em 12 meses sem uso — confira seu saldo em Minha Conta → KD Points.</p>
             </div>
           </FadeInOnScroll>
         </div>

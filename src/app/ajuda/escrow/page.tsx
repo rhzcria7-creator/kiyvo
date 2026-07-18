@@ -3,7 +3,6 @@
 import { motion } from 'framer-motion'
 import { PageTransition } from '@/components/shared/PageTransition'
 import { FadeInOnScroll } from '@/components/animations'
-import { FileText } from 'lucide-react'
 
 export default function Page() {
   return (
@@ -20,33 +19,30 @@ export default function Page() {
             transition={{ type: 'spring', stiffness: 200, delay: 0.2 }}
             className="w-20 h-20 bg-gradient-to-br from-brand-500 to-brand-700 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg"
           >
-            <FileText size={36} className="text-white" />
+            <span className="text-4xl">🔒</span>
           </motion.div>
           <h1 className="font-display font-extrabold text-4xl lg:text-5xl text-surface-900 dark:text-white mb-4">
-            Escrow
+            Sistema de Escrow
           </h1>
-          <p className="text-lg text-surface-500 dark:text-surface-400 max-w-2xl mx-auto">
-            Informações sobre escrow na Kiyvo
-          </p>
         </motion.div>
 
         <div className="space-y-4">
           <FadeInOnScroll delay={0}>
             <div className="card-base p-6">
               <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">O que é Escrow?</h3>
-              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">Na Kiyvo, escrow é uma funcionalidade que permite aos usuários interagir com o marketplace de forma segura e eficiente.</p>
+              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">Escrow é um sistema de custódia onde o KIYVO retém o pagamento do comprador até que o produto seja entregue e confirmado. Isso elimina o risco de golpe: o comprador só paga quando tem certeza de que recebeu, e o vendedor só recebe quando a entrega é comprovada. É o mesmo sistema usado por plataformas como eBay e AliExpress.</p>
             </div>
           </FadeInOnScroll>
           <FadeInOnScroll delay={0.1}>
             <div className="card-base p-6">
-              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">Como funciona?</h3>
-              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">Acesse a área de escrow através do menu de navegação. Siga as instruções para configurar ou utilizar os recursos disponíveis.</p>
+              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">Como funciona</h3>
+              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">1) Comprador faz o pagamento → dinheiro vai para conta custódia do KIYVO. 2) Vendedor é notificado e entrega o produto. 3) Comprador confirma recebimento → dinheiro é liberado para o vendedor. 4) Se houver problema, o comprador abre disputa → KIYVO intermedeia e decide. O período padrão de auto-confirmação é de 7 dias.</p>
             </div>
           </FadeInOnScroll>
           <FadeInOnScroll delay={0.2}>
             <div className="card-base p-6">
-              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">Precisa de ajuda?</h3>
-              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">Se tiver problemas, acesse nossa Central de Ajuda em /ajuda ou entre em contato com o suporte pelo chat 24/7.</p>
+              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">Proteção ao comprador</h3>
+              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">Se o produto não for entregue, estiver diferente do anunciado ou não funcionar, o comprador recebe reembolso integral. O dinheiro nunca vai direto para o vendedor — sempre passa pelo escrow. Chargebacks no cartão também são protegidos pelo sistema.</p>
             </div>
           </FadeInOnScroll>
         </div>

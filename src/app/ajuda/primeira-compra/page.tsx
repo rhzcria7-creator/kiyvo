@@ -3,7 +3,6 @@
 import { motion } from 'framer-motion'
 import { PageTransition } from '@/components/shared/PageTransition'
 import { FadeInOnScroll } from '@/components/animations'
-import { FileText } from 'lucide-react'
 
 export default function Page() {
   return (
@@ -20,33 +19,24 @@ export default function Page() {
             transition={{ type: 'spring', stiffness: 200, delay: 0.2 }}
             className="w-20 h-20 bg-gradient-to-br from-brand-500 to-brand-700 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg"
           >
-            <FileText size={36} className="text-white" />
+            <span className="text-4xl">🛍️</span>
           </motion.div>
           <h1 className="font-display font-extrabold text-4xl lg:text-5xl text-surface-900 dark:text-white mb-4">
-            Primeira Compra
+            Primeira Compra no KIYVO
           </h1>
-          <p className="text-lg text-surface-500 dark:text-surface-400 max-w-2xl mx-auto">
-            Informações sobre primeira compra na Kiyvo
-          </p>
         </motion.div>
 
         <div className="space-y-4">
           <FadeInOnScroll delay={0}>
             <div className="card-base p-6">
-              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">O que é Primeira Compra?</h3>
-              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">Na Kiyvo, primeira compra é uma funcionalidade que permite aos usuários interagir com o marketplace de forma segura e eficiente.</p>
+              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">Guia passo a passo</h3>
+              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">1) Crie sua conta com email e senha. 2) Navegue pelas categorias ou use a busca. 3) Encontre o produto e clique "Comprar Agora". 4) Escolha o método de pagamento. 5) Complete o checkout seguro via Stripe. 6) Após confirmação, acesse seu produto em Minha Conta → Compras. Produtos digitais com entrega automática ficam disponíveis em segundos!</p>
             </div>
           </FadeInOnScroll>
           <FadeInOnScroll delay={0.1}>
             <div className="card-base p-6">
-              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">Como funciona?</h3>
-              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">Acesse a área de primeira compra através do menu de navegação. Siga as instruções para configurar ou utilizar os recursos disponíveis.</p>
-            </div>
-          </FadeInOnScroll>
-          <FadeInOnScroll delay={0.2}>
-            <div className="card-base p-6">
-              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">Precisa de ajuda?</h3>
-              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">Se tiver problemas, acesse nossa Central de Ajuda em /ajuda ou entre em contato com o suporte pelo chat 24/7.</p>
+              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">Dicas para iniciantes</h3>
+              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">Sempre verifique a reputação do vendedor (estrelas e vendas). Leia a descrição completa antes de comprar. Produtos com badge "Entrega Automática" são liberados instantaneamente. Ative o 2FA para proteger sua conta. Use PIX para pagamentos mais rápidos. Guarde o comprovante de compra.</p>
             </div>
           </FadeInOnScroll>
         </div>

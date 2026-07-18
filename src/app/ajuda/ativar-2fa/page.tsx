@@ -3,7 +3,6 @@
 import { motion } from 'framer-motion'
 import { PageTransition } from '@/components/shared/PageTransition'
 import { FadeInOnScroll } from '@/components/animations'
-import { FileText } from 'lucide-react'
 
 export default function Page() {
   return (
@@ -20,33 +19,36 @@ export default function Page() {
             transition={{ type: 'spring', stiffness: 200, delay: 0.2 }}
             className="w-20 h-20 bg-gradient-to-br from-brand-500 to-brand-700 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg"
           >
-            <FileText size={36} className="text-white" />
+            <span className="text-4xl">🔐</span>
           </motion.div>
           <h1 className="font-display font-extrabold text-4xl lg:text-5xl text-surface-900 dark:text-white mb-4">
-            Ativar 2fa
+            Ativar Autenticação de Dois Fatores
           </h1>
-          <p className="text-lg text-surface-500 dark:text-surface-400 max-w-2xl mx-auto">
-            Informações sobre ativar 2fa na Kiyvo
-          </p>
         </motion.div>
 
         <div className="space-y-4">
           <FadeInOnScroll delay={0}>
             <div className="card-base p-6">
-              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">O que é Ativar 2fa?</h3>
-              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">Na Kiyvo, ativar 2fa é uma funcionalidade que permite aos usuários interagir com o marketplace de forma segura e eficiente.</p>
+              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">O que é 2FA?</h3>
+              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">A autenticação de dois fatores (2FA) adiciona uma camada extra de segurança à sua conta. Além da senha, você precisa de um código gerado pelo seu celular. Mesmo que alguém descubra sua senha, não conseguirá acessar sua conta sem o código 2FA.</p>
             </div>
           </FadeInOnScroll>
           <FadeInOnScroll delay={0.1}>
             <div className="card-base p-6">
-              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">Como funciona?</h3>
-              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">Acesse a área de ativar 2fa através do menu de navegação. Siga as instruções para configurar ou utilizar os recursos disponíveis.</p>
+              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">Como ativar</h3>
+              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">1) Acesse Minha Conta → Segurança → 2FA; 2) Clique em "Ativar 2FA"; 3) Escaneie o QR Code com seu app autenticador (Google Authenticator, Authy, etc.); 4) Digite o código de 6 dígitos para confirmar; 5) Salve seus códigos de backup em local seguro.</p>
             </div>
           </FadeInOnScroll>
           <FadeInOnScroll delay={0.2}>
             <div className="card-base p-6">
-              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">Precisa de ajuda?</h3>
-              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">Se tiver problemas, acesse nossa Central de Ajuda em /ajuda ou entre em contato com o suporte pelo chat 24/7.</p>
+              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">Códigos de backup</h3>
+              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">Ao ativar o 2FA, você receberá 10 códigos de backup. Guarde-os em local seguro — cada código pode ser usado apenas uma vez. Se perder o acesso ao seu app autenticador, use um código de backup para entrar. Quando restarem 3 ou menos códigos, gere novos em Minha Conta → Segurança.</p>
+            </div>
+          </FadeInOnScroll>
+          <FadeInOnScroll delay={0.30000000000000004}>
+            <div className="card-base p-6">
+              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">E se perder o acesso?</h3>
+              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">Se perdeu o acesso ao app autenticador E aos códigos de backup, entre em contato com nosso suporte. Precisaremos verificar sua identidade com documento com foto para desativar o 2FA e permitir que você reconfigure. Esse processo leva até 48h por segurança.</p>
             </div>
           </FadeInOnScroll>
         </div>

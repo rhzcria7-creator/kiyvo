@@ -3,7 +3,6 @@
 import { motion } from 'framer-motion'
 import { PageTransition } from '@/components/shared/PageTransition'
 import { FadeInOnScroll } from '@/components/animations'
-import { FileText } from 'lucide-react'
 
 export default function Page() {
   return (
@@ -20,33 +19,42 @@ export default function Page() {
             transition={{ type: 'spring', stiffness: 200, delay: 0.2 }}
             className="w-20 h-20 bg-gradient-to-br from-brand-500 to-brand-700 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg"
           >
-            <FileText size={36} className="text-white" />
+            <span className="text-4xl">🛡️</span>
           </motion.div>
           <h1 className="font-display font-extrabold text-4xl lg:text-5xl text-surface-900 dark:text-white mb-4">
-            Anti Fraude
+            Proteção Anti-Fraude
           </h1>
-          <p className="text-lg text-surface-500 dark:text-surface-400 max-w-2xl mx-auto">
-            Informações sobre anti fraude na Kiyvo
-          </p>
         </motion.div>
 
         <div className="space-y-4">
           <FadeInOnScroll delay={0}>
             <div className="card-base p-6">
-              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">O que é Anti Fraude?</h3>
-              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">Na Kiyvo, anti fraude é uma funcionalidade que permite aos usuários interagir com o marketplace de forma segura e eficiente.</p>
+              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">Sistema de Detecção de Fraude</h3>
+              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">O KIYVO utiliza um sistema multi-camadas de detecção de fraude que analisa cada transação em tempo real. Nosso algoritmo avalia mais de 20 sinais de risco, incluindo velocidade de compra, valor da transação, histórico de disputas, fingerprint do dispositivo e localização do IP. Transações com score de risco alto são automaticamente bloqueadas e enviadas para revisão manual.</p>
             </div>
           </FadeInOnScroll>
           <FadeInOnScroll delay={0.1}>
             <div className="card-base p-6">
-              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">Como funciona?</h3>
-              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">Acesse a área de anti fraude através do menu de navegação. Siga as instruções para configurar ou utilizar os recursos disponíveis.</p>
+              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">Escrow — Seu Dinheiro Protegido</h3>
+              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">Todo pagamento no KIYVO passa pelo sistema de Escrow: o dinheiro fica retido pela plataforma e só é liberado ao vendedor após o comprador confirmar o recebimento do produto. Se o produto não for entregue ou estiver diferente do anunciado, o comprador recebe reembolso integral. Esse sistema elimina o risco de golpe para o comprador.</p>
             </div>
           </FadeInOnScroll>
           <FadeInOnScroll delay={0.2}>
             <div className="card-base p-6">
-              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">Precisa de ajuda?</h3>
-              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">Se tiver problemas, acesse nossa Central de Ajuda em /ajuda ou entre em contato com o suporte pelo chat 24/7.</p>
+              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">Verificação de Identidade (KYC)</h3>
+              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">Vendedores precisam completar a verificação KYC (Know Your Customer) antes de anunciar. Isso inclui documento de identidade com foto, comprovante de residência e selfie. A verificação é processada em até 24h e garante que todos os vendedores são reais e identificáveis.</p>
+            </div>
+          </FadeInOnScroll>
+          <FadeInOnScroll delay={0.30000000000000004}>
+            <div className="card-base p-6">
+              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">Monitoramento 24/7</h3>
+              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">Nossa equipe de segurança monitora a plataforma 24 horas por dia, 7 dias por semana. Atividades suspeitas como tentativas de phishing, contas falsas e padrões de golpe são detectadas e bloqueadas automaticamente. Em caso de incidente, nossa equipe responde em menos de 15 minutos.</p>
+            </div>
+          </FadeInOnScroll>
+          <FadeInOnScroll delay={0.4}>
+            <div className="card-base p-6">
+              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">O que fazer se suspeitar de fraude?</h3>
+              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">Se você suspeitar de qualquer atividade fraudulenta: 1) Não finalize a compra; 2) Denuncie o anúncio usando o botão "Reportar"; 3) Entre em contato com nosso suporte pelo chat; 4) Se já comprou, abra uma disputa imediatamente. O KIYVO garante reembolso total em casos de fraude comprovada.</p>
             </div>
           </FadeInOnScroll>
         </div>
