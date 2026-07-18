@@ -21,7 +21,9 @@ export default function StatusPage() {
   const fetchHealth = async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/health')
+      // Tenta v1 primeiro, fallback para legacy
+      let res = await fetch('/api/v1/health')
+      if (!res.ok) res = await fetch('/api/health')
       const data = await res.json()
       setHealth(data)
     } catch {

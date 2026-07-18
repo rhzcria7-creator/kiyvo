@@ -20,14 +20,14 @@ type BucketName = typeof BUCKETS[keyof typeof BUCKETS]
 
 // ─── ALLOWED MIME TYPES ──────────────────────────────────────
 
-const ALLOWED_IMAGE_TYPES = [
+export const ALLOWED_IMAGE_TYPES = [
   'image/jpeg',
   'image/png',
   'image/webp',
   'image/gif',
 ]
 
-const ALLOWED_DOCUMENT_TYPES = [
+export const ALLOWED_DOCUMENT_TYPES = [
   'application/pdf',
   'application/zip',
   'application/x-zip-compressed',
@@ -35,15 +35,15 @@ const ALLOWED_DOCUMENT_TYPES = [
   'text/plain',
 ]
 
-const ALLOWED_DIGITAL_TYPES = [
+export const ALLOWED_DIGITAL_TYPES = [
   ...ALLOWED_DOCUMENT_TYPES,
   'application/x-msdownload',  // .exe
   'application/octet-stream',  // generic binary
 ]
 
-const MAX_IMAGE_SIZE = 5 * 1024 * 1024   // 5MB
-const MAX_DOCUMENT_SIZE = 50 * 1024 * 1024 // 50MB
-const MAX_DIGITAL_SIZE = 500 * 1024 * 1024  // 500MB
+export const MAX_IMAGE_SIZE = 5 * 1024 * 1024   // 5MB
+export const MAX_DOCUMENT_SIZE = 50 * 1024 * 1024 // 50MB
+export const MAX_DIGITAL_SIZE = 500 * 1024 * 1024  // 500MB
 
 // ─── TYPES ───────────────────────────────────────────────────
 
@@ -63,7 +63,7 @@ interface FileInfo {
 
 // ─── VALIDAÇÃO DE ARQUIVO ────────────────────────────────────
 
-function validateFile(
+export function validateFile(
   file: File,
   allowedTypes: string[],
   maxSize: number
