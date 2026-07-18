@@ -1,9 +1,10 @@
 'use client'
 import { useEffect } from 'react'
+import { clientLogger } from '@/lib/observability/client-logger'
 import { AlertTriangle, RefreshCw } from 'lucide-react'
 
 export default function Error({ error, reset }: { error: Error; reset: () => void }) {
-  useEffect(() => { console.error(error) }, [error])
+  useEffect(() => { clientLogger.error('Page error', { metadata: { message: error.message, digest: (error as Error & { digest?: string }).digest } }) }, [error])
   return (
     <div className="min-h-[60vh] flex items-center justify-center px-4">
       <div className="text-center max-w-sm">

@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
+import { clientLogger } from '@/lib/observability/client-logger'
 import Link from 'next/link'
 
 export default function Error({
@@ -14,7 +15,13 @@ export default function Error({
   reset: () => void
 }) {
   useEffect(() => {
-    console.error('Application error:', error)
+    clientLogger.error('Application error', {
+      metadata: {
+        message: error.message,
+        digest: error.digest,
+        stack: error.stack,
+      },
+    })
   }, [error])
 
   return (
