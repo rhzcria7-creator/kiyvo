@@ -1,155 +1,171 @@
-# 🎮 KIYVO — Marketplace de Produtos Digitais
+# 🚀 KIYVO v6.0 — Marketplace de Produtos Digitais
 
-> O marketplace de **tudo que é digital**. Compre e venda jogos, software, cursos, e-books, templates, gift cards, domínios, APIs e muito mais.
+<p align="center">
+  <strong>O maior marketplace digital do Brasil.</strong><br>
+  Compre e venda tudo que é digital: jogos, software, cursos, e-books, templates, gift cards, domínios, APIs e muito mais.
+</p>
 
-![Kiyvo v3.1](https://img.shields.io/badge/version-3.1-blue?style=for-the-badge)
-![Next.js 14](https://img.shields.io/badge/Next.js-14.2-black?style=flat-square&logo=next.js)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=flat-square&logo=typescript)
-![Supabase](https://img.shields.io/badge/Supabase-Auth%20%2B%20DB-green?style=flat-square&logo=supabase)
-![Stripe](https://img.shields.io/badge/Stripe-Payments-purple?style=flat-square&logo=stripe)
-
----
-
-## 📊 Números
-
-| Métrica | Valor |
-|---|---|
-| **Páginas** | 70+ |
-| **API Routes** | 10 |
-| **Arquivos TSX/TS** | 180+ |
-| **Tabelas no banco** | 30+ |
-| **Loading states** | 100% cobertura |
-| **Error boundaries** | 100% cobertura |
-| **Dark mode** | 90%+ das páginas |
+<p align="center">
+  <img src="https://img.shields.io/badge/Next.js-14.2.29-black?logo=next.js" alt="Next.js" />
+  <img src="https://img.shields.io/badge/TypeScript-5.7-blue?logo=typescript" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/Supabase-PostgreSQL-green?logo=supabase" alt="Supabase" />
+  <img src="https://img.shields.io/badge/Stripe-Connect-blueviolet?logo=stripe" alt="Stripe" />
+  <img src="https://img.shields.io/badge/TailwindCSS-3.4-38B2AC?logo=tailwindcss" alt="Tailwind" />
+  <img src="https://img.shields.io/badge/Páginas-378-orange" alt="378 Pages" />
+</p>
 
 ---
 
-## 🛠️ Stack
+## 📋 Stack Técnico
 
-- **Frontend:** Next.js 14 (App Router) + React 18 + TypeScript
-- **Styling:** Tailwind CSS + Framer Motion (100% animado)
-- **3D:** React Three Fiber + Drei
-- **Backend:** Supabase (Auth + Database + Storage + Realtime)
-- **Pagamentos:** Stripe (PIX, Cartão, Boleto)
-- **Security:** CSRF, Rate Limiting, Bot Detection, Fraud Scoring, Device Fingerprint
+| Tecnologia | Versão | Uso |
+|---|---|---|
+| Next.js | 14.2.29 (pinned) | Framework principal |
+| React | 18.3 | UI Library |
+| TypeScript | 5.7 | Tipagem forte |
+| Supabase | 2.109 | Backend + Auth + DB + Storage + Realtime |
+| Stripe | 22.3 | Pagamentos + Connect + Escrow |
+| Tailwind CSS | 3.4 | Design System |
+| Framer Motion | 11.18 | Animações em 100% dos componentes |
+| Zustand | 5.0 | State Management |
+| Zod | 4.4 | Validação de schemas |
 
----
-
-## 🚀 Quick Start
-
-```bash
-# Clone o repo
-git clone https://github.com/rhzcria7-creator/KIYVO.git
-cd KIYVO
-
-# Instale dependências
-npm install
-
-# Configure o .env.local (veja .env.example)
-cp .env.example .env.local
-# Edite .env.local com suas credenciais
-
-# Rode o projeto
-npm run dev
-```
-
-### Setup automático
-1. Abra `http://localhost:3000/setup`
-2. Veja o status de todas as integrações
-3. Clique em "Criar categorias" e "Criar cupons"
-
-### Setup manual (SQL)
-1. Abra o SQL Editor no Supabase
-2. Cole o conteúdo de `supabase/schema.sql`
-3. Execute
-
----
-
-## 🔑 Variáveis de Ambiente
-
-| Variável | Onde pegar |
-|---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` | Supabase → Settings → API |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase → Settings → API |
-| `SUPABASE_SERVICE_ROLE_KEY` | Supabase → Settings → API |
-| `STRIPE_SECRET_KEY` | Stripe → Developers → API keys |
-| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Stripe → Developers → API keys |
-| `STRIPE_WEBHOOK_SECRET` | Stripe → Developers → Webhooks |
-| `NEXT_PUBLIC_SITE_URL` | Seu domínio |
-
----
-
-## 📁 Estrutura
+## 🏗️ Arquitetura
 
 ```
 src/
-├── app/              # 70+ páginas (App Router)
-│   ├── admin/        # Painel administrativo
-│   ├── api/          # 10 API routes
-│   ├── auth/         # Login, cadastro, recuperação
-│   ├── checkout/     # Fluxo de pagamento Stripe
-│   └── ...           # Todas as páginas públicas
+├── app/                    # Next.js App Router (378 páginas)
+│   ├── api/               # 33 API Routes
+│   │   ├── v1/            # API v1 (REST)
+│   │   │   ├── admin/     # APIs administrativas (auth required)
+│   │   │   ├── security/  # Fraud detection + device fingerprint
+│   │   │   ├── vault/     # Cofre Digital (escrow delivery)
+│   │   │   └── ...
+│   │   ├── cart/          # Carrinho
+│   │   ├── checkout/      # Checkout com Stripe Escrow
+│   │   ├── search/        # Full-text search
+│   │   └── stripe/        # Webhook handler
+│   ├── admin/             # Painel administrativo
+│   ├── auth/              # Autenticação (login, 2FA, OAuth)
+│   ├── ajuda/             # Central de ajuda (30+ artigos)
+│   ├── blog/              # Blog com conteúdo dinâmico
+│   ├── categoria/         # 32 categorias de produtos
+│   ├── conta/             # Área do usuário
+│   ├── tutorial/          # Tutoriais e onboarding
+│   └── ...
 ├── components/
-│   ├── animations/   # Framer Motion components
-│   ├── home/         # Hero, Categories, Products
-│   ├── layout/       # Header, Footer
-│   ├── product/      # ProductCard
-│   ├── shared/       # PageTransition
-│   ├── svgs/         # AnimatedSVGs
-│   └── ui/           # Button, Card, Input, CommandK, ThemeToggle
-├── data/             # Mock data
+│   ├── animations/        # Animações reutilizáveis
+│   ├── home/              # Componentes da homepage
+│   ├── layout/            # Header + Footer
+│   ├── product/           # ProductCard (legado + API)
+│   ├── shared/            # PageTransition
+│   ├── svgs/              # SVGs animados
+│   └── ui/                # Design System (Button, Card, Badge, etc.)
 ├── lib/
-│   ├── auth/         # AuthProvider + useAuth
-│   ├── security/     # Rate limit, CSRF, fraud, sanitization
-│   ├── stripe/       # Client + Server
-│   ├── supabase/     # Client + Server + Middleware
-│   └── theme/        # ThemeProvider + useTheme (dark/light)
-├── types/            # TypeScript interfaces
-└── middleware.ts      # Security + Auth middleware
+│   ├── auth/              # Auth context + server helpers
+│   │   ├── context.tsx    # AuthProvider (client)
+│   │   └── server.ts      # requireAuth/Admin/Vendor/OwnerOrAdmin
+│   ├── security/          # Rate limiting + fraud detection + sanitização
+│   ├── stripe/            # Stripe client + server
+│   ├── supabase/          # Supabase client + admin client
+│   └── theme/             # Dark mode provider
+├── types/                 # TypeScript interfaces
+└── middleware.ts           # Segurança: rate limit, anti-bot, CSP, HSTS
 ```
-
----
 
 ## 🔒 Segurança
 
-- ✅ CSRF Protection (Origin header validation)
-- ✅ Rate Limiting com auto-block IP
-- ✅ Bot Detection (bloqueia bots de rotas sensíveis)
-- ✅ Fraud Scoring (4 níveis: low/medium/high/critical)
-- ✅ Device Fingerprinting
-- ✅ Security Headers (CSP, HSTS, X-Frame-Options, CORS)
-- ✅ Input Sanitization (XSS, SQL Injection, Event Handlers)
-- ✅ CPF Validation
-- ✅ Password Strength Checker
-- ✅ Row Level Security (RLS) em todas as tabelas
-- ✅ KYC Verification (4 passos)
-- ✅ .env.local no .gitignore (credenciais protegidas)
+- **Escrow**: Pagamentos retidos até confirmação de entrega
+- **KYC**: Verificação de identidade para vendedores
+- **2FA**: Autenticação em 2 passos (TOTP)
+- **Rate Limiting**: Por IP, fingerprint e path
+- **Anti-Fraud**: Detecção de velocity, anomalias e comportamento suspeito
+- **CSP**: Content Security Policy rigorosa
+- **HSTS**: Strict-Transport-Security com preload
+- **RLS**: Row Level Security no Supabase
+- **Admin Auth**: `requireAdmin()` em todas as APIs admin
+- **OWASP Top 10**: XSS, CSRF, SQL Injection, IDOR, Mass Assignment protegidos
+
+## 📦 Configuração
+
+### Variáveis de Ambiente (.env.local)
+
+```env
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=https://seu-projeto.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=sua-anon-key
+SUPABASE_SERVICE_ROLE_KEY=sua-service-role-key
+
+# Stripe
+STRIPE_SECRET_KEY=sk_test_...
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+
+# Site
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+```
+
+### Instalação
+
+```bash
+# Instalar dependências
+npm install
+
+# PIN do Next.js (obrigatório após qualquer npm install)
+npm install next@14.2.29 --save-exact
+
+# Desenvolvimento
+npm run dev
+
+# Build de produção
+npm run build
+```
+
+### Supabase Setup
+
+Execute o schema no SQL Editor do Supabase:
+1. `supabase/schema_v5.sql` — Tabelas base
+2. `supabase/schema_v6.sql` — Tabelas v6 + enums + triggers + RLS
+
+### Stripe Setup
+
+1. Criar conta Stripe Connect
+2. Configurar webhook endpoint: `/api/stripe/webhook`
+3. Adicionar `STRIPE_WEBHOOK_SECRET` ao `.env.local`
+
+## 🧪 Quality Gates (CI/CD)
+
+O pipeline GitHub Actions verifica:
+
+1. **Lint & Formatação** — ESLint + Prettier
+2. **TypeScript** — `tsc --noEmit --strict`
+3. **Segurança** — Verificação de segredos + npm audit
+4. **Build** — Verifica mínimo 300 páginas
+5. **Quality** — Zero mocks, zero any, zero console.log, zero placeholders
+
+## 📊 Métricas Atuais
+
+| Métrica | Valor |
+|---|---|
+| Páginas | 378 |
+| APIs | 33 rotas |
+| Componentes | 24 |
+| Mock imports | 0 |
+| `any` types | 0 |
+| `console.log` | 0 |
+| Placeholder pages | 0 |
+| TypeScript errors | 0 |
+| Build status | ✅ Passing |
+
+## 📝 Convenções
+
+- **Idioma dos comentários**: PT-BR
+- **Nomes de variáveis**: EN
+- **Paleta**: White/Blue/Black (#2563EB, #0F172A, #FFFFFF)
+- **Animações**: Framer Motion em 100% dos componentes
+- **Next.js**: Sempre pinned em `14.2.29`
+- **Stripe API Version**: `'2026-06-24.dahlia'`
 
 ---
 
-## 🌙 Dark Mode
-
-- Toggle no Header (animado Sun ↔ Moon)
-- Seletor em Configurações (Light / System / Dark)
-- Persistido no localStorage
-- Transições animadas
-
----
-
-## 🔍 Features
-
-- **Command-K** (Cmd/Ctrl+K) — busca global
-- **Onboarding** — guia passo a passo
-- **Health Check** — `/api/health` + `/status`
-- **Auto Setup** — `/setup` + `/api/setup`
-- **SEO** — sitemap.xml, robots.txt, Open Graph, JSON-LD
-- **PWA** — manifest.json
-- **Wallet** — carteira digital do vendedor
-- **Export** — CSV/PDF de dados
-- **Admin Analytics** — charts e KPIs em tempo real
-
----
-
-## 📄 Licença
-
-Projeto proprietário. Todos os direitos reservados.
+**KIYVO** — TUDO digital. Não apenas jogos.
