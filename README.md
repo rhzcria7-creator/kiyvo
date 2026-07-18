@@ -12,8 +12,8 @@
   <img src="https://img.shields.io/badge/Stripe-Connect-blueviolet?logo=stripe" alt="Stripe" />
   <img src="https://img.shields.io/badge/TailwindCSS-3.4-38B2AC?logo=tailwindcss" alt="Tailwind" />
   <img src="https://img.shields.io/badge/Páginas-387-orange" alt="387 Pages" />
-  <img src="https://img.shields.io/badge/Testes-136_passed-brightgreen" alt="136 Tests" />
-  <img src="https://img.shields.io/badge/Coverage-4_suites-blue" alt="4 Test Suites" />
+  <img src="https://img.shields.io/badge/Testes-249_passed-brightgreen" alt="249 Tests" />
+  <img src="https://img.shields.io/badge/Coverage-9_suites-blue" alt="9 Test Suites" />
 </p>
 
 ---
@@ -138,7 +138,7 @@ npm run test:watch    # Modo watch
 npm run test:coverage # Com coverage
 ```
 
-### Cobertura atual (136 testes, 4 suites):
+### Cobertura atual (249 testes, 9 suites):
 
 | Suite | Testes | Descrição |
 |-------|--------|-----------|
@@ -146,6 +146,11 @@ npm run test:coverage # Com coverage
 | two-factor.test.ts | 18 | TOTP, backup codes, encryption, base32 |
 | security.test.ts | 53 | Rate limit, sanitização, CPF, fraude, CSRF, password |
 | validation.test.ts | 49 | Email, password, username, CPF, checkout, chat, review |
+| storage-validation.test.ts | 27 | Product create, checkout, review, XSS, phone |
+| integration.test.ts | 19 | Cross-module integration tests |
+| email.test.ts | 30 | Email templates, HTML validation, security checks |
+| observability.test.ts | 18 | Logger, API logging, metrics, measureTime |
+| storage.test.ts | 19 | File validation, MIME types, size limits, XSS |
 
 ---
 
