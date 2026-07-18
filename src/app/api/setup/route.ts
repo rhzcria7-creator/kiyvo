@@ -1,20 +1,21 @@
+// ─────────────────────────────────────────────────────────────
+// API Setup — Verificação e seed inicial do banco
+// PROTEGIDO: POST requer autenticação de admin
+// GET é público (apenas verifica status das tabelas)
+// ─────────────────────────────────────────────────────────────
+
 import { NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
-import { rateLimit, sanitizeInput, isSetupComplete } from '@/lib/security'
+import { requireAdmin } from '@/lib/auth/server'
+import { sanitizeInput } from '@/lib/security'
 
-// GET /api/setup/status — Verifica o que já está configurado
-export async function GET(request: Request) {
-  const ip = request.headers.get('x-forwarded-for') || 'unknown'
-  const { allowed } = rateLimit(ip, 30, 60000)
-  if (!allowed) {
-    return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 })
-  }
-
+// GET /api/setup/status — Verifica o que já está configurado (público)
+export async function GET(request: NextRequest) {
   const supabase = createAdminClient()
-  const setup = isSetupComplete()
 
   // Check which tables exist
-  let tablesStatus: Record<string, boolean> = {}
+  const tablesStatus: Record<string, boolean> = {}
   if (supabase) {
     const requiredTables = [
       'profiles', 'categories', 'products', 'product_images', 'orders',
@@ -39,27 +40,32 @@ export async function GET(request: Request) {
     categoriesCount = count || 0
   }
 
+  const supabaseConfigured = !!supabase
+  const stripeConfigured = !!(process.env.STRIPE_SECRET_KEY)
+
   return NextResponse.json({
-    setup,
+    supabase: supabaseConfigured,
+    stripe: stripeConfigured,
     tables: tablesStatus,
     tablesCount: Object.values(tablesStatus).filter(Boolean).length,
     tablesTotal: Object.keys(tablesStatus).length,
     categoriesSeeded: categoriesCount >= 20,
-    ready: setup.supabase && setup.stripe && Object.values(tablesStatus).every(Boolean),
+    ready: supabaseConfigured && stripeConfigured && Object.values(tablesStatus).every(Boolean),
   })
 }
 
-// POST /api/setup/seed — Auto-seed categories and coupons
-export async function POST(request: Request) {
-  const ip = request.headers.get('x-forwarded-for') || 'unknown'
-  const { allowed } = rateLimit(ip, 5, 60000) // 5 requests/min (setup is sensitive)
-  if (!allowed) {
-    return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 })
+// POST /api/setup/seed — Auto-seed categories and coupons (ADMIN ONLY)
+export async function POST(request: NextRequest) {
+  // Verificar se é admin
+  const { user, error: authError } = await requireAdmin()
+
+  if (authError || !user) {
+    return NextResponse.json({ error: authError || 'Acesso restrito a administradores' }, { status: 401 })
   }
 
   const supabase = createAdminClient()
   if (!supabase) {
-    return NextResponse.json({ error: 'Supabase not configured' }, { status: 500 })
+    return NextResponse.json({ error: 'Supabase não configurado' }, { status: 500 })
   }
 
   try {
@@ -110,9 +116,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: true, message: `${coupons.length} cupons criados`, coupons: coupons.length })
     }
 
-    return NextResponse.json({ error: 'Invalid action. Use: seed_categories, seed_coupons' }, { status: 400 })
-  } catch (error) {
-    // Setup error handled
-    return NextResponse.json({ error: 'Setup failed' }, { status: 500 })
+    return NextResponse.json({ error: 'Ação inválida. Use: seed_categories, seed_coupons' }, { status: 400 })
+  } catch {
+    return NextResponse.json({ error: 'Setup falhou' }, { status: 500 })
   }
 }
