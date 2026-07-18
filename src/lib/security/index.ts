@@ -1,36 +1,47 @@
-// Security Utilities v2.0 — Anti-hacker, anti-fraud, rate limiting, CSRF, bot detection
-// TUDO AUTOMÁTICO — Zero intervenção manual
+// ─────────────────────────────────────────────────────────────
+// KIYVO — Security Utilities v3.0
+// Anti-hacker, anti-fraud, rate limiting, CSRF, bot detection
+// ✅ Sem setInterval (memory leak em serverless)
+// ✅ Zero `any` types
+// ✅ Lazy cleanup (igual ao middleware)
+// ─────────────────────────────────────────────────────────────
 
-// ─── Rate Limiting (in-memory with auto-cleanup) ────────────
+// ─── Rate Limiting (in-memory com lazy cleanup) ──────────────
 const rateLimitMap = new Map<string, { count: number; resetTime: number; blocked: boolean }>()
 
-// Auto-cleanup a cada 5 minutos
-if (typeof globalThis !== 'undefined') {
-  setInterval(() => {
-    const now = Date.now()
-    rateLimitMap.forEach((val, key) => {
-      if (now > val.resetTime) rateLimitMap.delete(key)
-    })
-  }, 5 * 60 * 1000)
+/**
+ * Lazy cleanup de entradas expiradas
+ * Chamado a cada verificação — sem setInterval, sem memory leak
+ */
+function cleanupRateLimits(): void {
+  const now = Date.now()
+  rateLimitMap.forEach((val, key) => {
+    if (now > val.resetTime || (val.blocked && now > val.resetTime + 3600000)) {
+      rateLimitMap.delete(key)
+    }
+  })
 }
 
 export function rateLimit(ip: string, limit: number = 100, windowMs: number = 60000): { allowed: boolean; remaining: number; blocked: boolean } {
+  // Lazy cleanup
+  cleanupRateLimits()
+
   const now = Date.now()
   const record = rateLimitMap.get(ip)
 
-  // Auto-unblock after window expires
   if (!record || now > record.resetTime) {
     rateLimitMap.set(ip, { count: 1, resetTime: now + windowMs, blocked: false })
     return { allowed: true, remaining: limit - 1, blocked: false }
   }
 
-  // Permanently blocked IPs (too many violations)
   if (record.blocked) {
     return { allowed: false, remaining: 0, blocked: true }
   }
 
   if (record.count >= limit) {
-    // Auto-block after 3x limit exceeded in same window
+    // Incrementar mesmo negado para rastrear abuso
+    record.count++
+    // Auto-block após 3x o limit excedido na mesma janela
     if (record.count >= limit * 3) {
       record.blocked = true
       return { allowed: false, remaining: 0, blocked: true }
@@ -42,36 +53,35 @@ export function rateLimit(ip: string, limit: number = 100, windowMs: number = 60
   return { allowed: true, remaining: limit - record.count, blocked: false }
 }
 
-// Unblock IP manually (for admin)
-export function unblockIP(ip: string) {
+export function unblockIP(ip: string): void {
   rateLimitMap.delete(ip)
 }
 
-// Get all blocked IPs
 export function getBlockedIPs(): string[] {
   const blocked: string[] = []
+  const now = Date.now()
   rateLimitMap.forEach((val, ip) => {
-    if (val.blocked) blocked.push(ip)
+    if (val.blocked && now <= val.resetTime + 3600000) blocked.push(ip)
   })
   return blocked
 }
 
-// ─── Input Sanitization (Enhanced) ──────────────────────────
+// ─── Input Sanitization ─────────────────────────────────────
 export function sanitizeInput(input: string): string {
   return input
-    .replace(/[<>]/g, '')                    // Remove HTML tags
-    .replace(/javascript:/gi, '')            // Remove javascript: protocol
-    .replace(/on\w+=/gi, '')                 // Remove event handlers
-    .replace(/data:/gi, '')                  // Remove data: protocol
-    .replace(/eval\s*\(/gi, '')              // Remove eval()
-    .replace(/expression\s*\(/gi, '')        // Remove CSS expression
-    .replace(/vbscript:/gi, '')              // Remove vbscript:
-    .replace(/url\s*\(/gi, '')               // Remove url()
-    .replace(/@import/gi, '')                // Remove @import
-    .replace(/document\./gi, '')             // Remove document access
-    .replace(/window\./gi, '')               // Remove window access
-    .replace(/\.cookie/gi, '')               // Remove cookie access
-    .replace(/\.localStorage/gi, '')         // Remove localStorage access
+    .replace(/[<>]/g, '')
+    .replace(/javascript:/gi, '')
+    .replace(/on\w+=/gi, '')
+    .replace(/data:/gi, '')
+    .replace(/eval\s*\(/gi, '')
+    .replace(/expression\s*\(/gi, '')
+    .replace(/vbscript:/gi, '')
+    .replace(/url\s*\(/gi, '')
+    .replace(/@import/gi, '')
+    .replace(/document\./gi, '')
+    .replace(/window\./gi, '')
+    .replace(/\.cookie/gi, '')
+    .replace(/\.localStorage/gi, '')
     .trim()
     .slice(0, 10000)
 }
@@ -109,49 +119,55 @@ export function validateCPF(cpf: string): boolean {
   return true
 }
 
-// ─── CEP Validation (ViaCEP) ────────────────────────────────
+// ─── CEP Validation ─────────────────────────────────────────
 export function validateCEP(cep: string): boolean {
   return /^\d{5}-?\d{3}$/.test(cep)
 }
 
-// ─── CSRF Protection ───────────────────────────────────────
+// ─── CSRF Protection (lazy cleanup, sem setInterval) ────────
 const csrfTokens = new Map<string, { token: string; expires: number }>()
 
+function cleanupCSRFTokens(): void {
+  const now = Date.now()
+  csrfTokens.forEach((val, key) => {
+    if (now > val.expires) csrfTokens.delete(key)
+  })
+}
+
 export function generateCSRFToken(sessionId: string): string {
-  // Use crypto.randomUUID() (available in Edge runtime) or Math.random fallback
-  const token = (typeof crypto !== 'undefined' && crypto.randomUUID)
+  // Lazy cleanup
+  cleanupCSRFTokens()
+
+  const token = (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function')
     ? crypto.randomUUID() + crypto.randomUUID()
     : Array.from({ length: 64 }, () => Math.random().toString(36)[2]).join('')
-  csrfTokens.set(sessionId, { token, expires: Date.now() + 24 * 60 * 60 * 1000 }) // 24h
+  csrfTokens.set(sessionId, { token, expires: Date.now() + 24 * 60 * 60 * 1000 })
   return token
 }
 
 export function validateCSRFToken(sessionId: string, token: string): boolean {
+  cleanupCSRFTokens()
   const stored = csrfTokens.get(sessionId)
   if (!stored) return false
   if (Date.now() > stored.expires) {
     csrfTokens.delete(sessionId)
     return false
   }
-  return stored.token === token
-}
-
-// Auto-cleanup expired tokens every hour
-if (typeof globalThis !== 'undefined') {
-  setInterval(() => {
-    const now = Date.now()
-    csrfTokens.forEach((val, key) => {
-      if (now > val.expires) csrfTokens.delete(key)
-    })
-  }, 60 * 60 * 1000)
+  // Timing-safe comparison
+  let result = 0
+  for (let i = 0; i < stored.token.length; i++) {
+    result |= stored.token.charCodeAt(i) ^ (token.charCodeAt(i) || 0)
+  }
+  return result === 0 && stored.token.length === token.length
 }
 
 // ─── Bot Detection ──────────────────────────────────────────
 const botPatterns = [
   /bot/i, /crawl/i, /spider/i, /scrape/i, /curl/i, /wget/i,
-  /python/i, /java/i, /go-http/i, /php/i, /ruby/i,
-  /semrush/i, /ahrefs/i, /moz/i, /screaming/i,
+  /python-requests/i, /go-http/i, /php\//i, /ruby/i,
+  /semrush/i, /ahrefs/i, /moz\.com/i, /screaming/i,
   /masscan/i, /nmap/i, /nikto/i, /sqlmap/i,
+  /^java\//i,
 ]
 
 export function isBot(userAgent: string): boolean {
@@ -160,13 +176,12 @@ export function isBot(userAgent: string): boolean {
 }
 
 // ─── Honeypot Field Validation ──────────────────────────────
-// Add hidden fields to forms — if filled, it's a bot
 export function isHoneypotTriggered(data: Record<string, string>): boolean {
   const honeypotFields = ['website', 'url', 'company_website', 'fax', 'phone_home']
   return honeypotFields.some(field => data[field] && data[field].length > 0)
 }
 
-// ─── Fraud Detection v2.0 (Enhanced) ────────────────────────
+// ─── Fraud Detection v3.0 ───────────────────────────────────
 interface FraudCheckResult {
   risk: 'low' | 'medium' | 'high' | 'critical'
   score: number
@@ -184,45 +199,36 @@ export function detectFraud(params: {
   paymentMethod: string
   deviceFingerprint?: string
   userAgent?: string
-  velocityCheck?: number // orders in last hour
+  velocityCheck?: number
 }): FraudCheckResult {
   const flags: string[] = []
   let riskScore = 0
 
-  // Bot detection
   if (params.userAgent && isBot(params.userAgent)) {
     flags.push('bot_detected')
     riskScore += 80
   }
 
-  // High value transaction
   if (params.amount > 2000) { flags.push('very_high_value'); riskScore += 40 }
   else if (params.amount > 500) { flags.push('high_value'); riskScore += 20 }
 
-  // New account patterns
   if (params.timeSinceSignup < 0.01) { flags.push('account_minutes_old'); riskScore += 40 }
   else if (params.timeSinceSignup < 1) { flags.push('new_account_same_day'); riskScore += 30 }
   else if (params.timeSinceSignup < 7) { flags.push('new_account_week'); riskScore += 15 }
 
-  // Velocity check (too many orders too fast)
   if (params.velocityCheck && params.velocityCheck > 5) { flags.push('velocity_attack'); riskScore += 50 }
   else if (params.velocityCheck && params.velocityCheck > 3) { flags.push('high_velocity'); riskScore += 25 }
 
-  // Dispute history
   if (params.previousDisputes > 3) { flags.push('serial_disputer'); riskScore += 40 }
   else if (params.previousDisputes > 1) { flags.push('multiple_disputes'); riskScore += 25 }
   else if (params.previousDisputes > 0) { flags.push('has_disputes'); riskScore += 10 }
 
-  // Payment method risk
   if (params.paymentMethod === 'crypto') { flags.push('crypto_payment'); riskScore += 15 }
 
-  // First purchase with high value
   if (params.previousOrders === 0 && params.amount > 100) { flags.push('first_purchase_high'); riskScore += 20 }
 
-  // Suspicious IP patterns
   if (params.ip === 'unknown' || params.ip.startsWith('10.')) { flags.push('suspicious_ip'); riskScore += 10 }
 
-  // Determine risk level and action
   let risk: FraudCheckResult['risk']
   let recommendedAction: FraudCheckResult['recommendedAction']
 
@@ -243,24 +249,34 @@ export function detectFraud(params: {
   return { risk, score: riskScore, flags, recommendedAction }
 }
 
-// ─── Security Headers (Enhanced) ────────────────────────────
-export function getSecurityHeaders() {
+// ─── Security Headers ───────────────────────────────────────
+export function getSecurityHeaders(): Record<string, string> {
   return {
     'X-Frame-Options': 'DENY',
     'X-Content-Type-Options': 'nosniff',
     'X-XSS-Protection': '1; mode=block',
     'Referrer-Policy': 'strict-origin-when-cross-origin',
     'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), payment=(self)',
-    'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' js.stripe.com; style-src 'self' 'unsafe-inline' fonts.googleapis.com; img-src 'self' data: blob: picsum.photos cdn.kiyvo.com.br; font-src 'self' fonts.gstatic.com; frame-src js.stripe.com; connect-src 'self' api.stripe.com ytiyqkliojawihfnlwzo.supabase.co",
-    'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
+    'Content-Security-Policy': [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+      "img-src 'self' data: blob: https:",
+      "font-src 'self' https://fonts.gstatic.com",
+      "frame-src https://js.stripe.com https://hooks.stripe.com",
+      "connect-src 'self' https://api.stripe.com https://ytiyqkliojawihfnlwzo.supabase.co wss://ytiyqkliojawihfnlwzo.supabase.co",
+      "frame-ancestors 'none'",
+      "form-action 'self'",
+    ].join('; '),
+    'Strict-Transport-Security': 'max-age=63072000; includeSubDomains; preload',
     'X-Permitted-Cross-Domain-Policies': 'none',
     'Cross-Origin-Opener-Policy': 'same-origin',
     'Cross-Origin-Resource-Policy': 'same-origin',
-    'Cross-Origin-Embedder-Policy': 'require-corp',
+    'Cross-Origin-Embedder-Policy': 'credentialless',
   }
 }
 
-// ─── Password Strength v2.0 ─────────────────────────────────
+// ─── Password Strength v3.0 ─────────────────────────────────
 export function checkPasswordStrength(password: string): { score: number; label: string; color: string; suggestions: string[] } {
   let score = 0
   const suggestions: string[] = []
@@ -283,7 +299,6 @@ export function checkPasswordStrength(password: string): { score: number; label:
   if (/[^A-Za-z0-9]/.test(password)) score++
   else suggestions.push('Adicione caracteres especiais')
 
-  // Check for common passwords
   const commonPasswords = ['123456', 'password', '12345678', 'qwerty', '123456789', 'abc123', 'senha', '1234567']
   if (commonPasswords.includes(password.toLowerCase())) {
     score = 0
@@ -291,7 +306,6 @@ export function checkPasswordStrength(password: string): { score: number; label:
     suggestions.push('Esta senha é muito comum. Use uma senha única.')
   }
 
-  // Sequential chars
   if (/(?:abc|123|qwerty|asdf)/i.test(password)) {
     score = Math.max(0, score - 1)
     suggestions.push('Evite sequências óbvias')
@@ -302,9 +316,10 @@ export function checkPasswordStrength(password: string): { score: number; label:
   return { score, label: 'Forte', color: 'bg-emerald-500', suggestions }
 }
 
-// ─── Device Fingerprint (Server-side) ───────────────────────
+// ─── Device Fingerprint (Client-side only) ──────────────────
 export function generateDeviceFingerprint(): string {
   if (typeof window === 'undefined') return 'server'
+
   const canvas = document.createElement('canvas')
   const ctx = canvas.getContext('2d')
   if (!ctx) return 'unknown'
@@ -313,6 +328,7 @@ export function generateDeviceFingerprint(): string {
   ctx.font = '14px Arial'
   ctx.fillText('KiyvoFP', 2, 2)
 
+  const nav = navigator as Navigator & { deviceMemory?: number }
   const data = [
     navigator.userAgent,
     navigator.language,
@@ -320,7 +336,7 @@ export function generateDeviceFingerprint(): string {
     screen.colorDepth,
     new Date().getTimezoneOffset(),
     navigator.hardwareConcurrency,
-    (navigator as any).deviceMemory,
+    nav.deviceMemory || 0,
     canvas.toDataURL(),
   ].join('|')
 
@@ -336,7 +352,6 @@ export function generateDeviceFingerprint(): string {
 
 // ─── Encryption Utilities ───────────────────────────────────
 export function hashSensitiveData(data: string): string {
-  // Simple hash for Edge runtime compatibility
   let hash = 0
   const salt = process.env.NEXT_PUBLIC_SITE_URL || 'kiyvo'
   const combined = data + salt
@@ -349,7 +364,7 @@ export function hashSensitiveData(data: string): string {
 }
 
 export function generateSecureToken(length: number = 32): string {
-  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
     return crypto.randomUUID().replace(/-/g, '').slice(0, length)
   }
   return Array.from({ length }, () => Math.random().toString(36)[2]).join('')
@@ -357,19 +372,18 @@ export function generateSecureToken(length: number = 32): string {
 
 // ─── IP Analysis ────────────────────────────────────────────
 export function analyzeIP(ip: string): { isProxy: boolean; isVPN: boolean; isTor: boolean; country: string } {
-  // Basic heuristics (use MaxMind or similar in production)
-  const torExits = ['10.0.0.0'] // Simplified
+  const torExits = ['10.0.0.0']
   const isTor = torExits.includes(ip)
 
   return {
     isProxy: false,
     isVPN: false,
     isTor,
-    country: 'BR', // Default for Brazilian marketplace
+    country: 'BR',
   }
 }
 
-// ─── Auto-Setup Check ───────────────────────────────────────
+// ─── Setup Check ────────────────────────────────────────────
 export function isSetupComplete(): {
   supabase: boolean
   stripe: boolean

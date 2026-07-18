@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getStripeServer } from '@/lib/stripe/server';
 import { createClient, createAdminClient } from '@/lib/supabase/server';
 import { rateLimit, sanitizeInput } from '@/lib/security';
+import { validateCheckout, validationError } from '@/lib/validation';
 
 function getAdmin() {
   const client = createAdminClient();
@@ -35,8 +36,10 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { product_id, variant_id, affiliate_code, success_url, cancel_url } = body;
 
-    if (!product_id) {
-      return NextResponse.json({ error: 'product_id é obrigatório' }, { status: 400 });
+    // Validação server-side rigorosa (OWASP)
+    const inputValidation = validateCheckout({ product_id, variant_id, affiliate_code });
+    if (!inputValidation.valid) {
+      return NextResponse.json({ error: 'Dados inválidos', details: inputValidation.errors }, { status: 422 });
     }
 
     // Buscar produto REAL com vendor

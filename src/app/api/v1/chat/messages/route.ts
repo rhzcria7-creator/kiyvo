@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { rateLimit, sanitizeInput } from '@/lib/security'
+import { validateChatMessage } from '@/lib/validation'
 
 function getAdmin() {
   const client = createAdminClient()
@@ -110,12 +111,10 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { conversation_id, content, message_type } = body
 
-    if (!conversation_id || !content) {
-      return NextResponse.json({ error: 'conversation_id e content são obrigatórios' }, { status: 400 })
-    }
-
-    if (String(content).length > 2000) {
-      return NextResponse.json({ error: 'Mensagem muito longa (máximo 2000 caracteres)' }, { status: 400 })
+    // Validação server-side rigorosa
+    const inputValidation = validateChatMessage({ conversation_id, content, message_type })
+    if (!inputValidation.valid) {
+      return NextResponse.json({ error: 'Dados inválidos', details: inputValidation.errors }, { status: 422 })
     }
 
     // Verificar participação na conversa
