@@ -6,7 +6,7 @@ export default function Loading() {
         {/* Animated logo */}
         <div className="relative">
           <div className="w-16 h-16 bg-gradient-to-br from-brand-500 to-brand-700 rounded-2xl flex items-center justify-center animate-pulse">
-            <span className="text-white font-display font-extrabold text-2xl">P</span>
+            <span className="text-white font-display font-extrabold text-2xl">K</span>
           </div>
           <div className="absolute inset-0 w-16 h-16 bg-gradient-to-br from-brand-500 to-brand-700 rounded-2xl animate-ping opacity-20" />
         </div>

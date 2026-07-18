@@ -190,7 +190,7 @@ export function SpinningCoin({ className = 'w-12 h-12' }: { className?: string }
         animate={{ rotateY: [0, 360] }}
         transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
       >
-        <span className="font-display font-extrabold text-amber-900 text-lg">P</span>
+        <span className="font-display font-extrabold text-amber-900 text-lg">K</span>
       </motion.div>
     </motion.div>
   )

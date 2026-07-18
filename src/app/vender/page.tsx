@@ -80,7 +80,7 @@ export default function VenderPage() {
         {/* CTA */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} className="text-center">
           <div className="card-base p-8 bg-gradient-to-br from-brand-600 to-brand-800 text-white border-0">
-            <h2 className="font-display font-extrabold text-2xl">Pronto para começar?</h2>
+            <h2 className="font-display font-extrabold text-2xl">Kronto para começar?</h2>
             <p className="text-brand-100 mt-2">Junte-se a +1M usuários que já confiam na Kiyvo.</p>
             <Link href="/cadastro"><Button size="lg" className="mt-6 bg-white text-brand-600 hover:bg-brand-50">Criar Conta Grátis <ArrowRight size={16} /></Button></Link>
           </div>

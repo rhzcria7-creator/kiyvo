@@ -1,16 +1,10 @@
 // ─────────────────────────────────────────────────────────────
-// API v1 Blog — Posts reais do Supabase
-// Substitui mockBlog por dados reais
+// API v1 Blog — Posts publicados do Supabase
+// Endpoint PÚBLICO — usa client normal (respeita RLS)
 // ─────────────────────────────────────────────────────────────
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/server'
-
-function getAdmin() {
-  const client = createAdminClient()
-  if (!client) throw new Error('Admin client não configurado')
-  return client
-}
+import { createClient } from '@/lib/supabase/server'
 
 /**
  * GET /api/v1/blog?limit=3&slug=xxx
@@ -22,17 +16,13 @@ export async function GET(request: NextRequest) {
     const limit = Math.min(parseInt(searchParams.get('limit') || '10'), 50)
     const slug = searchParams.get('slug')
 
-    const supabase = getAdmin()
+    // Client normal — respeita RLS (só busca is_published=true)
+    const supabase = createClient()
 
-    // Buscar posts — tabela blog_posts pode não existir ainda
     if (slug) {
       const { data, error } = await supabase
         .from('blog_posts')
-        .select(`
-          id, title, slug, excerpt, content, image_url, category,
-          read_time, created_at, is_published,
-          author:profiles!blog_posts_author_id_fkey (id, username, avatar_url)
-        `)
+        .select('id, title, slug, excerpt, content, image_url, category, read_time, created_at, is_published, author:profiles!blog_posts_author_id_fkey(id, username, avatar_url)')
         .eq('slug', slug)
         .eq('is_published', true)
         .single()
@@ -61,14 +51,14 @@ export async function GET(request: NextRequest) {
 
     const { data, error } = await supabase
       .from('blog_posts')
-      .select(`
-        id, title, slug, excerpt, content, image_url, category,
-        read_time, created_at, is_published,
-        author:profiles!blog_posts_author_id_fkey (id, username, avatar_url)
-      `)
+      .select('id, title, slug, excerpt, content, image_url, category, read_time, created_at, is_published, author:profiles!blog_posts_author_id_fkey(id, username, avatar_url)')
       .eq('is_published', true)
       .order('created_at', { ascending: false })
       .limit(limit)
+
+    if (error) {
+      return NextResponse.json({ posts: [] })
+    }
 
     const formatPost = (p: Record<string, unknown>) => {
       const author = (p.author || {}) as Record<string, unknown>
@@ -90,7 +80,6 @@ export async function GET(request: NextRequest) {
     const posts = ((data || []) as Record<string, unknown>[]).map(formatPost)
     return NextResponse.json({ posts })
   } catch {
-    // Tabela pode não existir ainda
     return NextResponse.json({ posts: [] })
   }
 }

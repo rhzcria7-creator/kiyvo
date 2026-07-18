@@ -379,7 +379,7 @@ function CheckoutContent() {
               <h3 className="font-display font-bold text-sm text-surface-900 mb-4">Resumo</h3>
               <div className="flex gap-3 mb-4">
                 {product.image_url ? (
-                  <img src={product.image_url} alt="" className="w-14 h-14 rounded-lg object-cover" />
+                  <img src={product.image_url} alt="Imagem do produto" className="w-14 h-14 rounded-lg object-cover" />
                 ) : (
                   <div className="w-14 h-14 rounded-lg bg-surface-100 flex items-center justify-center">
                     <CreditCard size={20} className="text-surface-300" />

@@ -1,25 +1,27 @@
 // ─────────────────────────────────────────────────────────────
 // KIYVO — Middleware de Segurança Anti-Fraude
-// Proteção contra: copia, inspect, screenshot, bots, XSS, CSRF
-// Rate limiting com fingerprint, detecção de anomalias
+// Proteção contra: bots, XSS, CSRF, rate limiting, hotlink
+// Rate limiting em memória (produção: Redis/Supabase)
+// ⚠️ Sem setInterval — em serverless, cada cold start
+//    reinicia o Map, o que já limpa entradas antigas
 // ─────────────────────────────────────────────────────────────
 
 import { NextRequest, NextResponse } from 'next/server'
 
-// Rate limiting em memória (produção: usar Redis ou Supabase rate_limit_tracking)
+// Rate limiting em memória
 const rateLimits = new Map<string, { count: number; resetAt: number }>()
 const blockedIPs = new Map<string, { reason: string; blockedAt: number }>()
 
-// Limpar rate limits expirados a cada 5 minutos
-setInterval(() => {
+// Limpar rate limits expirados a cada verificação (lazy cleanup)
+function cleanup() {
   const now = Date.now()
   rateLimits.forEach((value, key) => {
     if (value.resetAt < now) rateLimits.delete(key)
   })
   blockedIPs.forEach((value, key) => {
-    if (now - value.blockedAt > 3600000) blockedIPs.delete(key) // Desbloqueia após 1h
+    if (now - value.blockedAt > 3600000) blockedIPs.delete(key)
   })
-}, 300000)
+}
 
 // Paths que precisam de autenticação
 const PROTECTED_PATHS = [
@@ -41,7 +43,7 @@ const PROTECTED_PATHS = [
 // Paths que são só para admins
 const ADMIN_PATHS = ['/admin/']
 
-// IPs suspeitos (pattern de VPN/proxy)
+// Padrões de user-agent suspeitos
 const SUSPICIOUS_PATTERNS = [
   /bot/i, /crawl/i, /spider/i, /scraper/i, /headless/i,
   /selenium/i, /puppeteer/i, /playwright/i, /phantom/i,
@@ -83,7 +85,7 @@ function generateFingerprint(request: NextRequest): string {
     request.headers.get('sec-ch-ua') || '',
     request.headers.get('sec-ch-ua-platform') || '',
   ]
-  // Hash simples (produção: usar crypto.subtle)
+  // Hash simples — produção: usar crypto.subtle
   let hash = 0
   for (const component of components) {
     for (let i = 0; i < component.length; i++) {
@@ -124,6 +126,9 @@ export function middleware(request: NextRequest) {
   const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
   const fingerprint = generateFingerprint(request)
 
+  // Lazy cleanup de entradas expiradas
+  cleanup()
+
   // 1. Bloquear IPs banidos
   if (blockedIPs.has(ip)) {
     return new NextResponse('Acesso bloqueado por violação dos termos de uso.', { status: 403 })
@@ -134,10 +139,9 @@ export function middleware(request: NextRequest) {
     return new NextResponse('Acesso não autorizado.', { status: 403 })
   }
 
-  // 3. Rate limiting global por IP
+  // 3. Rate limiting global por IP (200 req/min)
   const globalLimit = checkRateLimit(`global:${ip}`, 200, 60000)
   if (!globalLimit.allowed) {
-    // Registrar tentativa de abuso
     blockedIPs.set(ip, { reason: 'rate_limit_global', blockedAt: Date.now() })
     return new NextResponse('Muitas requisições. Tente novamente em 1 minuto.', { status: 429 })
   }
@@ -158,7 +162,7 @@ export function middleware(request: NextRequest) {
 
   // 6. Rate limiting para auth (login, cadastro, reset)
   if (pathname.includes('/auth/') || pathname.includes('/login') || pathname.includes('/cadastro')) {
-    const authLimit = checkRateLimit(`auth:${ip}`, 5, 300000) // 5 tentativas em 5 min
+    const authLimit = checkRateLimit(`auth:${ip}`, 5, 300000)
     if (!authLimit.allowed) {
       blockedIPs.set(ip, { reason: 'brute_force_auth', blockedAt: Date.now() })
       return new NextResponse('Muitas tentativas. Conta temporariamente bloqueada.', { status: 429 })
@@ -167,17 +171,14 @@ export function middleware(request: NextRequest) {
 
   // 7. Rate limiting para checkout (anti-fraude)
   if (pathname.startsWith('/api/checkout') || pathname.startsWith('/api/v1/withdraw')) {
-    const checkoutLimit = checkRateLimit(`checkout:${ip}`, 3, 300000) // 3 por 5 min
+    const checkoutLimit = checkRateLimit(`checkout:${ip}`, 3, 300000)
     if (!checkoutLimit.allowed) {
       return NextResponse.json({ error: 'Operação bloqueada por segurança. Tente em 5 minutos.' }, { status: 429 })
     }
   }
 
-  // 8. Proteção de paths admin
-  if (ADMIN_PATHS.some(p => pathname.startsWith(p))) {
-    // Admins são validados pelo RLS do Supabase no server-side
-    // Aqui só adicionamos headers extras
-  }
+  // 8. Proteção de paths admin — admins são validados pelo RLS do Supabase
+  // Middleware adiciona headers extras para admin paths
 
   // 9. Bloquear acesso direto a arquivos do vault
   if (pathname.includes('/digital_inventory') || pathname.includes('/vault/asset')) {
@@ -210,13 +211,6 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public folder files
-     */
     '/((?!_next/static|_next/image|favicon\\.ico|icon-|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }

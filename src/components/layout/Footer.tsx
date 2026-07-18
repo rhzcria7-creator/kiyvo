@@ -30,10 +30,10 @@ export function Footer() {
           <div className="col-span-2 md:col-span-1">
             <Link href="/" className="flex items-center gap-2.5 mb-4">
               <div className="w-8 h-8 bg-gradient-to-br from-brand-400 to-brand-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-display font-extrabold text-sm">P</span>
+                <span className="text-white font-display font-extrabold text-sm">K</span>
               </div>
               <span className="font-display font-extrabold text-xl">
-                Play<span className="text-brand-400">dex</span>
+                Kiy<span className="text-brand-400">vo</span>
               </span>
             </Link>
             <p className="text-surface-400 text-sm leading-relaxed mb-4">

@@ -175,7 +175,7 @@ export default function VendorProfilePage() {
       {/* Banner */}
       <div className={`h-48 bg-gradient-to-r ${level.bgGradient} relative`}>
         {vendor.bannerUrl && (
-          <img src={vendor.bannerUrl} alt="" className="w-full h-full object-cover opacity-30" />
+          <img src={vendor.bannerUrl} alt="Banner da loja" className="w-full h-full object-cover opacity-30" />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950 to-transparent" />
       </div>

@@ -32,10 +32,10 @@ export function Header() {
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2.5 shrink-0">
               <div className="w-8 h-8 bg-gradient-to-br from-brand-500 to-brand-700 rounded-lg flex items-center justify-center">
-                <span className="text-white font-display font-extrabold text-sm">P</span>
+                <span className="text-white font-display font-extrabold text-sm">K</span>
               </div>
               <span className="font-display font-extrabold text-xl text-surface-900 dark:text-white">
-                Play<span className="text-brand-600 dark:text-brand-400">dex</span>
+                Kiy<span className="text-brand-600 dark:text-brand-400">vo</span>
               </span>
             </Link>
 

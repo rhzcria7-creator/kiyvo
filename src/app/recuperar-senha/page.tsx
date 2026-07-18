@@ -31,7 +31,7 @@ function RecoverForm() {
       <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md mx-4">
         <div className="text-center mb-8">
           <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 200 }} className="w-16 h-16 bg-gradient-to-br from-brand-500 to-brand-700 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-glow">
-            <span className="text-white font-display font-extrabold text-2xl">P</span>
+            <span className="text-white font-display font-extrabold text-2xl">K</span>
           </motion.div>
           <h1 className="font-display font-extrabold text-2xl text-surface-900">Recuperar Senha</h1>
           <p className="text-surface-500 text-sm mt-1">Enviaremos um link para redefinir sua senha</p>

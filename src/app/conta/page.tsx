@@ -80,7 +80,7 @@ export default function ContaPage() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-4 mb-8">
           <div className="w-16 h-16 rounded-2xl bg-brand-100 dark:bg-brand-900/50 flex items-center justify-center">
             {profile?.avatar_url ? (
-              <img src={profile.avatar_url} alt="" className="w-full h-full rounded-2xl object-cover" />
+              <img src={profile.avatar_url} alt="Foto do perfil" className="w-full h-full rounded-2xl object-cover" />
             ) : (
               <User size={28} className="text-brand-600 dark:text-brand-400" />
             )}

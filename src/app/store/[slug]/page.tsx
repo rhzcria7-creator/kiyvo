@@ -86,7 +86,7 @@ export default function StorePage() {
     <PageTransition>
       {/* Banner */}
       <div className="relative h-48 md:h-64 bg-gradient-to-r from-brand-600 to-brand-800 overflow-hidden">
-        <img src={vendor.bannerUrl} alt="" className="absolute inset-0 w-full h-full object-cover opacity-30" />
+        <img src={vendor.bannerUrl} alt="Banner da loja" className="absolute inset-0 w-full h-full object-cover opacity-30" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
       </div>
 

@@ -47,7 +47,7 @@ export default function ForgotPasswordPage() {
       >
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-gradient-to-br from-brand-500 to-brand-700 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-glow">
-            <span className="text-white font-display font-extrabold text-2xl">P</span>
+            <span className="text-white font-display font-extrabold text-2xl">K</span>
           </div>
           <h1 className="font-display font-extrabold text-2xl text-surface-900 dark:text-white">Recuperar senha</h1>
           <p className="text-surface-500 dark:text-surface-400 text-sm mt-1">Enviaremos um link para redefinir sua senha</p>

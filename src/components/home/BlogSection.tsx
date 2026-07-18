@@ -97,7 +97,7 @@ export function BlogSection() {
                       />
                     ) : (
                       <div className="w-full h-full bg-gradient-to-br from-brand-200 to-brand-400 dark:from-brand-800 dark:to-brand-600 flex items-center justify-center">
-                        <span className="text-white text-3xl font-display font-bold">P</span>
+                        <span className="text-white text-3xl font-display font-bold">K</span>
                       </div>
                     )}
                   </div>

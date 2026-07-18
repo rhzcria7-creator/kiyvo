@@ -6,7 +6,7 @@ import { Float, MeshDistortMaterial } from '@react-three/drei'
 import * as THREE from 'three'
 
 /* ── Floating gem that represents the Kiyvo "dex/index" concept ── */
-function PlayGem() {
+function KiyvoGem() {
   const meshRef = useRef<THREE.Mesh>(null)
 
   useFrame((state) => {
@@ -105,7 +105,7 @@ export function Hero3D() {
         <directionalLight position={[-3, -3, 2]} intensity={0.4} color="#93C5FD" />
         <pointLight position={[0, 2, 3]} intensity={0.8} color="#2563EB" distance={10} />
 
-        <PlayGem />
+        <KiyvoGem />
         <OrbitRing radius={2.2} speed={0.4} color="#3B82F6" thickness={0.02} />
         <OrbitRing radius={2.8} speed={-0.25} color="#60A5FA" thickness={0.015} />
         <Particles />

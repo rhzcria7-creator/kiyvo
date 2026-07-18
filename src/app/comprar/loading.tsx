@@ -4,7 +4,7 @@ export default function Loading() {
       <div className="flex flex-col items-center gap-4">
         <div className="relative">
           <div className="w-12 h-12 bg-gradient-to-br from-brand-500 to-brand-700 rounded-xl flex items-center justify-center animate-pulse">
-            <span className="text-white font-display font-extrabold text-lg">P</span>
+            <span className="text-white font-display font-extrabold text-lg">K</span>
           </div>
         </div>
         <div className="flex items-center gap-1.5">
