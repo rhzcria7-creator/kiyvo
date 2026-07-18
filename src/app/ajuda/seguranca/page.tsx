@@ -4,7 +4,6 @@ import { motion } from 'framer-motion'
 import { PageTransition } from '@/components/shared/PageTransition'
 import { FadeInOnScroll } from '@/components/animations'
 import { FileText } from 'lucide-react'
-import Link from 'next/link'
 
 export default function Page() {
   return (
@@ -19,26 +18,50 @@ export default function Page() {
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: 'spring', stiffness: 200, delay: 0.2 }}
-            className="w-20 h-20 bg-gradient-to-br from-brand-500 to-brand-700 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-brand-500/30"
+            className="w-20 h-20 bg-gradient-to-br from-brand-500 to-brand-700 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg"
           >
             <FileText size={36} className="text-white" />
           </motion.div>
           <h1 className="font-display font-extrabold text-4xl lg:text-5xl text-surface-900 dark:text-white mb-4">
-            Ajuda com Segurança
+            Seguranca
           </h1>
           <p className="text-lg text-surface-500 dark:text-surface-400 max-w-2xl mx-auto">
-            2FA, anti-fraude, proteção de dados e denúncias
+            Proteção para compradores e vendedores
           </p>
         </motion.div>
 
-        <FadeInOnScroll>
-          <div className="card-base p-8 text-center">
-            <p className="text-surface-500 dark:text-surface-400 mb-4">
-              Conteúdo em construção. Em breve disponível com dados reais do Supabase.
-            </p>
-            <Link href="/buscar" className="btn-primary text-sm inline-block">Explorar Produtos</Link>
-          </div>
-        </FadeInOnScroll>
+        <div className="space-y-4">
+          <FadeInOnScroll delay={0}>
+            <div className="card-base p-6">
+              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">A Kiyvo é segura?</h3>
+              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">Sim. Criptografia TLS/SSL, 2FA, Escrow para pagamentos, verificação KYC e monitoramento anti-fraude 24/7.</p>
+            </div>
+          </FadeInOnScroll>
+          <FadeInOnScroll delay={0.1}>
+            <div className="card-base p-6">
+              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">O que é verificação KYC?</h3>
+              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">Verificação de identidade com CPF, documento com foto e selfie. Vendedores verificados recebem badge de confiança.</p>
+            </div>
+          </FadeInOnScroll>
+          <FadeInOnScroll delay={0.2}>
+            <div className="card-base p-6">
+              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">Como denunciar fraude?</h3>
+              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">Acesse Centro de Segurança → Denunciar, ou abra uma disputa no pedido. Denúncias anônimas são aceitas.</p>
+            </div>
+          </FadeInOnScroll>
+          <FadeInOnScroll delay={0.30000000000000004}>
+            <div className="card-base p-6">
+              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">Como evitar golpes?</h3>
+              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">Só compre de vendedores verificados. Nunca pague fora da plataforma. Confira avaliações antes de comprar.</p>
+            </div>
+          </FadeInOnScroll>
+          <FadeInOnScroll delay={0.4}>
+            <div className="card-base p-6">
+              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">Programa de Integridade</h3>
+              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">Detecta comportamentos suspeitos como vendas duplicadas, preços irreais ou contas falsas. Infratores são banidos.</p>
+            </div>
+          </FadeInOnScroll>
+        </div>
       </div>
     </PageTransition>
   )

@@ -4,7 +4,6 @@ import { motion } from 'framer-motion'
 import { PageTransition } from '@/components/shared/PageTransition'
 import { FadeInOnScroll } from '@/components/animations'
 import { FileText } from 'lucide-react'
-import Link from 'next/link'
 
 export default function Page() {
   return (
@@ -19,26 +18,38 @@ export default function Page() {
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: 'spring', stiffness: 200, delay: 0.2 }}
-            className="w-20 h-20 bg-gradient-to-br from-brand-500 to-brand-700 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-brand-500/30"
+            className="w-20 h-20 bg-gradient-to-br from-brand-500 to-brand-700 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg"
           >
             <FileText size={36} className="text-white" />
           </motion.div>
           <h1 className="font-display font-extrabold text-4xl lg:text-5xl text-surface-900 dark:text-white mb-4">
-            Código de Conduta
+            Codigo Conduta
           </h1>
           <p className="text-lg text-surface-500 dark:text-surface-400 max-w-2xl mx-auto">
-            Regras de comportamento e respeito na comunidade
+            Informações sobre codigo conduta na Kiyvo
           </p>
         </motion.div>
 
-        <FadeInOnScroll>
-          <div className="card-base p-8 text-center">
-            <p className="text-surface-500 dark:text-surface-400 mb-4">
-              Conteúdo em construção. Em breve disponível com dados reais do Supabase.
-            </p>
-            <Link href="/buscar" className="btn-primary text-sm inline-block">Explorar Produtos</Link>
-          </div>
-        </FadeInOnScroll>
+        <div className="space-y-4">
+          <FadeInOnScroll delay={0}>
+            <div className="card-base p-6">
+              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">O que é Codigo Conduta?</h3>
+              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">Na Kiyvo, codigo conduta é uma funcionalidade que permite aos usuários interagir com o marketplace de forma segura e eficiente.</p>
+            </div>
+          </FadeInOnScroll>
+          <FadeInOnScroll delay={0.1}>
+            <div className="card-base p-6">
+              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">Como funciona?</h3>
+              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">Acesse a área de codigo conduta através do menu de navegação. Siga as instruções para configurar ou utilizar os recursos disponíveis.</p>
+            </div>
+          </FadeInOnScroll>
+          <FadeInOnScroll delay={0.2}>
+            <div className="card-base p-6">
+              <h3 className="font-display font-bold text-surface-900 dark:text-white mb-2">Precisa de ajuda?</h3>
+              <p className="text-sm text-surface-600 dark:text-surface-400 leading-relaxed">Se tiver problemas, acesse nossa Central de Ajuda em /ajuda ou entre em contato com o suporte pelo chat 24/7.</p>
+            </div>
+          </FadeInOnScroll>
+        </div>
       </div>
     </PageTransition>
   )
