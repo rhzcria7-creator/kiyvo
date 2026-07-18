@@ -7,6 +7,7 @@
 // ─────────────────────────────────────────────────────────────
 
 import { NextRequest, NextResponse } from 'next/server'
+import { refreshSession } from '@/lib/auth/middleware'
 
 // Rate limiting em memória
 const rateLimits = new Map<string, { count: number; resetAt: number }>()
@@ -126,6 +127,9 @@ export function middleware(request: NextRequest) {
   const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
   const fingerprint = generateFingerprint(request)
 
+  // 0. Refresh de sessão Supabase (garante cookies atualizados)
+  const refreshedResponse = refreshSession(request)
+
   // Lazy cleanup de entradas expiradas
   cleanup()
 
@@ -193,8 +197,8 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  // Continuar com headers de segurança
-  const response = NextResponse.next()
+  // Continuar com headers de segurança (usar response com cookies atualizados)
+  const response = refreshedResponse || NextResponse.next()
 
   // Aplicar todos os headers de segurança
   const securityHeaders = getSecurityHeaders()
