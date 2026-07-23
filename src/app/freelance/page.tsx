@@ -17,8 +17,9 @@ interface Job {
 }
 
 interface Bid {
-  id: string; price: number; days: number; message: string; status: string;
-  created_at: string;
+  id: string; price?: number; valor?: number; days?: number; prazoDias?: number;
+  message?: string; mensagem?: string; status: string;
+  created_at?: string; createdAt?: string;
 }
 
 export default function FreelancePage() {
@@ -273,22 +274,50 @@ export default function FreelancePage() {
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="text-[11px] font-black uppercase tracking-widest text-[#64748B] block mb-1">Sua proposta (R$)</label>
-                      <input type="number" min={5} required value={bidForm.price} onChange={(e) => setBidForm({ ...bidForm, price: e.target.value })}
-                        className="w-full rounded-2xl border border-black/10 dark:border-white/10 bg-white dark:bg-black/20 px-4 py-3 font-bold focus:outline-none focus:border-brand-500" />
+                      <input
+                        type="number"
+                        min={Math.max(30, Math.round(activeJob.orcamentoMin * 0.5))}
+                        max={Math.min(50000, Math.round(activeJob.orcamentoMax * 2))}
+                        step="0.01"
+                        required
+                        value={bidForm.price}
+                        onChange={(e) => setBidForm({ ...bidForm, price: e.target.value })}
+                        className="w-full rounded-2xl border border-black/10 dark:border-white/10 bg-white dark:bg-black/20 px-4 py-3 font-bold focus:outline-none focus:border-brand-500"
+                      />
+                      <p className="text-[10px] text-slate-500 mt-1">
+                        Mín: R$ {Math.max(30, Math.round(activeJob.orcamentoMin * 0.5)).toFixed(2).replace('.', ',')} •
+                        Máx: R$ {Math.min(50000, Math.round(activeJob.orcamentoMax * 2)).toFixed(2).replace('.', ',')}
+                      </p>
                     </div>
                     <div>
                       <label className="text-[11px] font-black uppercase tracking-widest text-[#64748B] block mb-1">Prazo (dias)</label>
-                      <input type="number" min={1} required value={bidForm.days} onChange={(e) => setBidForm({ ...bidForm, days: e.target.value })}
-                        className="w-full rounded-2xl border border-black/10 dark:border-white/10 bg-white dark:bg-black/20 px-4 py-3 font-bold focus:outline-none focus:border-brand-500" />
+                      <input
+                        type="number"
+                        min={1}
+                        max={90}
+                        required
+                        value={bidForm.days}
+                        onChange={(e) => setBidForm({ ...bidForm, days: e.target.value })}
+                        className="w-full rounded-2xl border border-black/10 dark:border-white/10 bg-white dark:bg-black/20 px-4 py-3 font-bold focus:outline-none focus:border-brand-500"
+                      />
                     </div>
                   </div>
                   <div>
-                    <label className="text-[11px] font-black uppercase tracking-widest text-[#64748B] block mb-1">Mensagem</label>
-                    <textarea value={bidForm.message} onChange={(e) => setBidForm({ ...bidForm, message: e.target.value.slice(0, 500) })} rows={4}
-                      placeholder="Explique por que você é o melhor freelancer para esse job..."
-                      className="w-full rounded-2xl border border-black/10 dark:border-white/10 bg-white dark:bg-black/20 px-4 py-3 focus:outline-none focus:border-brand-500 resize-none" />
+                    <label className="text-[11px] font-black uppercase tracking-widest text-[#64748B] block mb-1">Mensagem (mín 15 caracteres)</label>
+                    <textarea
+                      value={bidForm.message}
+                      onChange={(e) => setBidForm({ ...bidForm, message: e.target.value.slice(0, 500) })}
+                      rows={4}
+                      placeholder="Explique por que você é o melhor freelancer para esse job, seu portfólio e como vai entregar..."
+                      className="w-full rounded-2xl border border-black/10 dark:border-white/10 bg-white dark:bg-black/20 px-4 py-3 focus:outline-none focus:border-brand-500 resize-none text-sm"
+                    />
+                    <p className="text-[10px] text-slate-500 mt-1 text-right">{bidForm.message.length}/500</p>
                   </div>
-                  <button type="submit" disabled={bidding} className="w-full rounded-full bg-[#0F172A] text-white font-black py-3.5 text-sm hover:bg-brand-600 disabled:opacity-50 flex items-center justify-center gap-2">
+                  {/* Selos de segurança */}
+                  <div className="flex items-center gap-2 text-[10px] text-slate-500 font-semibold bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 p-2.5 rounded-xl">
+                    🔒 Pagamento por escrow • Você só recebe após entrega
+                  </div>
+                  <button type="submit" disabled={bidding} className="w-full rounded-full bg-[#0F172A] hover:bg-brand-600 dark:bg-white dark:text-black text-white font-black py-3.5 text-sm disabled:opacity-50 flex items-center justify-center gap-2 transition-all shadow-lg">
                     {bidding ? 'Enviando...' : <>Enviar proposta <Send size={14}/></>}
                   </button>
                 </form>
@@ -300,8 +329,11 @@ export default function FreelancePage() {
                       {bids.slice(0, 5).map((b) => (
                         <div key={b.id} className="bg-white dark:bg-white/5 rounded-2xl p-3 flex items-center justify-between">
                           <div>
-                            <p className="text-sm font-bold">{fmtBRL(Number(b.price))}</p>
-                            <p className="text-xs text-[#64748B]">{b.days} dias</p>
+                            <p className="text-sm font-bold">{fmtBRL(Number(b.price ?? b.valor ?? 0))}</p>
+                            <p className="text-xs text-[#64748B]">{b.days ?? b.prazoDias ?? '?'} dias</p>
+                            {(b.message || b.mensagem) && (
+                              <p className="text-[11px] text-slate-500 mt-1 line-clamp-1">{b.message || b.mensagem}</p>
+                            )}
                           </div>
                           <span className="text-[10px] font-black uppercase text-emerald-600 bg-emerald-50 dark:bg-emerald-500/10 px-2 py-1 rounded-full flex items-center gap-1">
                             <CheckCircle2 size={10}/> Enviada
