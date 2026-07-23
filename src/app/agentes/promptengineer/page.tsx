@@ -1,0 +1,17 @@
+'use client'; import { useState } from 'react'; import { Terminal } from 'lucide-react'; import { AgentShell, Field, inputClass, selectClass, textareaClass } from '@/components/agents/AgentShell';
+export default function Page(){const[objetivo,setObjetivo]=useState('');const[contexto,setContexto]=useState('');const[ferramenta,setFerramenta]=useState('chatgpt');const[tom,setTom]=useState('profissional');const[loading,setLoading]=useState(false);const[out,setOut]=useState<any>(null);
+const gerar=async()=>{setLoading(true);try{const r=await fetch('/api/agents/promptengineer',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({objetivo,contexto,ferramenta,tom})});const d=await r.json();if(d.error)return alert(d.error);setOut(d)}catch{alert('Erro')}finally{setLoading(false)}}
+return(<AgentShell titulo="PromptEngineer" tagline="Cria prompts profissionais para ChatGPT/Gemini/Claude/Midjourney/DALL-E" icone={<Terminal className="w-7 h-7"/>} cor="bg-gradient-to-br from-slate-700 to-black" labelBotao="Criar prompt" onGerar={gerar} loading={loading} output={out && (
+<div className="space-y-3">
+<div className="bg-slate-900 text-green-400 rounded-2xl p-4 font-mono text-xs overflow-x-auto"><pre className="whitespace-pre-wrap">{out.prompt}</pre></div>
+{out.systemPrompt && <div><p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">System Prompt</p><div className="bg-slate-50 dark:bg-[#0B0F1A] rounded-xl p-3 text-xs font-mono whitespace-pre-wrap">{out.systemPrompt}</div></div>}
+{out.negativo && <div><p className="text-[10px] font-black uppercase tracking-widest text-red-500 mb-1">Negative Prompt (imagens)</p><div className="bg-red-50 dark:bg-red-900/20 rounded-xl p-3 text-xs font-mono">{out.negativo}</div></div>}
+<button onClick={()=>navigator.clipboard?.writeText(out.prompt)} className="bg-brand-600 text-white rounded-full px-4 py-2 text-xs font-bold">Copiar prompt</button>
+<details className="bg-slate-50 dark:bg-[#0B0F1A] rounded-xl p-3 text-xs"><summary className="font-bold cursor-pointer">Técnicas e variações</summary><p className="mt-2 font-bold">Técnicas:</p><ul>{out.tecnicas.map((t:string,i:number)=><li key={i}>• {t}</li>)}</ul><p className="mt-2 font-bold">Dicas:</p><ul>{out.dicasUso.map((d:string,i:number)=><li key={i}>• {d}</li>)}</ul></details>
+<p className="text-xs">Score: {out.scorePrompt}/100</p>
+</div>)}>
+<Field label="Objetivo"><input className={inputClass} value={objetivo} onChange={e=>setObjetivo(e.target.value)} placeholder="Ex: escrever copy de vendas"/></Field>
+<Field label="Contexto"><textarea className={textareaClass} value={contexto} onChange={e=>setContexto(e.target.value)} placeholder="Detalhes do projeto"/></Field>
+<Field label="Ferramenta IA"><select className={selectClass} value={ferramenta} onChange={e=>setFerramenta(e.target.value)}><option value="chatgpt">ChatGPT/GPT-4</option><option value="gemini">Gemini</option><option value="claude">Claude</option><option value="midjourney">Midjourney</option><option value="dalle">DALL-E 3</option><option value="copiloto">Copiloto GitHub</option></select></Field>
+<Field label="Tom"><select className={selectClass} value={tom} onChange={e=>setTom(e.target.value)}><option value="profissional">Profissional</option><option value="criativo">Criativo</option><option value="tecnico">Técnico</option><option value="vendas">Vendas/copy</option></select></Field>
+</AgentShell>)}

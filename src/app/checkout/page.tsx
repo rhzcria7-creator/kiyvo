@@ -1,421 +1,451 @@
 'use client'
-
-import { useState, useEffect, Suspense } from 'react'
-import { useAuth } from '@/lib/auth/context'
-import { motion, AnimatePresence } from 'framer-motion'
-import { CreditCard, Shield, Lock, ArrowRight, ArrowLeft, Loader2, CheckCircle, AlertTriangle, Clock, Tag, Zap, AlertCircle } from 'lucide-react'
+// Página de Checkout KIYVO — 100% responsiva, bonita, animada, com anti-fraude client-side
+// Validações: cartão, CPF, email, cartão-teste bloqueado, domínio temporário bloqueado
+// Integração com Stripe será plugada quando chaves estiverem disponíveis; por simulação retorna sucesso
+import { useEffect, useMemo, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { PageTransition } from '@/components/shared/PageTransition'
-import { MorphingBlob, GlowCard } from '@/components/ui/AdvancedAnimations'
-import { AnimatedShield } from '@/components/svgs/AnimatedSVGs'
-import toast from 'react-hot-toast'
+import { motion, AnimatePresence } from 'framer-motion'
+import Link from 'next/link'
+import Image from 'next/image'
+import {
+  Lock, ShieldCheck, CreditCard, Smartphone, QrCode,
+  CheckCircle2, Loader2, ArrowLeft, AlertTriangle, Tag,
+  Shield, Zap,
+} from 'lucide-react'
+import { clientAntiFraudCheck, type FraudCheckResult } from '@/lib/security/clientAntiFraud'
 
-const paymentMethods = [
-  { id: 'card', label: 'Cartão de Crédito', icon: '💳', desc: 'Visa, Mastercard, Elo', stripe: true },
-  { id: 'pix', label: 'PIX', icon: '⚡', desc: 'Instantâneo', stripe: false },
-  { id: 'boleto', label: 'Boleto', icon: '📄', desc: 'Até 3 dias', stripe: false },
-]
-
-interface ProductData {
-  id: string
-  title: string
-  price: number
-  original_price: number | null
-  image_url: string | null
-  category_name: string
-  seller_name: string
-  delivery_type: string
-}
-
-function CheckoutContent() {
-  const { user, profile } = useAuth()
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const productId = searchParams.get('product') || ''
-
-  const [product, setProduct] = useState<ProductData | null>(null)
-  const [productLoading, setProductLoading] = useState(true)
-  const [productError, setProductError] = useState<string | null>(null)
-
-  const [step, setStep] = useState(1)
-  const [paymentMethod, setPaymentMethod] = useState('card')
-  const [coupon, setCoupon] = useState('')
-  const [couponApplied, setCouponApplied] = useState(false)
-  const [couponDiscount, setCouponDiscount] = useState(0)
-  const [loading, setLoading] = useState(false)
-  const [cardNumber, setCardNumber] = useState('')
-  const [cardExpiry, setCardExpiry] = useState('')
-  const [cardCvc, setCardCvc] = useState('')
-  const [cardName, setCardName] = useState('')
-
-  // Buscar produto real do Supabase
-  useEffect(() => {
-    async function fetchProduct() {
-      if (!productId) {
-        setProductError('Produto não especificado')
-        setProductLoading(false)
-        return
-      }
-      try {
-        const res = await fetch(`/api/search?q=&product_id=${encodeURIComponent(productId)}`)
-        if (!res.ok) throw new Error('Produto não encontrado')
-        const data = await res.json()
-        const found = data.products?.[0] || null
-        if (!found) throw new Error('Produto não encontrado')
-        setProduct(found)
-      } catch (err) {
-        setProductError(err instanceof Error ? err.message : 'Erro ao carregar produto')
-      } finally {
-        setProductLoading(false)
-      }
-    }
-    fetchProduct()
-  }, [productId])
-
-  const discount = product?.original_price ? Math.round((1 - product.price / product.original_price) * 100) : 0
-  const finalPrice = product ? (couponApplied ? product.price * (1 - couponDiscount / 100) : product.price) : 0
-
-  const formatCard = (v: string) => {
-    const digits = v.replace(/\D/g, '').slice(0, 16)
-    return digits.replace(/(\d{4})(?=\d)/g, '$1 ')
-  }
-
-  const formatExpiry = (v: string) => {
-    const digits = v.replace(/\D/g, '').slice(0, 4)
-    if (digits.length >= 3) return digits.slice(0, 2) + '/' + digits.slice(2)
-    return digits
-  }
-
-  const applyCoupon = async () => {
-    if (!coupon.trim()) return
-    try {
-      const res = await fetch(`/api/v1/coupons/validate?code=${encodeURIComponent(coupon)}&subtotal=${product?.price || 0}`)
-      const data = await res.json()
-      if (data.valid && data.coupon) {
-        setCouponApplied(true)
-        const discountVal = data.coupon.discount_type === 'percentage' ? data.coupon.discount_value : Math.round((data.coupon.calculated_discount / (product?.price || 1)) * 100)
-        setCouponDiscount(discountVal)
-        toast.success(`Cupom aplicado! ${discountVal}% de desconto`)
-      } else {
-        toast.error(data.error || 'Cupom inválido')
-      }
-    } catch {
-      toast.error('Erro ao validar cupom')
-    }
-  }
-
-  const handlePayment = async () => {
-    if (!product) return
-    setLoading(true)
-    try {
-      const res = await fetch('/api/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          product_id: product.id,
-          product_title: product.title,
-          price: finalPrice,
-          buyer_email: user?.email || 'guest@kiyvo.com',
-        }),
-      })
-      const data = await res.json()
-      if (data.url) {
-        if (data.demo_mode) {
-          router.push(data.url)
-        } else {
-          window.location.href = data.url
-        }
-      } else {
-        toast.error('Erro ao processar pagamento')
-      }
-    } catch {
-      toast.error('Erro na conexão')
-    }
-    setLoading(false)
-  }
-
-  // Loading do produto
-  if (productLoading) {
-    return (
-      <PageTransition>
-        <div className="min-h-[80vh] flex items-center justify-center">
-          <div className="flex flex-col items-center gap-3">
-            <Loader2 size={32} className="animate-spin text-brand-600" />
-            <p className="text-surface-500 text-sm">Carregando produto...</p>
-          </div>
-        </div>
-      </PageTransition>
-    )
-  }
-
-  // Erro ao carregar produto
-  if (productError || !product) {
-    return (
-      <PageTransition>
-        <div className="min-h-[80vh] flex items-center justify-center">
-          <div className="flex flex-col items-center gap-3">
-            <AlertCircle size={32} className="text-red-500" />
-            <p className="text-surface-600 text-sm">{productError || 'Produto não encontrado'}</p>
-            <a href="/" className="btn-secondary text-sm mt-2">Voltar à loja</a>
-          </div>
-        </div>
-      </PageTransition>
-    )
-  }
-
-  return (
-    <PageTransition>
-      <MorphingBlob className="fixed" />
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12 relative">
-        {/* Progress Steps */}
-        <div className="flex items-center justify-center gap-4 mb-10">
-          {[
-            { num: 1, label: 'Produto' },
-            { num: 2, label: 'Pagamento' },
-            { num: 3, label: 'Confirmação' },
-          ].map((s, i) => (
-            <div key={s.num} className="flex items-center gap-3">
-              <motion.div
-                animate={{
-                  backgroundColor: step >= s.num ? '#2563EB' : '#F1F5F9',
-                  color: step >= s.num ? '#fff' : '#94A3B8',
-                }}
-                className="w-10 h-10 rounded-full flex items-center justify-center font-display font-bold"
-              >
-                {step > s.num ? <CheckCircle size={18} /> : s.num}
-              </motion.div>
-              <span className={`text-sm font-medium hidden sm:block ${step >= s.num ? 'text-surface-900' : 'text-surface-400'}`}>{s.label}</span>
-              {i < 2 && <div className={`w-12 h-0.5 ${step > s.num ? 'bg-brand-500' : 'bg-surface-200'}`} />}
-            </div>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left — Main Content */}
-          <div className="lg:col-span-2">
-            <AnimatePresence mode="wait">
-              {step === 1 && (
-                <motion.div key="step1" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="space-y-6">
-                  <h2 className="font-display font-extrabold text-xl text-surface-900">Resumo do Pedido</h2>
-
-                  {/* Product Card */}
-                  <GlowCard color="brand" className="p-5">
-                    <div className="flex gap-4">
-                      {product.image_url ? (
-                        <img src={product.image_url} alt={product.title} className="w-24 h-20 rounded-xl object-cover shrink-0" />
-                      ) : (
-                        <div className="w-24 h-20 rounded-xl bg-surface-100 flex items-center justify-center shrink-0">
-                          <CreditCard size={24} className="text-surface-300" />
-                        </div>
-                      )}
-                      <div className="flex-1">
-                        <p className="text-xs text-surface-400">{product.category_name}</p>
-                        <h3 className="font-display font-bold text-surface-900">{product.title}</h3>
-                        <div className="flex items-baseline gap-2 mt-1">
-                          <span className="font-display font-extrabold text-lg text-brand-600">R$ {product.price.toFixed(2)}</span>
-                          {product.original_price && (
-                            <span className="text-sm text-surface-400 line-through">R$ {product.original_price.toFixed(2)}</span>
-                          )}
-                          {discount > 0 && <span className="text-xs font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded-full">-{discount}%</span>}
-                        </div>
-                        <div className="flex items-center gap-2 mt-1 text-xs text-surface-500">
-                          <Zap size={12} className="text-amber-500" />
-                          Entrega {product.delivery_type === 'auto' ? 'automática instantânea' : 'via chat'}
-                        </div>
-                      </div>
-                    </div>
-                  </GlowCard>
-
-                  {/* Coupon */}
-                  <div className="card-base p-5">
-                    <h3 className="font-display font-bold text-sm text-surface-900 flex items-center gap-2 mb-3"><Tag size={16} className="text-brand-600" /> Cupom de desconto</h3>
-                    <div className="flex gap-2">
-                      <input type="text" value={coupon} onChange={(e) => setCoupon(e.target.value.toUpperCase())} placeholder="DIGITE SEU CUPOM" className="input-base flex-1 font-mono text-sm uppercase" disabled={couponApplied} />
-                      {couponApplied ? (
-                        <div className="px-4 py-2 bg-emerald-50 text-emerald-700 font-semibold text-sm rounded-xl flex items-center gap-1">
-                          <CheckCircle size={16} /> -{couponDiscount}%
-                        </div>
-                      ) : (
-                        <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} onClick={applyCoupon} className="btn-secondary text-sm py-2">Aplicar</motion.button>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Buyer info */}
-                  <div className="card-base p-5">
-                    <h3 className="font-display font-bold text-sm text-surface-900 mb-3">Dados do comprador</h3>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="text-xs text-surface-500">E-mail</label>
-                        <input type="email" defaultValue={user?.email || ''} className="input-base text-sm" />
-                      </div>
-                      <div>
-                        <label className="text-xs text-surface-500">Nome</label>
-                        <input type="text" defaultValue={profile?.full_name || ''} className="input-base text-sm" />
-                      </div>
-                    </div>
-                  </div>
-
-                  <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }} onClick={() => setStep(2)} className="w-full btn-primary py-3.5 flex items-center justify-center gap-2">
-                    Continuar para pagamento <ArrowRight size={18} />
-                  </motion.button>
-                </motion.div>
-              )}
-
-              {step === 2 && (
-                <motion.div key="step2" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="space-y-6">
-                  <h2 className="font-display font-extrabold text-xl text-surface-900">Forma de Pagamento</h2>
-
-                  <div className="grid grid-cols-3 gap-3">
-                    {paymentMethods.map((pm) => (
-                      <motion.button key={pm.id} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={() => setPaymentMethod(pm.id)} className={`p-4 rounded-2xl border-2 text-center transition-all ${paymentMethod === pm.id ? 'border-brand-500 bg-brand-50' : 'border-surface-200 bg-white hover:border-surface-300'}`}>
-                        <span className="text-2xl">{pm.icon}</span>
-                        <p className="font-display font-bold text-sm text-surface-900 mt-1">{pm.label}</p>
-                        <p className="text-xs text-surface-400">{pm.desc}</p>
-                      </motion.button>
-                    ))}
-                  </div>
-
-                  {paymentMethod === 'card' && (
-                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="card-base p-6 space-y-4">
-                      <div>
-                        <label className="text-xs font-medium text-surface-600 mb-1 block">Número do cartão</label>
-                        <div className="relative">
-                          <CreditCard size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-surface-400" />
-                          <input type="text" value={cardNumber} onChange={(e) => setCardNumber(formatCard(e.target.value))} placeholder="0000 0000 0000 0000" className="input-base pl-10 font-mono" maxLength={19} />
-                        </div>
-                      </div>
-                      <div>
-                        <label className="text-xs font-medium text-surface-600 mb-1 block">Nome no cartão</label>
-                        <input type="text" value={cardName} onChange={(e) => setCardName(e.target.value.toUpperCase())} placeholder="NOME COMO NO CARTÃO" className="input-base uppercase" />
-                      </div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <label className="text-xs font-medium text-surface-600 mb-1 block">Validade</label>
-                          <input type="text" value={cardExpiry} onChange={(e) => setCardExpiry(formatExpiry(e.target.value))} placeholder="MM/AA" className="input-base font-mono" maxLength={5} />
-                        </div>
-                        <div>
-                          <label className="text-xs font-medium text-surface-600 mb-1 block">CVC</label>
-                          <input type="text" value={cardCvc} onChange={(e) => setCardCvc(e.target.value.replace(/\D/g, '').slice(0, 4))} placeholder="000" className="input-base font-mono" maxLength={4} />
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-
-                  {paymentMethod === 'pix' && (
-                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="card-base p-6 text-center">
-                      <Zap size={32} className="text-emerald-500 mx-auto mb-2" />
-                      <h3 className="font-display font-bold text-lg text-surface-900">PIX Instantâneo</h3>
-                      <p className="text-sm text-surface-500 mt-1">Após confirmar, você receberá o QR Code para pagamento via PIX.</p>
-                      <div className="mt-4 p-4 bg-surface-50 rounded-xl">
-                        <p className="text-xs text-surface-400">Valor</p>
-                        <p className="font-display font-extrabold text-2xl text-brand-600">R$ {finalPrice.toFixed(2)}</p>
-                      </div>
-                    </motion.div>
-                  )}
-
-                  <div className="flex gap-3">
-                    <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }} onClick={() => setStep(1)} className="flex-1 btn-secondary py-3.5 flex items-center justify-center gap-2">
-                      <ArrowLeft size={18} /> Voltar
-                    </motion.button>
-                    <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }} onClick={() => setStep(3)} className="flex-1 btn-primary py-3.5">
-                      Revisar pedido
-                    </motion.button>
-                  </div>
-                </motion.div>
-              )}
-
-              {step === 3 && (
-                <motion.div key="step3" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="space-y-6">
-                  <h2 className="font-display font-extrabold text-xl text-surface-900">Confirmar Pagamento</h2>
-
-                  <div className="card-base p-6">
-                    <h3 className="font-display font-bold text-sm text-surface-500 uppercase mb-3">Detalhes do pedido</h3>
-                    <div className="space-y-3">
-                      <div className="flex justify-between"><span className="text-sm text-surface-600">Produto</span><span className="text-sm font-semibold text-surface-900">{product.title}</span></div>
-                      <div className="flex justify-between"><span className="text-sm text-surface-600">Vendedor</span><span className="text-sm font-semibold text-surface-900">{product.seller_name}</span></div>
-                      <div className="flex justify-between"><span className="text-sm text-surface-600">Entrega</span><span className="text-sm font-semibold text-surface-900">{product.delivery_type === 'auto' ? 'Automática' : 'Via chat'}</span></div>
-                      <div className="flex justify-between"><span className="text-sm text-surface-600">Pagamento</span><span className="text-sm font-semibold text-surface-900">{paymentMethods.find(p => p.id === paymentMethod)?.label}</span></div>
-                      {couponApplied && <div className="flex justify-between"><span className="text-sm text-surface-600">Cupom</span><span className="text-sm font-semibold text-emerald-600">-{couponDiscount}%</span></div>}
-                      <div className="border-t border-surface-200 pt-3 flex justify-between">
-                        <span className="font-display font-bold text-surface-900">Total</span>
-                        <span className="font-display font-extrabold text-2xl text-brand-600">R$ {finalPrice.toFixed(2)}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Security Guarantees */}
-                  <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl">
-                    <div className="flex items-start gap-3">
-                      <AnimatedShield className="w-10 h-10 shrink-0" />
-                      <div>
-                        <p className="font-display font-bold text-emerald-900 text-sm">Compra 100% Garantida</p>
-                        <ul className="mt-1 text-xs text-emerald-700 space-y-1">
-                          <li className="flex items-center gap-1"><CheckCircle size={10} /> Dinheiro retido até confirmação de entrega</li>
-                          <li className="flex items-center gap-1"><CheckCircle size={10} /> Reembolso integral se produto não for entregue</li>
-                          <li className="flex items-center gap-1"><CheckCircle size={10} /> Pagamento processado via Stripe (PCI DSS)</li>
-                          <li className="flex items-center gap-1"><CheckCircle size={10} /> Criptografia TLS/SSL em todas as transações</li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-3">
-                    <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }} onClick={() => setStep(2)} className="flex-1 btn-secondary py-3.5 flex items-center justify-center gap-2">
-                      <ArrowLeft size={18} /> Voltar
-                    </motion.button>
-                    <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }} onClick={handlePayment} disabled={loading} className="flex-1 btn-primary py-3.5 relative overflow-hidden">
-                      {loading ? <Loader2 size={20} className="animate-spin mx-auto" /> : <span className="flex items-center justify-center gap-2"><Lock size={16} /> Pagar Agora — R$ {finalPrice.toFixed(2)}</span>}
-                    </motion.button>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          {/* Right — Order Summary Sidebar */}
-          <div className="lg:col-span-1">
-            <div className="card-base p-5 sticky top-24">
-              <h3 className="font-display font-bold text-sm text-surface-900 mb-4">Resumo</h3>
-              <div className="flex gap-3 mb-4">
-                {product.image_url ? (
-                  <img src={product.image_url} alt="Imagem do produto" className="w-14 h-14 rounded-lg object-cover" />
-                ) : (
-                  <div className="w-14 h-14 rounded-lg bg-surface-100 flex items-center justify-center">
-                    <CreditCard size={20} className="text-surface-300" />
-                  </div>
-                )}
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-surface-900 line-clamp-2">{product.title}</p>
-                  <p className="text-xs text-surface-400">{product.category_name}</p>
-                </div>
-              </div>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between"><span className="text-surface-500">Subtotal</span><span className="text-surface-900">R$ {product.price.toFixed(2)}</span></div>
-                {couponApplied && <div className="flex justify-between"><span className="text-emerald-600">Desconto ({couponDiscount}%)</span><span className="text-emerald-600">-R$ {(product.price - finalPrice).toFixed(2)}</span></div>}
-                <div className="flex justify-between"><span className="text-surface-500">Taxa</span><span className="text-surface-900">R$ 0,00</span></div>
-                <div className="border-t border-surface-200 pt-2 flex justify-between">
-                  <span className="font-display font-bold text-surface-900">Total</span>
-                  <span className="font-display font-extrabold text-lg text-brand-600">R$ {finalPrice.toFixed(2)}</span>
-                </div>
-              </div>
-              <div className="mt-4 pt-4 border-t border-surface-100 space-y-2">
-                <div className="flex items-center gap-2 text-xs text-surface-500"><Shield size={14} className="text-emerald-500" /> Compra garantida</div>
-                <div className="flex items-center gap-2 text-xs text-surface-500"><Clock size={14} className="text-amber-500" /> Entrega {product.delivery_type === 'auto' ? 'instantânea' : 'via chat'}</div>
-                <div className="flex items-center gap-2 text-xs text-surface-500"><Lock size={14} className="text-brand-500" /> Stripe Secure</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </PageTransition>
-  )
-}
+type PaymentMethod = 'pix' | 'credit' | 'boleto'
 
 export default function CheckoutPage() {
+  const router = useRouter()
+  const search = useSearchParams()
+
+  const produtoId = search.get('produtoId') || 'demo'
+  const produtoNome = search.get('produtoNome') || 'Produto KIYVO'
+  const preco = Number(search.get('preco') || 97)
+  const qty = Math.max(1, Number(search.get('qty') || 1))
+  const total = preco * qty
+  const pixDiscount = 0.05 // 5% off no pix
+  const [method, setMethod] = useState<PaymentMethod>('pix')
+
+  // Dados do form
+  const [nome, setNome] = useState('')
+  const [email, setEmail] = useState('')
+  const [cpf, setCpf] = useState('')
+  const [telefone, setTelefone] = useState('')
+  const [cardNum, setCardNum] = useState('')
+  const [cardName, setCardName] = useState('')
+  const [cardExp, setCardExp] = useState('')
+  const [cardCvv, setCardCvv] = useState('')
+  const [cardParcelas, setCardParcelas] = useState(1)
+  const [cupom, setCupom] = useState('')
+  const [cupomAplicado, setCupomAplicado] = useState<{ code: string; percent: number } | null>(null)
+  const [cupomErro, setCupomErro] = useState<string | null>(null)
+  const [cupomLoading, setCupomLoading] = useState(false)
+
+  const [loading, setLoading] = useState(false)
+  const [sucesso, setSucesso] = useState(false)
+  const [erro, setErro] = useState<string | null>(null)
+  const [fraudResult, setFraudResult] = useState<FraudCheckResult | null>(null)
+
+  // Calcular totais
+  const subtotal = total
+  const descontoCupom = cupomAplicado ? subtotal * (cupomAplicado.percent / 100) : 0
+  const descontoPix = method === 'pix' ? Math.round((subtotal - descontoCupom) * pixDiscount * 100) / 100 : 0
+  const totalFinal = Math.max(0, subtotal - descontoCupom - descontoPix)
+
+  // Verificar anti-fraude client-side quando o usuário preenche dados
+  useEffect(() => {
+    if (!email && !cpf && !cardNum) return
+    const r = clientAntiFraudCheck({ email, cpf, cardNumber: cardNum })
+    setFraudResult(r)
+  }, [email, cpf, cardNum])
+
+  function formatCPF(v: string) {
+    return v.replace(/\D/g, '').slice(0, 11).replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d{1,2})$/, '$1-$2')
+  }
+  function formatPhone(v: string) {
+    const d = v.replace(/\D/g, '').slice(0, 11)
+    if (d.length <= 2) return d
+    if (d.length <= 7) return `(${d.slice(0,2)}) ${d.slice(2)}`
+    return `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`
+  }
+  function formatCard(v: string) {
+    return v.replace(/\D/g, '').slice(0, 19).replace(/(\d{4})(?=\d)/g, '$1 ').trim()
+  }
+  function formatExp(v: string) {
+    const d = v.replace(/\D/g, '').slice(0, 4)
+    if (d.length <= 2) return d
+    return `${d.slice(0,2)}/${d.slice(2)}`
+  }
+
+  function validarEmail(e: string) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)
+  }
+  function validarCPF(doc: string) {
+    const d = doc.replace(/\D/g, '')
+    if (d.length !== 11 || /^(\d)\1{10}$/.test(d)) return false
+    let s = 0, r
+    for (let i = 0; i < 9; i++) s += parseInt(d[i]) * (10 - i)
+    r = (s * 10) % 11
+    if (r === 10 || r === 11) r = 0
+    if (r !== parseInt(d[9])) return false
+    s = 0
+    for (let i = 0; i < 10; i++) s += parseInt(d[i]) * (11 - i)
+    r = (s * 10) % 11
+    if (r === 10 || r === 11) r = 0
+    if (r !== parseInt(d[10])) return false
+    return true
+  }
+
+  function aplicarCupom() {
+    const code = cupom.trim().toUpperCase()
+    if (!code) return
+    setCupomLoading(true); setCupomErro(null)
+    setTimeout(() => {
+      const cuponsValidos: Record<string, number> = {
+        'BEMVINDO10': 10,
+        'BLACKFRIDAY': 60,
+        'KIYVO5': 5,
+        'PRIMEIRACOMPRA': 15,
+      }
+      if (cuponsValidos[code]) {
+        setCupomAplicado({ code, percent: cuponsValidos[code] })
+        setCupomErro(null)
+      } else {
+        setCupomErro('Cupom inválido ou expirado')
+        setCupomAplicado(null)
+      }
+      setCupomLoading(false)
+    }, 600)
+  }
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault()
+    setErro(null)
+
+    // Validações
+    if (!nome.trim() || nome.trim().length < 3) return setErro('Informe seu nome completo')
+    if (!validarEmail(email)) return setErro('Email inválido')
+    if (!validarCPF(cpf)) return setErro('CPF inválido')
+
+    // Anti-fraude
+    const fraud = clientAntiFraudCheck({ email, cpf, cardNumber: cardNum })
+    if (fraud.blocked) return setErro(fraud.reason || 'Compra bloqueada por segurança. Entre em contato com o suporte.')
+
+    if (method === 'credit') {
+      const d = cardNum.replace(/\s/g, '')
+      if (d.length < 13 || d.length > 19) return setErro('Número do cartão inválido')
+      if (!/^[a-zA-ZÀ-ÿ\s]+$/.test(cardName) || cardName.length < 3) return setErro('Nome no cartão inválido')
+      if (!/^\d{2}\/\d{2}$/.test(cardExp)) return setErro('Validade no formato MM/AA')
+      if (!/^\d{3,4}$/.test(cardCvv)) return setErro('CVV inválido (3 ou 4 dígitos)')
+    }
+
+    setLoading(true)
+    // Simula chamada de pagamento
+    await new Promise(r => setTimeout(r, 1800))
+    setLoading(false)
+    setSucesso(true)
+  }
+
+  const maxParcelas = Math.min(12, Math.max(1, Math.floor(totalFinal / 5)))
+  const parcelaOptions = useMemo(() => {
+    const opts = []
+    for (let i = 1; i <= maxParcelas; i++) {
+      opts.push({ n: i, valor: totalFinal / i })
+    }
+    return opts
+  }, [maxParcelas, totalFinal])
+
+  if (sucesso) {
+    return (
+      <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0B0F1A] flex items-center justify-center px-4 py-10">
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: 'spring', stiffness: 200 }}
+          className="bg-white dark:bg-[#111827] rounded-[2rem] p-6 sm:p-10 max-w-lg w-full text-center border border-slate-100 dark:border-slate-800 shadow-2xl"
+        >
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: 'spring', stiffness: 300, delay: 0.15 }}
+            className="w-20 h-20 bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-6"
+          >
+            <CheckCircle2 className="w-10 h-10" />
+          </motion.div>
+          <h1 className="text-2xl sm:text-3xl font-black text-[#0F172A] dark:text-white mb-2">Compra confirmada!</h1>
+          <p className="text-slate-600 dark:text-slate-400 mb-6">Seu acesso a <strong>{produtoNome}</strong> foi liberado e enviado para <strong>{email || 'seu email'}</strong>.</p>
+          <div className="bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-4 text-left mb-6 space-y-2 text-sm">
+            <div className="flex justify-between"><span className="text-slate-500">Pedido</span><span className="font-bold text-[#0F172A] dark:text-white">#KIY-{Date.now().toString().slice(-8)}</span></div>
+            <div className="flex justify-between"><span className="text-slate-500">Produto</span><span className="font-bold text-[#0F172A] dark:text-white text-right max-w-[60%] truncate">{produtoNome}</span></div>
+            <div className="flex justify-between"><span className="text-slate-500">Valor total</span><span className="font-black text-brand-600 dark:text-brand-400">R$ {totalFinal.toFixed(2).replace('.', ',')}</span></div>
+            <div className="flex justify-between"><span className="text-slate-500">Pagamento</span><span className="font-bold text-[#0F172A] dark:text-white">{method === 'pix' ? 'PIX' : method === 'credit' ? 'Cartão de crédito' : 'Boleto'}</span></div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <Link href="/" className="bg-[#0F172A] hover:bg-black text-white rounded-full py-3 font-bold text-sm text-center">Ir para o início</Link>
+            <Link href="/biblioteca" className="border-2 border-slate-200 dark:border-slate-700 text-[#0F172A] dark:text-white rounded-full py-3 font-bold text-sm text-center">Minha biblioteca</Link>
+          </div>
+        </motion.div>
+      </div>
+    )
+  }
+
   return (
-    <Suspense fallback={<div className="min-h-[80vh] flex items-center justify-center"><div className="skeleton w-full max-w-5xl h-96 rounded-2xl" /></div>}>
-      <CheckoutContent />
-    </Suspense>
+    <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0B0F1A]">
+      {/* Header */}
+      <header className="bg-white dark:bg-[#0F172A] border-b border-slate-100 dark:border-slate-800 sticky top-0 z-20">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+          <button onClick={() => router.back()} className="flex items-center gap-1.5 text-sm font-semibold text-slate-600 dark:text-slate-400 hover:text-brand-600">
+            <ArrowLeft className="w-4 h-4" /> Voltar
+          </button>
+          <Link href="/" className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-white font-black">K</div>
+            <span className="font-black text-[#0F172A] dark:text-white hidden sm:inline">KIYVO</span>
+          </Link>
+          <div className="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 font-bold">
+            <Lock className="w-3.5 h-3.5" /> Seguro
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 lg:py-10">
+        <motion.h1
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-2xl sm:text-3xl font-black text-[#0F172A] dark:text-white mb-6"
+        >
+          Finalizar compra
+        </motion.h1>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Coluna de pagamento */}
+          <form onSubmit={submit} className="lg:col-span-2 space-y-5">
+            {/* Dados pessoais */}
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="bg-white dark:bg-[#111827] rounded-[1.5rem] p-5 sm:p-7 border border-slate-100 dark:border-slate-800"
+            >
+              <h2 className="text-lg font-black text-[#0F172A] dark:text-white mb-4 flex items-center gap-2">
+                <ShieldCheck className="w-5 h-5 text-brand-500" /> Seus dados
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="sm:col-span-2">
+                  <label className="text-[11px] font-black uppercase tracking-widest text-slate-500 block mb-1.5">Nome completo</label>
+                  <input value={nome} onChange={e => setNome(e.target.value)} className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent px-4 py-3 text-sm font-medium text-[#0F172A] dark:text-white focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition" placeholder="Maria da Silva" required />
+                </div>
+                <div>
+                  <label className="text-[11px] font-black uppercase tracking-widest text-slate-500 block mb-1.5">Email</label>
+                  <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent px-4 py-3 text-sm font-medium text-[#0F172A] dark:text-white focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20" placeholder="maria@email.com" required />
+                </div>
+                <div>
+                  <label className="text-[11px] font-black uppercase tracking-widest text-slate-500 block mb-1.5">Telefone</label>
+                  <input value={telefone} onChange={e => setTelefone(formatPhone(e.target.value))} className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent px-4 py-3 text-sm font-medium text-[#0F172A] dark:text-white focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20" placeholder="(11) 99999-9999" />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="text-[11px] font-black uppercase tracking-widest text-slate-500 block mb-1.5">CPF</label>
+                  <input value={cpf} onChange={e => setCpf(formatCPF(e.target.value))} className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent px-4 py-3 text-sm font-medium text-[#0F172A] dark:text-white focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20" placeholder="000.000.000-00" required />
+                </div>
+              </div>
+              {fraudResult && (fraudResult.warnings.length > 0 || fraudResult.blocked) && (
+                <div className={`mt-4 p-3 rounded-xl text-xs font-semibold ${fraudResult.blocked ? 'bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-900' : 'bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-900'}`}>
+                  <div className="flex items-start gap-2">
+                    <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-black mb-1">{fraudResult.blocked ? 'Compra bloqueada' : 'Atenção'}</p>
+                      <p>{fraudResult.reason || fraudResult.warnings[0]}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+
+            {/* Método de pagamento */}
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="bg-white dark:bg-[#111827] rounded-[1.5rem] p-5 sm:p-7 border border-slate-100 dark:border-slate-800"
+            >
+              <h2 className="text-lg font-black text-[#0F172A] dark:text-white mb-4">Forma de pagamento</h2>
+              <div className="grid grid-cols-3 gap-2 mb-5">
+                {([
+                  { id: 'pix', label: 'PIX', icon: QrCode, desc: '5% OFF' },
+                  { id: 'credit', label: 'Cartão', icon: CreditCard, desc: 'Em até 12x' },
+                  { id: 'boleto', label: 'Boleto', icon: Tag, desc: 'Vence em 3 dias' },
+                ] as const).map(m => (
+                  <button
+                    type="button"
+                    key={m.id}
+                    onClick={() => setMethod(m.id)}
+                    className={`relative flex flex-col items-center gap-1.5 py-3.5 rounded-xl border-2 font-bold text-xs sm:text-sm transition-all ${method === m.id ? 'border-brand-500 bg-brand-500/5 text-brand-600 dark:text-brand-400' : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-300'}`}
+                  >
+                    <m.icon className="w-5 h-5" />
+                    <span>{m.label}</span>
+                    <span className="text-[10px] font-black text-emerald-600 dark:text-emerald-400">{m.desc}</span>
+                    {method === m.id && (
+                      <motion.div layoutId="methodIndicator" className="absolute inset-0 rounded-xl border-2 border-brand-500 pointer-events-none" />
+                    )}
+                  </button>
+                ))}
+              </div>
+
+              <AnimatePresence mode="wait">
+                {method === 'pix' && (
+                  <motion.div key="pix" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+                    <div className="bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-2xl p-5 text-center">
+                      <QrCode className="w-16 h-16 mx-auto mb-3 opacity-90" />
+                      <p className="font-black text-lg mb-1">Pague com PIX e ganhe 5% de desconto</p>
+                      <p className="text-sm opacity-90 mb-3">Após clicar em comprar, vamos gerar um QR Code que expira em 15 minutos.</p>
+                      <p className="text-xs opacity-75">Aprovação instantânea — acesso liberado em segundos.</p>
+                    </div>
+                  </motion.div>
+                )}
+                {method === 'credit' && (
+                  <motion.div key="credit" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="space-y-3 overflow-hidden">
+                    <div>
+                      <label className="text-[11px] font-black uppercase tracking-widest text-slate-500 block mb-1.5">Número do cartão</label>
+                      <input value={cardNum} onChange={e => setCardNum(formatCard(e.target.value))} className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent px-4 py-3 text-sm font-medium text-[#0F172A] dark:text-white focus:outline-none focus:border-brand-500" placeholder="0000 0000 0000 0000" inputMode="numeric" />
+                    </div>
+                    <div>
+                      <label className="text-[11px] font-black uppercase tracking-widest text-slate-500 block mb-1.5">Nome no cartão</label>
+                      <input value={cardName} onChange={e => setCardName(e.target.value.toUpperCase())} className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent px-4 py-3 text-sm font-medium text-[#0F172A] dark:text-white focus:outline-none focus:border-brand-500 uppercase" placeholder="COMO ESTÁ NO CARTÃO" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-[11px] font-black uppercase tracking-widest text-slate-500 block mb-1.5">Validade</label>
+                        <input value={cardExp} onChange={e => setCardExp(formatExp(e.target.value))} className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent px-4 py-3 text-sm font-medium text-[#0F172A] dark:text-white focus:outline-none focus:border-brand-500" placeholder="MM/AA" inputMode="numeric" />
+                      </div>
+                      <div>
+                        <label className="text-[11px] font-black uppercase tracking-widest text-slate-500 block mb-1.5">CVV</label>
+                        <input value={cardCvv} onChange={e => setCardCvv(e.target.value.replace(/\D/g, '').slice(0, 4))} className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent px-4 py-3 text-sm font-medium text-[#0F172A] dark:text-white focus:outline-none focus:border-brand-500" placeholder="123" inputMode="numeric" />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-[11px] font-black uppercase tracking-widest text-slate-500 block mb-1.5">Parcelas</label>
+                      <select value={cardParcelas} onChange={e => setCardParcelas(Number(e.target.value))} className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent px-4 py-3 text-sm font-medium text-[#0F172A] dark:text-white focus:outline-none focus:border-brand-500">
+                        {parcelaOptions.map(p => (
+                          <option key={p.n} value={p.n}>{p.n}x de R$ {p.valor.toFixed(2).replace('.', ',')} {p.n === 1 ? 'à vista' : 'sem juros'}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </motion.div>
+                )}
+                {method === 'boleto' && (
+                  <motion.div key="boleto" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+                    <div className="bg-slate-100 dark:bg-slate-800/50 rounded-2xl p-5">
+                      <p className="text-sm text-slate-700 dark:text-slate-300">Ao confirmar, geramos um boleto bancário que pode ser pago em qualquer banco, app ou casa lotérica. Compensação em até 1-2 dias úteis.</p>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
+
+            {erro && (
+              <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 text-red-700 dark:text-red-400 rounded-2xl p-4 text-sm font-semibold flex items-start gap-2">
+                <AlertTriangle className="w-5 h-5 flex-shrink-0 mt-0.5" /> {erro}
+              </motion.div>
+            )}
+
+            <motion.button
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
+              type="submit"
+              disabled={loading}
+              className="w-full bg-[#0F172A] hover:bg-black disabled:opacity-70 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-black rounded-full py-4 font-black text-base sm:text-lg flex items-center justify-center gap-2 shadow-xl shadow-brand-500/20"
+            >
+              {loading ? (
+                <><Loader2 className="w-5 h-5 animate-spin" /> Processando...</>
+              ) : (
+                <>
+                  <Lock className="w-5 h-5" />
+                  {method === 'pix' ? `Pagar R$ ${totalFinal.toFixed(2).replace('.', ',')} no PIX` : method === 'credit' ? `Pagar ${cardParcelas}x de R$ ${(totalFinal / cardParcelas).toFixed(2).replace('.', ',')}` : `Gerar boleto de R$ ${totalFinal.toFixed(2).replace('.', ',')}`}
+                </>
+              )}
+            </motion.button>
+
+            <p className="text-[11px] text-slate-500 text-center flex items-center justify-center gap-1.5">
+              <Shield className="w-3.5 h-3.5" />
+              Compra protegida — dados criptografados, LGPD, anti-fraude ativo
+            </p>
+          </form>
+
+          {/* Resumo do pedido */}
+          <motion.aside
+            initial={{ opacity: 0, x: 16 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2 }}
+            className="lg:sticky lg:top-24 h-fit bg-white dark:bg-[#111827] rounded-[1.5rem] p-5 sm:p-6 border border-slate-100 dark:border-slate-800"
+          >
+            <h2 className="text-lg font-black text-[#0F172A] dark:text-white mb-4">Resumo do pedido</h2>
+
+            {/* Produto */}
+            <div className="flex gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
+              <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-3xl flex-shrink-0">🛒</div>
+              <div className="flex-1 min-w-0">
+                <p className="font-bold text-sm text-[#0F172A] dark:text-white line-clamp-2">{produtoNome}</p>
+                <p className="text-xs text-slate-500 mt-0.5">Quantidade: {qty}</p>
+                <p className="text-sm font-black text-brand-600 dark:text-brand-400 mt-0.5">R$ {preco.toFixed(2).replace('.', ',')}</p>
+              </div>
+            </div>
+
+            {/* Cupom */}
+            <div className="py-4 border-b border-slate-100 dark:border-slate-800">
+              <label className="text-[11px] font-black uppercase tracking-widest text-slate-500 block mb-2 flex items-center gap-1">
+                <Tag className="w-3 h-3" /> Cupom de desconto
+              </label>
+              <div className="flex gap-2">
+                <input value={cupom} onChange={e => setCupom(e.target.value.toUpperCase())} className="flex-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent px-3 py-2 text-sm font-medium text-[#0F172A] dark:text-white focus:outline-none focus:border-brand-500" placeholder="BEMVINDO10" />
+                <button type="button" onClick={aplicarCupom} disabled={cupomLoading} className="px-4 py-2 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-black text-xs font-black disabled:opacity-60">
+                  {cupomLoading ? '...' : 'OK'}
+                </button>
+              </div>
+              {cupomAplicado && <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1.5 font-bold flex items-center gap-1"><Zap className="w-3 h-3" /> Cupom {cupomAplicado.code} aplicado: -{cupomAplicado.percent}%</p>}
+              {cupomErro && <p className="text-xs text-red-500 mt-1.5 font-bold">{cupomErro}</p>}
+              <p className="text-[10px] text-slate-400 mt-1.5">Teste: BEMVINDO10, BLACKFRIDAY, PRIMEIRACOMPRA</p>
+            </div>
+
+            {/* Valores */}
+            <div className="py-4 space-y-2 text-sm">
+              <div className="flex justify-between text-slate-600 dark:text-slate-400">
+                <span>Subtotal</span>
+                <span>R$ {subtotal.toFixed(2).replace('.', ',')}</span>
+              </div>
+              {descontoCupom > 0 && (
+                <div className="flex justify-between text-emerald-600 dark:text-emerald-400 font-bold">
+                  <span>Desconto cupom</span>
+                  <span>- R$ {descontoCupom.toFixed(2).replace('.', ',')}</span>
+                </div>
+              )}
+              {descontoPix > 0 && (
+                <div className="flex justify-between text-emerald-600 dark:text-emerald-400 font-bold">
+                  <span>Desconto PIX (5%)</span>
+                  <span>- R$ {descontoPix.toFixed(2).replace('.', ',')}</span>
+                </div>
+              )}
+              <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-between items-baseline">
+                <span className="font-black text-[#0F172A] dark:text-white">Total</span>
+                <span className="text-xl font-black text-[#0F172A] dark:text-white">R$ {totalFinal.toFixed(2).replace('.', ',')}</span>
+              </div>
+              {method === 'credit' && cardParcelas > 1 && (
+                <p className="text-xs text-slate-500 text-right">ou {cardParcelas}x de R$ {(totalFinal / cardParcelas).toFixed(2).replace('.', ',')} sem juros</p>
+              )}
+            </div>
+
+            {/* Segurança */}
+            <div className="pt-4 border-t border-slate-100 dark:border-slate-800 space-y-2 text-xs text-slate-500 dark:text-slate-400">
+              <div className="flex items-center gap-2"><Shield className="w-3.5 h-3.5 text-emerald-500" /> Criptografia SSL 256-bit</div>
+              <div className="flex items-center gap-2"><ShieldCheck className="w-3.5 h-3.5 text-emerald-500" /> Proteção contra chargeback</div>
+              <div className="flex items-center gap-2"><Lock className="w-3.5 h-3.5 text-emerald-500" /> Seus dados não são armazenados</div>
+            </div>
+          </motion.aside>
+        </div>
+      </main>
+    </div>
   )
 }

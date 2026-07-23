@@ -96,8 +96,14 @@ export function BlogSection() {
                         sizes="(max-width: 768px) 100vw, 33vw"
                       />
                     ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-brand-200 to-brand-400 dark:from-brand-800 dark:to-brand-600 flex items-center justify-center">
-                        <span className="text-white text-3xl font-display font-bold">K</span>
+                      <div className="w-full h-full bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center">
+                        <svg viewBox="0 0 40 40" className="w-16 h-16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                          <g stroke="#FFFFFF" strokeWidth="3.8" strokeLinecap="round" strokeLinejoin="round">
+                            <line x1="10" y1="9" x2="10" y2="31" />
+                            <line x1="28" y1="10" x2="10" y2="20" />
+                            <line x1="10" y1="20" x2="28" y2="30" />
+                          </g>
+                        </svg>
                       </div>
                     )}
                   </div>

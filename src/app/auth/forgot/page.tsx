@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Mail, ArrowLeft, Loader2, CheckCircle, AlertCircle } from 'lucide-react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import { KiyvoLogo } from '@/components/brand/KiyvoLogo'
+import { toPtBrError } from '@/lib/errors/ptBrMessages'
 import toast from 'react-hot-toast'
 
 export default function ForgotPasswordPage() {
@@ -26,11 +28,9 @@ export default function ForgotPasswordPage() {
     })
 
     if (error) {
-      setError(error.message === 'User not found'
-        ? 'Nenhum conta encontrada com este e-mail'
-        : 'Erro ao enviar e-mail. Tente novamente.'
-      )
-      toast.error('Erro ao enviar e-mail')
+      const pt = toPtBrError(error, 'Recuperação')
+      setError(pt.message)
+      toast.error(pt.title)
     } else {
       setSent(true)
       toast.success('E-mail enviado com sucesso!')
@@ -46,8 +46,8 @@ export default function ForgotPasswordPage() {
         className="w-full max-w-md"
       >
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-gradient-to-br from-brand-500 to-brand-700 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-glow">
-            <span className="text-white font-display font-extrabold text-2xl">K</span>
+          <div className="flex items-center justify-center mx-auto mb-4">
+            <KiyvoLogo variant="full" size="lg" className="text-surface-900 dark:text-white" />
           </div>
           <h1 className="font-display font-extrabold text-2xl text-surface-900 dark:text-white">Recuperar senha</h1>
           <p className="text-surface-500 dark:text-surface-400 text-sm mt-1">Enviaremos um link para redefinir sua senha</p>

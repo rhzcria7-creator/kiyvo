@@ -1,4 +1,5 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
+import dynamic from 'next/dynamic'
 import './globals.css'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
@@ -7,6 +8,11 @@ import { ThemeProvider } from '@/lib/theme/ThemeProvider'
 import { Toaster } from 'react-hot-toast'
 import { ScrollProgress } from '@/components/ui/AdvancedAnimations'
 import { CommandK, CommandKButton } from '@/components/ui/CommandK'
+import ClickSpark from '@/components/ui/ClickSpark'
+import { ReferralProvider } from '@/components/referral/ReferralProvider'
+import { UpdateBanner } from '@/components/layout/UpdateBanner'
+
+const KiyaWidget = dynamic(() => import('@/components/support/KiyaWidget'), { ssr: false })
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://kiyvo.com.br'
 
@@ -62,9 +68,25 @@ export const metadata: Metadata = {
   alternates: {
     canonical: BASE_URL,
   },
+  icons: {
+    icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+    ],
+    apple: '/logo.svg',
+    shortcut: '/favicon.svg',
+  },
   verification: {
     google: 'google-site-verification-code',
   },
+}
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#FFFFFF' },
+    { media: '(prefers-color-scheme: dark)', color: '#0F172A' },
+  ],
+  width: 'device-width',
+  initialScale: 1,
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -74,7 +96,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* Fontes — preload para performance (não bloqueia render) */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
         {/* Structured Data — JSON-LD */}
         <script
           type="application/ld+json"
@@ -101,7 +123,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               '@type': 'Organization',
               name: 'Kiyvo',
               url: BASE_URL,
-              logo: `${BASE_URL}/logo.png`,
+              logo: `${BASE_URL}/logo-full.svg`,
               sameAs: [
                 'https://twitter.com/kiyvo',
                 'https://discord.gg/kiyvo',
@@ -116,13 +138,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
       </head>
-      <body className="min-h-screen flex flex-col">
+      <body className="min-h-screen flex flex-col bg-[#FAFAFA] dark:bg-[#0B0F1A] text-[#0F172A] dark:text-white antialiased selection:bg-brand-600 selection:text-white">
         <ThemeProvider>
           <AuthProvider>
+            <ClickSpark />
             <ScrollProgress />
+            <UpdateBanner />
             <Header />
+            <ReferralProvider />
             <div className="flex-1">{children}</div>
             <Footer />
+            <KiyaWidget />
             <CommandK />
             <CommandKButton />
             <Toaster

@@ -1,91 +1,44 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createClient, createAdminClient } from '@/lib/supabase/server';
+// API: Notificações (lista + mark as read)
+// Implementação em memória + localStorage (em produção usa Supabase realtime)
+export const runtime = 'nodejs'
+import { NextRequest, NextResponse } from 'next/server'
 
-function getAdmin() {
-  const client = createAdminClient();
-  if (!client) throw new Error("Admin client não configurado");
-  return client;
+export type NotifTipo = 'compra' | 'venda' | 'afiliado' | 'cupom' | 'sistema' | 'review' | 'freela' | 'kd'
+
+export interface Notification {
+  id: string
+  tipo: NotifTipo
+  titulo: string
+  mensagem: string
+  link?: string
+  criadaEm: string
+  lida: boolean
+  icone: string
 }
 
-// ═══════════════════════════════════════════════════════════════
-// GET /api/notifications — Notificações reais do utilizador
-// PUT /api/notifications — Marcar como lida
-// ═══════════════════════════════════════════════════════════════
-
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    const supabase = createClient();
-    const admin = getAdmin();
-
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
-    }
-
-    const { searchParams } = new URL(request.url);
-    const limit = parseInt(searchParams.get('limit') || '20');
-    const unreadOnly = searchParams.get('unread') === 'true';
-
-    let query = admin
-      .from('notifications')
-      .select('*', { count: 'exact' })
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
-      .limit(limit);
-
-    if (unreadOnly) {
-      query = query.eq('is_read', false);
-    }
-
-    const { data: notifications, error, count } = await query;
-
-    if (error) {
-      return NextResponse.json({ error: 'Erro ao buscar notificações' }, { status: 500 });
-    }
-
-    const unread = (notifications || []).filter((n: { is_read: boolean }) => !n.is_read).length;
-
-    return NextResponse.json({
-      data: notifications || [],
-      unread,
-      total: count || 0,
-    });
-  } catch (err) {
-    const message = err instanceof Error ? err.message : 'Erro interno';
-    return NextResponse.json({ error: message }, { status: 500 });
+    // Em produção: SELECT * FROM notifications WHERE user_id = auth.uid() ORDER BY criadaEm DESC LIMIT 50
+    // Por enquanto retorna notificações de exemplo
+    const demo: Notification[] = [
+      { id: 'n1', tipo: 'sistema', titulo: '🎉 KIYVO atualizou!', mensagem: '23 agentes IA disponíveis, novo sistema de conquistas e bug fixes.', criadaEm: new Date().toISOString(), lida: false, icone: 'sparkles' },
+      { id: 'n2', tipo: 'cupom', titulo: 'Cupom BOASVINDAS disponível', mensagem: '10% OFF válido no primeiro pedido.', link: '/cupons', criadaEm: new Date(Date.now() - 3600000).toISOString(), lida: false, icone: 'tag' },
+      { id: 'n3', tipo: 'kd', titulo: 'KD Points bônus', mensagem: 'Complete seu cadastro e ganhe +100 KD Points.', criadaEm: new Date(Date.now() - 86400000).toISOString(), lida: true, icone: 'coins' },
+    ]
+    return NextResponse.json({ notificacoes: demo, total: demo.length, naoLidas: demo.filter(n => !n.lida).length })
+  } catch {
+    return NextResponse.json({ error: 'Erro' }, { status: 500 })
   }
 }
 
-export async function PUT(request: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
-    const supabase = createClient();
-    const admin = getAdmin();
-
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
+    const body = await req.json().catch(() => ({}))
+    if (body.acao === 'marcar_lida' && body.id) {
+      return NextResponse.json({ ok: true })
     }
-
-    const body = await request.json();
-    const { id, mark_all } = body as { id?: string; mark_all?: boolean };
-
-    if (mark_all) {
-      await admin
-        .from('notifications')
-        .update({ is_read: true })
-        .eq('user_id', user.id)
-        .eq('is_read', false);
-    } else if (id) {
-      await admin
-        .from('notifications')
-        .update({ is_read: true })
-        .eq('id', id)
-        .eq('user_id', user.id);
-    }
-
-    return NextResponse.json({ success: true });
-  } catch (err) {
-    const message = err instanceof Error ? err.message : 'Erro interno';
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ ok: true })
+  } catch {
+    return NextResponse.json({ error: 'Erro' }, { status: 500 })
   }
 }

@@ -1,0 +1,13 @@
+'use client'; import { useState } from 'react'; import { ListChecks } from 'lucide-react'; import { AgentShell, Field, inputClass, textareaClass } from '@/components/agents/AgentShell';
+export default function Page(){const[produto,setProduto]=useState('');const[nicho,setNicho]=useState('');const[beneficios,setBeneficios]=useState('');const[loading,setLoading]=useState(false);const[out,setOut]=useState<any>(null);
+const gerar=async()=>{setLoading(true);try{const r=await fetch('/api/agents/bulletforge',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({produto,nicho,beneficios:beneficios.split('\n').filter(Boolean)})});const d=await r.json();if(d.error)return alert(d.error);setOut(d)}catch{alert('Erro')}finally{setLoading(false)}}
+return(<AgentShell titulo="BulletForge" tagline="Bullets de fascinação (copy que VENDE) em formato Halbert/Settle" icone={<ListChecks className="w-7 h-7"/>} cor="bg-gradient-to-br from-red-500 to-rose-600" labelBotao="Forjar bullets" onGerar={gerar} loading={loading} output={out && (
+<div className="space-y-3">
+<div className="bg-slate-900 text-white rounded-2xl p-4"><p className="text-[10px] font-black uppercase tracking-widest opacity-70">🏆 Top 5 bullets (alto poder de conversão)</p><ul className="mt-3 space-y-2 text-sm">{out.top5Bullets.map((b:any,i:number)=><li key={i} className="flex gap-2"><span className="text-amber-400 font-black">•</span><span className="flex-1">{b.texto}<span className="block text-[10px] text-white/50 mt-0.5">poder {b.poder}/100 • {b.tipo}</span></span></li>)}</ul></div>
+<details><summary className="font-bold text-sm cursor-pointer">Todos os bullets ({out.bullets.length})</summary><div className="mt-2 space-y-1">{out.bullets.map((b:any,i:number)=><div key={i} className="bg-slate-50 dark:bg-[#0B0F1A] rounded-lg p-2 text-xs"><p>{b.texto}</p><p className="text-[10px] text-slate-400">poder {b.poder}/100 • {b.tipo}</p></div>)}</div></details>
+<div className="bg-amber-50 dark:bg-amber-900/20 rounded-xl p-3 text-xs whitespace-pre-wrap font-sans">{out.dicas}</div>
+</div>)}>
+<Field label="Produto"><input className={inputClass} value={produto} onChange={e=>setProduto(e.target.value)} placeholder="Ex: Método ReelsPro"/></Field>
+<Field label="Nicho"><input className={inputClass} value={nicho} onChange={e=>setNicho(e.target.value)} placeholder="Ex: marketing digital"/></Field>
+<Field label="Benefícios (um por linha)"><textarea className={textareaClass} value={beneficios} onChange={e=>setBeneficios(e.target.value)} placeholder={"Vender mais reels\nEconomizar tempo\nGanhar dinheiro"}/></Field>
+</AgentShell>)}

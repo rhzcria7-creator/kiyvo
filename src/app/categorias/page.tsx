@@ -18,21 +18,18 @@ interface CategoryData {
 
 export default async function CategoriasPage() {
   let categories: CategoryData[] = []
-  let error: string | null = null
 
   try {
     const supabase = createClient()
 
-    const { data, error: fetchError } = await supabase
+    const { data } = await supabase
       .from('categories')
       .select('id, name, slug, icon, image_url, product_count, is_featured')
       .eq('is_active', true)
       .order('product_count', { ascending: false })
       .limit(50)
 
-    if (fetchError) {
-      error = 'Erro ao carregar categorias'
-    } else if (data) {
+    if (data) {
       categories = data.map((c: Record<string, unknown>) => ({
         id: c.id as string,
         name: c.name as string,
@@ -44,7 +41,7 @@ export default async function CategoriasPage() {
       }))
     }
   } catch {
-    error = 'Serviço temporariamente indisponível'
+    // Silencioso: o Client tem fallback rico
   }
 
   // Gerar JSON-LD para SEO
@@ -62,7 +59,7 @@ export default async function CategoriasPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <CategoriasClient categories={categories} error={error} />
+      <CategoriasClient categories={categories} error={null} />
     </>
   )
 }

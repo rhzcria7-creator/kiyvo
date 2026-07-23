@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────
-// Testes — 2FA Backend (TOTP, Backup Codes, Verificação)
+// Testes — 2FA Backend (TOTP, Backup Codes, Encryption AES-256-GCM)
 // ─────────────────────────────────────────────────────────────
 
 import {
@@ -10,6 +10,9 @@ import {
   hashBackupCode,
   encryptTOTPSecret,
   decryptTOTPSecret,
+  decryptTOTPSecretSync,
+  generateTOTPQRDataURL,
+  generateTOTPQRSVG,
 } from '../two-factor'
 
 describe('2FA — TOTP', () => {
@@ -25,7 +28,6 @@ describe('2FA — TOTP', () => {
     it('gera segredos diferentes a cada chamada', () => {
       const secret1 = generateTOTPSecret()
       const secret2 = generateTOTPSecret()
-      // Extremamente improvável de ser igual
       expect(secret1).not.toBe(secret2)
     })
   })
@@ -64,20 +66,16 @@ describe('2FA — TOTP', () => {
 
     it('rejeita código completamente errado', () => {
       const secret = generateTOTPSecret()
-      // Código aleatório tem chance minúscula de acertar
       const results = Array.from({ length: 10 }, () =>
         verifyTOTP(secret, '000000')
       )
-      // Pelo menos 9 de 10 devem falhar
       const failures = results.filter(r => r === false)
       expect(failures.length).toBeGreaterThanOrEqual(9)
     })
 
     it('aceita código válido gerado pelo mesmo segredo', () => {
       const secret = generateTOTPSecret()
-      // Para testar corretamente, precisaríamos gerar o código TOTP
-      // Mas podemos verificar a lógica de janela (window)
-      // Aqui testamos que o mecanismo não crasha
+      // Verifica que o mecanismo não crasha
       expect(() => verifyTOTP(secret, '123456')).not.toThrow()
     })
 
@@ -119,7 +117,6 @@ describe('2FA — Backup Codes', () => {
     it('gera códigos diferentes a cada chamada', () => {
       const codes1 = generateBackupCodes()
       const codes2 = generateBackupCodes()
-      // Pelo menos alguns devem ser diferentes
       const same = codes1.filter((c, i) => c === codes2[i])
       expect(same.length).toBeLessThan(10)
     })
@@ -151,24 +148,90 @@ describe('2FA — Backup Codes', () => {
   })
 })
 
-describe('2FA — Encryption', () => {
+describe('2FA — Encryption (AES-256-GCM real)', () => {
   describe('encryptTOTPSecret / decryptTOTPSecret', () => {
-    it('criptografa e descriptografa corretamente', () => {
+    it('criptografa e descriptografa corretamente (round-trip)', async () => {
       const secret = 'JBSWY3DPEHPK3PXP'
-      const encrypted = encryptTOTPSecret(secret)
-      const decrypted = decryptTOTPSecret(encrypted)
+      const encrypted = await encryptTOTPSecret(secret)
+      expect(typeof encrypted).toBe('string')
+      expect(encrypted.length).toBeGreaterThan(10)
+
+      const decrypted = await decryptTOTPSecret(encrypted)
       expect(decrypted).toBe(secret)
     })
 
-    it('adiciona prefixo enc_v1_', () => {
-      const encrypted = encryptTOTPSecret('test')
-      expect(encrypted).toMatch(/^enc_v1_/)
+    it('usa prefixo enc_v2_ (AES-256-GCM real)', async () => {
+      const encrypted = await encryptTOTPSecret('test-secret')
+      expect(encrypted).toMatch(/^enc_v2_/)
     })
 
-    it('lida com segredo já criptografado', () => {
-      const encrypted = encryptTOTPSecret('secret123')
-      const decrypted = decryptTOTPSecret(encrypted)
-      expect(decrypted).toBe('secret123')
+    it('cifras diferentes para o mesmo segredo (IV aleatório)', async () => {
+      const e1 = await encryptTOTPSecret('same-secret')
+      const e2 = await encryptTOTPSecret('same-secret')
+      expect(e1).not.toBe(e2)
+    })
+
+    it('lida com segredo vazio', async () => {
+      expect(await encryptTOTPSecret('')).toBe('')
+      expect(await decryptTOTPSecret('')).toBe('')
+    })
+
+    it('detecta tampering no ciphertext', async () => {
+      const encrypted = await encryptTOTPSecret('segredo')
+      // Corromper o corpo do payload (depois do prefixo enc_v2_), invertendo vários caracteres
+      // Isso altera a tag GCM garantindo falha na autenticação
+      const prefix = 'enc_v2_'
+      const body = encrypted.slice(prefix.length)
+      // Inverter dois caracteres centrais (garante dano real no tag/ciphertext)
+      const mid = Math.floor(body.length / 2)
+      const tampered = prefix + body.slice(0, mid - 2) + 'XXX' + body.slice(mid + 1)
+      await expect(decryptTOTPSecret(tampered)).rejects.toThrow()
+    })
+
+    it('suporta payload legado enc_v1_ (texto plano)', async () => {
+      const legacy = 'enc_v1_MEUSEGREDO123'
+      const decrypted = await decryptTOTPSecret(legacy)
+      expect(decrypted).toBe('MEUSEGREDO123')
+    })
+
+    it('suporta texto puro (sem prefixo, legado)', async () => {
+      expect(await decryptTOTPSecret('plain-secret')).toBe('plain-secret')
+    })
+  })
+
+  describe('decryptTOTPSecretSync (compatibilidade)', () => {
+    it('funciona para payloads v1 legados', () => {
+      expect(decryptTOTPSecretSync('enc_v1_LEGADO')).toBe('LEGADO')
+    })
+
+    it('funciona para texto puro', () => {
+      expect(decryptTOTPSecretSync('raw')).toBe('raw')
+    })
+
+    it('lança para payloads v2 (requer async)', () => {
+      // Um payload v2 sintético não real (mas reconhecível pelo prefixo)
+      expect(() => decryptTOTPSecretSync('enc_v2_fakepayload')).toThrow(/enc_v2_/)
+    })
+  })
+})
+
+describe('2FA — QR Code generation', () => {
+  describe('generateTOTPQRDataURL', () => {
+    it('gera um data URL PNG válido', async () => {
+      const uri = generateTOTPURI({ secret: 'JBSWY3DPEHPK3PXP', email: 't@t.com' })
+      const dataUrl = await generateTOTPQRDataURL(uri, 128)
+      expect(dataUrl).toMatch(/^data:image\/png;base64,/)
+    })
+  })
+
+  describe('generateTOTPQRSVG', () => {
+    it('gera uma string SVG com <svg> tag', async () => {
+      const uri = generateTOTPURI({ secret: 'JBSWY3DPEHPK3PXP', email: 't@t.com' })
+      const svg = await generateTOTPQRSVG(uri, 128)
+      expect(svg).toMatch(/<svg/)
+      // qrcode gera módulos como <path> ou <rect>; verificamos pelo xmlns e path/rect
+      expect(svg).toContain('xmlns="http://www.w3.org/2000/svg"')
+      expect(svg.length).toBeGreaterThan(100)
     })
   })
 })

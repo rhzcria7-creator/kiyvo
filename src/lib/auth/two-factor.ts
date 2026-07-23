@@ -2,9 +2,79 @@
 // KIYVO — Autenticação de Dois Fatores (2FA) Backend
 // TOTP (Time-based One-Time Password) + Códigos de Backup
 // Compatível com Google Authenticator, Authy, etc.
+// AES-256-GCM real para secrets TOTP (Web Crypto API)
+// QR Code real via biblioteca `qrcode`
 // ─────────────────────────────────────────────────────────────
 
 import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { logger } from '@/lib/observability'
+
+// ─── CONFIGURAÇÃO DE CRIPTOGRAFIA ────────────────────────────
+
+/** Versão do envelope de criptografia */
+const ENC_VERSION_V1 = 'enc_v1_'
+const ENC_VERSION_V2 = 'enc_v2_'
+
+/**
+ * Deriva a chave AES-256-GCM a partir de segredo da aplicação.
+ * Usa HKDF-SHA256 com salt fixo e info de contexto.
+ *
+ * Em produção, TOTP_ENCRYPTION_KEY deve ser uma chave hex de 32 bytes
+ * definida no .env.local. Gerada com: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+ * Se a chave não estiver definida, cai para uma chave derivada do SUPABASE_URL + NEXTAUTH_SECRET
+ * (protege básico mas NÃO é seguro contra atacantes com acesso ao .env — exigir chave explícita em produção).
+ */
+async function getEncryptionKey(): Promise<CryptoKey> {
+  const rawMaterial =
+    process.env.TOTP_ENCRYPTION_KEY ||
+    `${process.env.SUPABASE_SERVICE_ROLE_KEY || ''}:${process.env.NEXTAUTH_SECRET || process.env.NEXT_PUBLIC_SUPABASE_URL || 'kiyvo-dev'}`
+
+  // Se TOTP_ENCRYPTION_KEY for hex de 64 chars (32 bytes), usar direto
+  let keyMaterial: CryptoKey
+  if (/^[0-9a-fA-F]{64}$/.test(rawMaterial)) {
+    const rawBytes = hexToBytes(rawMaterial)
+    keyMaterial = await crypto.subtle.importKey(
+      'raw',
+      toBufferSource(rawBytes),
+      { name: 'AES-GCM' },
+      false,
+      ['encrypt', 'decrypt']
+    )
+    return keyMaterial
+  }
+
+  // Derivar via HKDF de uma senha/material textual
+  const enc = new TextEncoder()
+  const materialCopy = toBufferSource(enc.encode(rawMaterial))
+  const saltBytes = toBufferSource(enc.encode('kiyvo-totp-v2-salt'))
+  const infoBytes = toBufferSource(enc.encode('kiyvo-2fa-aes256gcm-v2'))
+
+  const baseKey = await crypto.subtle.importKey(
+    'raw',
+    materialCopy,
+    { name: 'HKDF' },
+    false,
+    ['deriveKey']
+  )
+  keyMaterial = await crypto.subtle.deriveKey(
+    {
+      name: 'HKDF',
+      hash: 'SHA-256',
+      salt: saltBytes,
+      info: infoBytes,
+    },
+    baseKey,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['encrypt', 'decrypt']
+  )
+
+  if (!process.env.TOTP_ENCRYPTION_KEY) {
+    logger.warn('TOTP_ENCRYPTION_KEY não configurada — usando chave derivada. Defina TOTP_ENCRYPTION_KEY em .env.local para produção.')
+  }
+
+  return keyMaterial
+}
 
 // ─── CONFIGURAÇÃO TOTP ──────────────────────────────────────
 
@@ -340,24 +410,187 @@ export function hashBackupCode(code: string): string {
   return `bk_${Math.abs(hash).toString(36)}`
 }
 
+// ─── CRIPTOGRAFIA AES-256-GCM REAL ───────────────────────────
+
 /**
- * Criptografa o segredo TOTP para armazenamento seguro
- * Em produção: usar AES-256 com chave do KMS
+ * Criptografa o segredo TOTP para armazenamento seguro usando AES-256-GCM.
+ * Formato: enc_v2_<base64(iv:12)><base64(ciphertext+tag:16)>
+ *
+ * O IV é gerado aleatoriamente por operação (12 bytes é o tamanho recomendado para GCM).
+ * A tag de autenticação (16 bytes) é incluída pelo AES-GCM e anexada ao ciphertext.
  */
-export function encryptTOTPSecret(secret: string): string {
-  // Placeholder — em produção usar encryption real
-  // Por enquanto, armazena com prefixo para identificação
-  return `enc_v1_${secret}`
+export async function encryptTOTPSecret(secret: string): Promise<string> {
+  if (!secret) return ''
+  const key = await getEncryptionKey()
+  const enc = new TextEncoder()
+
+  // IV de 12 bytes (96 bits) — recomendado pelo NIST para GCM
+  const iv = new Uint8Array(new ArrayBuffer(12))
+  crypto.getRandomValues(iv)
+
+  const ciphertextBuf = await crypto.subtle.encrypt(
+    { name: 'AES-GCM', iv: toBufferSource(iv), tagLength: 128 },
+    key,
+    toBufferSource(enc.encode(secret))
+  )
+
+  // Formato: iv || ciphertext+tag
+  const ciphertextBytes = new Uint8Array(ciphertextBuf)
+  const combined = new Uint8Array(new ArrayBuffer(iv.length + ciphertextBytes.length))
+  combined.set(new Uint8Array(iv), 0)
+  combined.set(ciphertextBytes, iv.length)
+
+  return `${ENC_VERSION_V2}${bytesToBase64url(combined)}`
 }
 
 /**
- * Descriptografa o segredo TOTP
+ * Descriptografa o segredo TOTP.
+ * Suporta os formatos:
+ *  - enc_v2_<...> (AES-256-GCM real — formato atual)
+ *  - enc_v1_<...> (legado — texto plano com prefixo, lido mas deve ser migrado)
+ *  - texto puro legado (sem prefixo)
  */
-export function decryptTOTPSecret(encrypted: string): string {
-  if (encrypted.startsWith('enc_v1_')) {
-    return encrypted.slice(7)
+export async function decryptTOTPSecret(encrypted: string): Promise<string> {
+  if (!encrypted) return ''
+
+  // V2: AES-GCM real
+  if (encrypted.startsWith(ENC_VERSION_V2)) {
+    const key = await getEncryptionKey()
+    const combined = base64urlToBytes(encrypted.slice(ENC_VERSION_V2.length))
+    if (combined.length <= 12 + 16) {
+      logger.error('decryptTOTPSecret: payload criptografado corrompido ou muito curto')
+      throw new Error('Erro ao descriptografar segredo TOTP')
+    }
+    const iv = combined.slice(0, 12)
+    const ciphertext = combined.slice(12)
+
+    try {
+      const plainBuf = await crypto.subtle.decrypt(
+        { name: 'AES-GCM', iv: toBufferSource(iv), tagLength: 128 },
+        key,
+        toBufferSource(ciphertext)
+      )
+      return new TextDecoder().decode(plainBuf)
+    } catch (err) {
+      logger.error('decryptTOTPSecret: falha na decriptografia (chave ou dados inválidos)', {
+        metadata: { errorMessage: err instanceof Error ? err.message : String(err) },
+      })
+      throw new Error('Não foi possível descriptografar o segredo 2FA. Contate o suporte se o problema persistir.')
+    }
+  }
+
+  // V1: placeholder legado (texto plano)
+  if (encrypted.startsWith(ENC_VERSION_V1)) {
+    logger.warn('Segredo TOTP armazenado em formato legado enc_v1_ (sem criptografia). Migrar para enc_v2_ (AES-256-GCM).')
+    return encrypted.slice(ENC_VERSION_V1.length)
+  }
+
+  // Texto puro (sem prefixo) — legado
+  return encrypted
+}
+
+/**
+ * Síncrono: mantido para compatibilidade com código antigo que chama decryptTOTPSecret sincronamente.
+ * Usa o formato v1 legado (síncrono). Se receber um payload v2, lança — código chamador deve
+ * ser migrado para a versão assíncrona.
+ *
+ * @deprecated Use decryptTOTPSecret (async) — AES-256-GCM é assíncrono por natureza.
+ */
+export function decryptTOTPSecretSync(encrypted: string): string {
+  if (!encrypted) return ''
+  if (encrypted.startsWith(ENC_VERSION_V2)) {
+    throw new Error('decryptTOTPSecretSync não suporta payloads enc_v2_; use decryptTOTPSecret (async)')
+  }
+  if (encrypted.startsWith(ENC_VERSION_V1)) {
+    return encrypted.slice(ENC_VERSION_V1.length)
   }
   return encrypted
+}
+
+// ─── HELPERS DE CODIFICAÇÃO ──────────────────────────────────
+
+/**
+ * Wrapper de tipagem para BufferSource — resolve incompatibilidade
+ * entre os tipos de @types/node e lib.dom.d.ts (ArrayBuffer vs ArrayBufferLike).
+ * Em runtime é um Uint8Array normal, compatível com crypto.subtle.
+ */
+function toBufferSource(bytes: Uint8Array): BufferSource {
+  return bytes as unknown as BufferSource
+}
+
+function hexToBytes(hex: string): Uint8Array {
+  const normalized = hex.length % 2 === 0 ? hex : `0${hex}`
+  const buf = new ArrayBuffer(normalized.length / 2)
+  const bytes = new Uint8Array(buf)
+  for (let i = 0; i < bytes.length; i++) {
+    bytes[i] = parseInt(normalized.substring(i * 2, i * 2 + 2), 16)
+  }
+  return bytes
+}
+
+function bytesToBase64url(bytes: Uint8Array): string {
+  // Conversão segura evitando String.fromCharCode.apply com muitos argumentos
+  let binary = ''
+  const chunk = 8192
+  for (let i = 0; i < bytes.length; i += chunk) {
+    const slice = bytes.subarray(i, i + chunk)
+    binary += String.fromCharCode(...Array.from(slice))
+  }
+  const b64 = btoa(binary)
+  return b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '')
+}
+
+function base64urlToBytes(str: string): Uint8Array {
+  let b64 = str.replace(/-/g, '+').replace(/_/g, '/')
+  while (b64.length % 4) b64 += '='
+  const binary = atob(b64)
+  const buf = new ArrayBuffer(binary.length)
+  const bytes = new Uint8Array(buf)
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i)
+  return bytes
+}
+
+// ─── QR CODE REAL (qrcode npm) ───────────────────────────────
+
+/**
+ * Gera um QR Code como Data URL (data:image/png;base64,...) a partir da URI TOTP.
+ * Usado na tela de setup do 2FA — usuário escaneia com Google Authenticator/Authy/etc.
+ *
+ * NOTA: Usa importação dinâmica pois `qrcode` depende de APIs Node que não devem
+ * ser incluídas em bundles client-side. Esta função só deve ser chamada em Server Components
+ * ou Route Handlers (server-side).
+ */
+export async function generateTOTPQRDataURL(uri: string, size = 256): Promise<string> {
+  // Importação dinâmica para evitar inclusão no bundle client
+  const qrcode = await import('qrcode')
+  const dataUrl = await qrcode.toDataURL(uri, {
+    errorCorrectionLevel: 'M',
+    margin: 2,
+    width: size,
+    color: {
+      dark: '#0F172A', // dark surface (contraste alto)
+      light: '#FFFFFF',
+    },
+  })
+  return dataUrl
+}
+
+/**
+ * Gera QR Code como string SVG (útil para inline em UI, mais leve que PNG).
+ */
+export async function generateTOTPQRSVG(uri: string, size = 256): Promise<string> {
+  const qrcode = await import('qrcode')
+  const svg = await qrcode.toString(uri, {
+    type: 'svg',
+    errorCorrectionLevel: 'M',
+    margin: 2,
+    width: size,
+    color: {
+      dark: '#0F172A',
+      light: '#FFFFFF',
+    },
+  })
+  return svg
 }
 
 // ─── CRYPTO HELPERS ──────────────────────────────────────────
@@ -389,16 +622,17 @@ export async function setupTwoFactor(userId: string, email: string): Promise<Two
   const uri = generateTOTPURI({ secret, email })
   const backupCodes = generateBackupCodes()
 
-  // Armazenar segredo temporariamente (pendente de verificação)
+  // Armazenar segredo criptografado (AES-256-GCM) — pendente de verificação
   // O campo two_factor_enabled continua false até verificação
   const admin = createAdminClient()
   if (admin) {
     const hashedBackupCodes = backupCodes.map(hashBackupCode)
+    const encryptedSecret = await encryptTOTPSecret(secret)
 
     await admin
       .from('profiles')
       .update({
-        two_factor_secret: encryptTOTPSecret(secret),
+        two_factor_secret: encryptedSecret,
         two_factor_backup_codes: hashedBackupCodes,
         two_factor_enabled: false, // Ainda não habilitado
       })
@@ -416,7 +650,6 @@ export async function verifyTOTPSetup(
   userId: string,
   code: string
 ): Promise<{ success: boolean; error: string | null }> {
-  const supabase = createClient()
   const admin = createAdminClient()
 
   if (!admin) {
@@ -444,7 +677,12 @@ export async function verifyTOTPSetup(
     return { success: false, error: 'Setup não iniciado' }
   }
 
-  const secret = decryptTOTPSecret(encryptedSecret)
+  let secret: string
+  try {
+    secret = await decryptTOTPSecret(encryptedSecret)
+  } catch {
+    return { success: false, error: 'Erro ao recuperar o segredo 2FA. Contate o suporte.' }
+  }
   const isValid = verifyTOTP(secret, code)
 
   if (!isValid) {
@@ -500,7 +738,12 @@ export async function verifyTwoFactorLogin(
   // 1. Tentar verificação TOTP
   const encryptedSecret = profileData.two_factor_secret as string | null
   if (encryptedSecret) {
-    const secret = decryptTOTPSecret(encryptedSecret)
+    let secret: string
+    try {
+      secret = await decryptTOTPSecret(encryptedSecret)
+    } catch {
+      return { success: false, error: 'Erro ao recuperar o segredo 2FA. Contate o suporte.' }
+    }
     if (verifyTOTP(secret, code)) {
       await admin.from('audit_log').insert({
         user_id: userId,

@@ -50,11 +50,13 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    if (coupon.expires_at && new Date(coupon.expires_at) < new Date()) {
+    const expires = (coupon as Record<string, unknown>).expires_at ?? (coupon as Record<string, unknown>).valid_until
+    const starts = (coupon as Record<string, unknown>).starts_at ?? (coupon as Record<string, unknown>).valid_from
+    if (expires && new Date(String(expires)) < new Date()) {
       return NextResponse.json({ valid: false, error: 'Cupom expirado' })
     }
 
-    if (coupon.starts_at && new Date(coupon.starts_at) > new Date()) {
+    if (starts && new Date(String(starts)) > new Date()) {
       return NextResponse.json({ valid: false, error: 'Cupom ainda não está disponível' })
     }
 
