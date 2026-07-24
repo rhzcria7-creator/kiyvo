@@ -395,6 +395,7 @@ function seedDatabase(): DB {
   const coupons: CouponRecord[] = [
     { id: simpleId(), code: 'BOASVINDAS', discount_type: 'percentage', discount_value: 5, is_active: true, max_uses: null, used_count: 0, min_order_value: null, expires_at: null, affiliate_code: null, first_purchase_only: true },
     { id: simpleId(), code: 'KIYVO10', discount_type: 'percentage', discount_value: 10, is_active: true, max_uses: null, used_count: 0, min_order_value: 50, expires_at: null, affiliate_code: null, first_purchase_only: false },
+    { id: simpleId(), code: 'PRIMEIRACOMPRA', discount_type: 'percentage', discount_value: 15, is_active: true, max_uses: null, used_count: 0, min_order_value: null, expires_at: null, affiliate_code: null, first_purchase_only: true },
   ]
 
   const db: DB = {

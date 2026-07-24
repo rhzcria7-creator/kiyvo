@@ -139,26 +139,28 @@ export default function CheckoutPage() {
     return true
   }
 
-  function aplicarCupom() {
+  // Valida o cupom contra o serviço real (Supabase em produção, LocalDB em demo).
+  // Assim o desconto é aplicado de verdade, com as regras de validade/minimo/uso.
+  async function aplicarCupom() {
     const code = cupom.trim().toUpperCase()
     if (!code) return
     setCupomLoading(true); setCupomErro(null)
-    setTimeout(() => {
-      const cuponsValidos: Record<string, number> = {
-        'BEMVINDO10': 10,
-        'BLACKFRIDAY': 60,
-        'KIYVO5': 5,
-        'PRIMEIRACOMPRA': 15,
-      }
-      if (cuponsValidos[code]) {
-        setCupomAplicado({ code, percent: cuponsValidos[code] })
+    try {
+      const res = await fetch(`/api/v1/coupons/validate?code=${encodeURIComponent(code)}&subtotal=${subtotal}`)
+      const data = await res.json().catch(() => null)
+      if (data && data.valid && data.coupon) {
+        setCupomAplicado({ code, percent: Number(data.coupon.discount_value) })
         setCupomErro(null)
       } else {
-        setCupomErro('Cupom inválido ou expirado')
+        setCupomErro(data?.error || 'Cupom inválido ou expirado')
         setCupomAplicado(null)
       }
+    } catch {
+      setCupomErro('Erro ao validar cupom. Tente novamente.')
+      setCupomAplicado(null)
+    } finally {
       setCupomLoading(false)
-    }, 600)
+    }
   }
 
   async function submit(e: React.FormEvent) {
@@ -547,7 +549,7 @@ Obrigado por comprar na KIYVO! 🚀
               </div>
               {cupomAplicado && <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1.5 font-bold flex items-center gap-1"><Zap className="w-3 h-3" /> Cupom {cupomAplicado.code} aplicado: -{cupomAplicado.percent}%</p>}
               {cupomErro && <p className="text-xs text-red-500 mt-1.5 font-bold">{cupomErro}</p>}
-              <p className="text-[10px] text-slate-400 mt-1.5">Teste: BEMVINDO10, BLACKFRIDAY, PRIMEIRACOMPRA</p>
+              <p className="text-[10px] text-slate-400 mt-1.5">Teste: BOASVINDAS, KIYVO10, PRIMEIRACOMPRA</p>
             </div>
 
             {/* KD Points */}

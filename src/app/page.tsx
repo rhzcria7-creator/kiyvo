@@ -98,13 +98,13 @@ export default function HomePage() {
         />
 
         <HomeHero />
+        <div className="cv-auto"><HomeDoisPublicos /></div>
+        <div className="cv-auto"><HomeCompradores /></div>
         <div className="cv-auto"><HomeNumeros /></div>
         <div className="cv-auto"><DailyDeals /></div>
         <div className="cv-auto"><TrendingNow /></div>
         <div className="cv-auto"><FeaturedProductsV2 /></div>
         <div className="cv-auto"><HomeCategories /></div>
-        <div className="cv-auto"><HomeCompradores /></div>
-        <div className="cv-auto"><HomeDoisPublicos /></div>
         <div className="cv-auto"><RecentlyViewed /></div>
         <div className="cv-auto"><HomeDiferenciais /></div>
         <div className="cv-auto"><HomeComoFunciona /></div>
