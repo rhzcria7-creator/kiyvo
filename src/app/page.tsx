@@ -98,21 +98,21 @@ export default function HomePage() {
         />
 
         <HomeHero />
-        <HomeNumeros />
-        <DailyDeals />
-        <TrendingNow />
-        <FeaturedProductsV2 />
-        <HomeCategories />
-        <HomeCompradores />
-        <HomeDoisPublicos />
-        <RecentlyViewed />
-        <HomeDiferenciais />
-        <HomeComoFunciona />
-        <HomeParaQuem />
-        <HomeComparativo />
-        <HomeAgentes />
-        <HomeFAQ />
-        <HomeCTA />
+        <div className="cv-auto"><HomeNumeros /></div>
+        <div className="cv-auto"><DailyDeals /></div>
+        <div className="cv-auto"><TrendingNow /></div>
+        <div className="cv-auto"><FeaturedProductsV2 /></div>
+        <div className="cv-auto"><HomeCategories /></div>
+        <div className="cv-auto"><HomeCompradores /></div>
+        <div className="cv-auto"><HomeDoisPublicos /></div>
+        <div className="cv-auto"><RecentlyViewed /></div>
+        <div className="cv-auto"><HomeDiferenciais /></div>
+        <div className="cv-auto"><HomeComoFunciona /></div>
+        <div className="cv-auto"><HomeParaQuem /></div>
+        <div className="cv-auto"><HomeComparativo /></div>
+        <div className="cv-auto"><HomeAgentes /></div>
+        <div className="cv-auto"><HomeFAQ /></div>
+        <div className="cv-auto"><HomeCTA /></div>
       </main>
     </>
   )
