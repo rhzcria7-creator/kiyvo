@@ -2,7 +2,8 @@
 import { NextResponse } from 'next/server'
 
 export async function GET() {
-  return NextResponse.json({
+  try {
+    return NextResponse.json({
     placements: [
       {
         id: 'category',
@@ -30,4 +31,7 @@ export async function GET() {
       },
     ],
   })
+  } catch {
+    return NextResponse.json({ error: 'Erro ao buscar preços' }, { status: 500 })
+  }
 }

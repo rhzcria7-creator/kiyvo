@@ -738,8 +738,8 @@ export function ProductPageClient({ slug, initialProduct }: { slug: string; init
         </div>
       </div>
 
-      {/* Barra flutuante MOBILE de compra (sempre visível no final da tela) */}
-      <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 pb-[env(safe-area-inset-bottom)]">
+      {/* Barra flutuante MOBILE de compra — fica ACIMA da bottom nav (mobile) */}
+      <div className="lg:hidden fixed inset-x-0 z-40 pb-[env(safe-area-inset-bottom)] bottom-[calc(env(safe-area-inset-bottom)+4.5rem)] md:bottom-0">
         <div className="bg-white/95 dark:bg-[#111827]/95 backdrop-blur-xl border-t border-black/10 dark:border-white/10 px-4 py-3 flex items-center gap-3 shadow-[0_-8px_30px_rgba(0,0,0,0.08)]">
           <button
             onClick={() => {

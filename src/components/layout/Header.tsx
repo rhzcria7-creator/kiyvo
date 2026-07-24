@@ -47,6 +47,13 @@ export function Header() {
     }
   }, [profileOpen])
 
+  // Abre o MiniCart quando disparado por outros componentes (bottom nav, toast)
+  useEffect(() => {
+    const onOpenCart = () => setCartOpen(true)
+    window.addEventListener('kiyvo:open-cart', onOpenCart)
+    return () => window.removeEventListener('kiyvo:open-cart', onOpenCart)
+  }, [])
+
   const handleSignOut = async () => {
     try {
       await signOut()
@@ -214,7 +221,7 @@ export function Header() {
             {/* Mobile */}
             <div className="flex items-center gap-1 md:hidden">
               <CommandSearch />
-              <button type="button" onClick={() => setCartOpen(true)} className="relative w-10 h-10 rounded-full flex items-center justify-center text-[#475569] dark:text-white/70" aria-label="Carrinho">
+              <button type="button" onClick={() => setCartOpen(true)} className="relative h-11 w-11 rounded-full flex items-center justify-center text-[#475569] dark:text-white/70" aria-label="Carrinho">
                 <ShoppingBag size={18} />
                 {cartCount > 0 && (
                   <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-brand-600 text-white text-[10px] font-black flex items-center justify-center">
@@ -226,7 +233,7 @@ export function Header() {
               <button
                 type="button"
                 onClick={() => setMobileOpen(!mobileOpen)}
-                className="w-10 h-10 rounded-full flex items-center justify-center text-[#0F172A] dark:text-white hover:bg-black/5 dark:hover:bg-white/10"
+                className="h-11 w-11 rounded-full flex items-center justify-center text-[#0F172A] dark:text-white hover:bg-black/5 dark:hover:bg-white/10"
                 aria-label={mobileOpen ? 'Fechar menu' : 'Abrir menu'}
               >
                 {mobileOpen ? <X size={22} /> : <Menu size={22} />}

@@ -50,7 +50,7 @@ export default function KiyaWidget() {
         animate={{ scale: 1 }}
         transition={{ delay: 1, type: 'spring', stiffness: 260, damping: 18 }}
         onClick={() => setOpen(!open)}
-        className="fixed bottom-5 right-5 z-50 w-14 h-14 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-2xl shadow-emerald-500/40 flex items-center justify-center hover:scale-110 active:scale-95 transition-transform"
+        className="fixed bottom-[calc(env(safe-area-inset-bottom)+5.5rem)] right-5 z-50 w-14 h-14 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-2xl shadow-emerald-500/40 flex items-center justify-center hover:scale-110 active:scale-95 transition-transform md:bottom-5"
         aria-label="Falar com a Kiya"
       >
         <AnimatePresence mode="wait">
@@ -76,7 +76,7 @@ export default function KiyaWidget() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-            className="fixed bottom-24 right-5 z-50 w-[92vw] max-w-sm h-[70vh] max-h-[600px] bg-white dark:bg-[#0F172A] rounded-[2rem] shadow-2xl border border-black/5 dark:border-white/10 overflow-hidden flex flex-col"
+            className="fixed bottom-[calc(env(safe-area-inset-bottom)+9.5rem)] right-5 z-50 w-[92vw] max-w-sm h-[70vh] max-h-[600px] bg-white dark:bg-[#0F172A] rounded-[2rem] shadow-2xl border border-black/5 dark:border-white/10 overflow-hidden flex flex-col md:bottom-24"
           >
             <div className="bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-600 p-4 text-white flex items-center gap-3 relative overflow-hidden">
               <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-white/10" />

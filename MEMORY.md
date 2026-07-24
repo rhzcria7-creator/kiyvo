@@ -942,8 +942,12 @@ export function MeuComponente({ prop1, prop2 }: Props) {
 
 ## Atualizações da Memória
 
-Última atualização desta memória: v12.3.1 (24/07/2026)
-- Adicionadas seções completas de: Performance Mobile, Bugs Conhecidos, Roadmap, Credenciais GitHub App.
-- Documentado Magic Link, KD no checkout, Boost real, DailyDeals, TrendingNow, FlashSaleBar.
-- Reorganização geral do índice e seções.
-- Próxima atualização: após varredura completa de bugs mobile.
+Última atualização desta memória: v12.4 (24/07/2026)
+- **Varredura de bugs críticos (seção 17) — PRIMEIRO LOTE concluído:**
+  - **Performance mobile (crítico #1):** criado `src/hooks/useIsMobile.ts` (detecta <768px via matchMedia, inicia como mobile/leve p/ evitar mismatch de hidratação + sem memory leak). `HomeHero` agora reduz drasticamente em mobile/reduced-motion: blobs 3→1 (mais lento), ParticleField 46→6, Meteors 15→3, Noise desligado. `ClickSpark` agora é ciente de mobile (count 12→6, duration 650→400, sem ripple no mobile).
+  - **Gate de login (#2):** verificado — middleware de walled garden já obriga cookie `kiyvo_session` (setado por `/api/auth/login` LocalDB e Firebase) em `/checkout`, `/conta/*`, `/vendor/*`, `/admin/*`; páginas também têm guards client-side. Nenhuma alteração necessária, apenas conferência.
+  - **Erros de requisição (#3):** as 272 rotas /api já usam try/catch + JSON com status; adicionado try/catch nas 4 rotas que faltavam (`/api/auth/logout`, `/api/auth/me`, `/api/health`, `/api/v1/boost/pricing`).
+  - **Polimento UI mobile (#4):** Header mobile com áreas de toque 44px (h-11 w-11); nova **MobileNavBar** fixa (<md) com Início/Buscar/Categorias/Carrinho/Conta (badge de carrinho + evento `kiyvo:open-cart`); BackToTop/KiyaWidget/CTA fixo da página de produto reposicionados acima da nav; conteúdo com `pb` no mobile.
+  - **Melhorias visíveis (#5):** MobileNavBar + `CartNotifier` (toast "Adicionado ao carrinho 🛒" com CTA "Ver carrinho" que abre o MiniCart via evento global).
+- `KYCProvider` NÃO alterado (nenhum store novo de Zustand criado neste lote).
+- Próxima atualização: após lote 2 (melhorias de catálogo, skeletons, pull-to-refresh, etc.).

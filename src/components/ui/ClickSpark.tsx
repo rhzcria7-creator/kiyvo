@@ -94,12 +94,19 @@ export function ClickSpark({
       }
     }
 
+    function isMobileNow() {
+      return typeof window !== 'undefined' && window.innerWidth < 768
+    }
+
     function spawn(px: number, py: number) {
       const pool = sparksRef.current
       // Limita partículas ativas para não travar
       if (pool.length > 200) pool.splice(0, pool.length - 200)
-      for (let i = 0; i < count; i += 1) {
-        const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.4
+      // Em mobile: metade das faíscas, duração menor e sem ondulação (seção 21 da memória)
+      const effCount = isMobileNow() ? Math.min(count, 6) : count
+      const effDuration = isMobileNow() ? 400 : duration
+      for (let i = 0; i < effCount; i += 1) {
+        const angle = (Math.PI * 2 * i) / effCount + (Math.random() - 0.5) * 0.4
         const spd = speed * (0.4 + Math.random() * 1.1)
         pool.push({
           x: px,
@@ -107,14 +114,14 @@ export function ClickSpark({
           vx: Math.cos(angle) * spd,
           vy: Math.sin(angle) * spd,
           life: 0,
-          maxLife: duration * (0.55 + Math.random() * 0.6),
+          maxLife: effDuration * (0.55 + Math.random() * 0.6),
           color: colors[Math.floor(Math.random() * colors.length)],
           size: size * (0.6 + Math.random() * 0.9),
           rotation: Math.random() * Math.PI * 2,
           rotationSpeed: (Math.random() - 0.5) * 0.25,
         })
       }
-      if (showRipple) {
+      if (showRipple && !isMobileNow()) {
         ripplesRef.current.push({
           x: px,
           y: py,
