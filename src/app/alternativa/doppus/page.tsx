@@ -2,13 +2,13 @@ import type { Metadata } from 'next'
 import { LongTailPage } from '@/components/seo/LongTailPage'
 
 export const metadata: Metadata = {
-  title: 'Alternativa à Doppus em 2026: Taxa 8% Máx (teto R$50) | KIYVO',
-  description: `Procurando alternativa à Doppus? KIYVO cobra no MÁXIMO 8% + R$0,50 (teto de R$50) por venda. Saque PIX em 1 dia útil, 200+ agentes IA gratuitos, plano free sem mensalidade.`,
+  title: 'Alternativa à Doppus em 2026: Taxa 8% Máx (sem teto) | KIYVO',
+  description: `Procurando alternativa à Doppus? KIYVO cobra no MÁXIMO 8% + R$0,50 (sem teto) por venda. Saque PIX em 1 dia útil, 200+ agentes IA gratuitos, plano free sem mensalidade.`,
   keywords: ['alternativa doppus', 'substituta doppus', 'melhor que doppus', 'plataforma produtos digitais brasil', 'taxa menor que doppus'],
   alternates: { canonical: `https://kiyvo.com.br/alternativa/doppus` },
   openGraph: {
     title: `Alternativa à Doppus com taxa JUSTA | KIYVO`,
-    description: 'KIYVO: 8% máximo (teto R$50), saque PIX em 1 dia, 200+ agentes IA.',
+    description: 'KIYVO: 8% máximo (sem teto), saque PIX em 1 dia, 200+ agentes IA.',
     url: `https://kiyvo.com.br/alternativa/doppus`,
     type: 'website',
   },
@@ -24,8 +24,8 @@ const problemas = [
 const diferenciais = [
   {
     "icone": "BadgePercent",
-    "titulo": "8% no MÁXIMO (teto R$50)",
-    "desc": "Independente do preço do seu produto, a KIYVO nunca cobra mais de R$50 por venda. Acima de R$625, você economiza muito."
+    "titulo": "8% + R$0,50 (sem teto)",
+    "desc": "Independente do preço do seu produto, a taxa da KIYVO é 8% + R$0,50, sem teto — sempre a menor do Brasil."
   },
   {
     "icone": "Clock",
@@ -57,7 +57,7 @@ const comparativo = [
   {
     "criterio": "Taxa sobre venda",
     "concorrente": "A partir de 4,99% + R$0,50",
-    "kiyvo": "8% + R$0,50 (teto R$50)"
+    "kiyvo": "8% + R$0,50 (sem teto)"
   },
   {
     "criterio": "Tempo de saque",

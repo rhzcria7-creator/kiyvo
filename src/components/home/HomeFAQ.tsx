@@ -18,7 +18,7 @@ const faqs = [
   },
   {
     q: 'A KIYVO é melhor que Hotmart/Kiwify/Eduzz?',
-    r: 'Cada plataforma tem seus pontos. A KIYVO cobra taxa menor (8% com teto de R$50 contra 10-12% sem teto), tem saque mais rápido, e 200+ agentes de IA inclusos de graça para ajudar você a vender mais. Comparamos abertamente em /transparencia.',
+    r: 'Cada plataforma tem seus pontos. A KIYVO cobra taxa menor (8% com sem teto contra 10-12% sem teto), tem saque mais rápido, e 200+ agentes de IA inclusos de graça para ajudar você a vender mais. Comparamos abertamente em /transparencia.',
   },
   {
     q: 'Preciso ter CNPJ pra vender?',

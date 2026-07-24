@@ -288,6 +288,7 @@ const PUBLIC_PREFIXES = [
   '/tutorial/',   // tutoriais
   '/c/',          // shortlinks de categoria
   '/p/',          // páginas institucionais
+  '/loja/',       // lojas públicas de vendedores (qualquer visitante pode navegar)
   '/v/',          // perfis públicos de vendedor
   '/institucional/',
   '/acordos-juridicos/',
@@ -301,7 +302,8 @@ const PUBLIC_PREFIXES = [
   '/api/health',
   '/api/v1/coupons',
   '/api/v1/boost/pricing',
-  '/api/auth/me',
+  '/api/auth/',   // TODAS as rotas de auth (login, signup, firebase, logout, me) são públicas — senão o próprio login é bloqueado
+  '/api/seller/', // Lojas públicas (qualquer visitante pode ver a loja/seller de um vendedor). O PATCH de perfil exige sessão no próprio handler.
   '/api/agents/', // TODAS as APIs de agentes são públicas (aceitam anônimo com limite, auth tem mais cota)
   // Agentes individuais (cobertos pelo prefixo /api/agents/ — mantidos como comentário/legado)
   '/api/agents/support',
@@ -574,17 +576,18 @@ export function middleware(request: NextRequest) {
     return buildBlockResponse(request, b.reason === 'bot_detected' ? 'bot_detected' : 'banned', wait, isApi)
   }
 
-  // 2. Bots/scrapers são bloqueados em TUDO exceto assets estáticos
-  if (isBotOrScraper(request) && !PUBLIC_EXTENSIONS.test(pathname)) {
-    // Em vez de banir permanente, bloqueia por 25min mas retorna resposta bonita
-    blockedIPs.set(ip, { reason: 'bot_detected', blockedAt: Date.now() })
+  // 2. Bots/scrapers: retorna resposta bonita (sem banir o IP de forma
+  // persistente — isso travaria usuários reais que compartilham IP/rede).
+  // Só aplicamos em PÁGINAS (não em /api) para não bloquear chamadas
+  // legítimas da própria aplicação por falta de User-Agent.
+  if (!isApi && isBotOrScraper(request) && !PUBLIC_EXTENSIONS.test(pathname)) {
     return buildBlockResponse(request, 'bot_detected', 25 * 60, isApi)
   }
 
-  // 3. Rate limit global (aumentado de 200 para 300 req/min para humanos)
-  const globalLimit = checkRateLimit(`global:${ip}`, 300, 60000)
+  // 3. Rate limit global (generoso: 400 req/min para humanos).
+  // NÃO banimos o IP: apenas respondemos 429 nesta requisição.
+  const globalLimit = checkRateLimit(`global:${ip}`, 400, 60000)
   if (!globalLimit.allowed) {
-    blockedIPs.set(ip, { reason: 'rate_limit_global', blockedAt: Date.now() })
     return buildBlockResponse(request, 'rate_limit', 20, isApi)
   }
 
@@ -651,7 +654,7 @@ export function middleware(request: NextRequest) {
   if (isAuthAttempt) {
     const authLimit = checkRateLimit(`auth:${ip}`, 10, 300000)
     if (!authLimit.allowed) {
-      blockedIPs.set(ip, { reason: 'brute_force_auth', blockedAt: Date.now() })
+      // Responde limitado nesta requisição (sem banir IP de forma persistente)
       if (isApi) return buildBlockResponse(request, 'banned', 60, true)
       return NextResponse.redirect(new URL('/erro/limite?code=banned&wait=90', request.url), { status: 307 })
     }

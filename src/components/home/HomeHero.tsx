@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import { GradientText, ShinyButton } from '@/components/ui/ReactBits'
 import { Meteors, FlipWords, SparklesText, BackgroundBeams, Noise } from '@/components/ui/ReactBits2'
+import { useIsMobile, usePrefersReducedMotion } from '@/hooks/useIsMobile'
 
 const ParticleField = dynamic(() => import('@/components/ui/ReactBits').then(m => m.ParticleField), { ssr: false })
 
@@ -29,59 +30,83 @@ export function HomeHero() {
   const y = useTransform(scrollYProgress, [0, 1], [0, -60])
   const opacity = useTransform(scrollYProgress, [0, 0.6], [1, 0])
 
+  // Performance mobile: em telas estreitas ou com reduced-motion,
+  // desliga efeitos pesados (muitas partículas/meteors/blobs).
+  const isMobile = useIsMobile()
+  const reduced = usePrefersReducedMotion()
+  const lightMode = isMobile || reduced
+
   return (
     <section ref={ref} className="relative pt-10 sm:pt-14 md:pt-20 pb-14 md:pb-20 overflow-hidden">
-      {/* Fundo animado com gradientes que se movem */}
-      <motion.div
-        className="absolute inset-0 pointer-events-none"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1 }}
-      >
-        {/* Blobs animados em posições diferentes */}
+        {/* Fundo animado com gradientes que se movem */}
         <motion.div
-          animate={{
-            x: [0, 40, -20, 0],
-            y: [0, -30, 20, 0],
-            scale: [1, 1.1, 0.95, 1],
-          }}
-          transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut' }}
-          className="absolute -top-32 -left-32 w-[500px] h-[500px] rounded-full bg-gradient-to-br from-brand-400/30 to-brand-600/20 blur-3xl"
-        />
-        <motion.div
-          animate={{
-            x: [0, -30, 40, 0],
-            y: [0, 20, -30, 0],
-            scale: [1, 1.05, 1.1, 1],
-          }}
-          transition={{ duration: 22, repeat: Infinity, ease: 'easeInOut' }}
-          className="absolute -top-10 right-0 w-[400px] h-[400px] rounded-full bg-gradient-to-br from-violet-400/25 to-fuchsia-500/15 blur-3xl"
-        />
-        <motion.div
-          animate={{
-            x: [0, 20, -40, 0],
-            y: [0, 30, -20, 0],
-          }}
-          transition={{ duration: 26, repeat: Infinity, ease: 'easeInOut' }}
-          className="absolute bottom-0 left-1/3 w-[450px] h-[450px] rounded-full bg-gradient-to-br from-emerald-400/20 to-teal-500/10 blur-3xl"
-        />
-        {/* Grid sutil */}
-        <div
-          className="absolute inset-0 opacity-[0.04] dark:opacity-[0.08]"
-          style={{
-            backgroundImage:
-              'linear-gradient(#0F172A 1px, transparent 1px), linear-gradient(90deg, #0F172A 1px, transparent 1px)',
-            backgroundSize: '56px 56px',
-            maskImage: 'radial-gradient(ellipse at center, black 30%, transparent 75%)',
-            WebkitMaskImage: 'radial-gradient(ellipse at center, black 30%, transparent 75%)',
-          }}
-        />
-        {/* Partículas flutuantes */}
-        <ParticleField color="#2563EB" count={28} />
-        <ParticleField color="#8B5CF6" count={18} />
-        <Meteors number={15} />
-        <Noise opacity={0.025} />
-      </motion.div>
+          className="absolute inset-0 pointer-events-none"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1 }}
+        >
+          {/* Blobs animados — no mobile/reduced fica APENAS 1 (mais lento)
+              para não sobrecarregar a GPU de celulares de entrada. */}
+          {lightMode ? (
+            <motion.div
+              animate={{ x: [0, 18, -10, 0], y: [0, -14, 10, 0], scale: [1, 1.04, 0.98, 1] }}
+              transition={{ duration: 30, repeat: Infinity, ease: 'easeInOut' }}
+              className="absolute -top-32 -left-32 w-[320px] h-[320px] rounded-full bg-gradient-to-br from-brand-400/22 to-brand-600/12 blur-2xl"
+            />
+          ) : (
+            <>
+              <motion.div
+                animate={{
+                  x: [0, 40, -20, 0],
+                  y: [0, -30, 20, 0],
+                  scale: [1, 1.1, 0.95, 1],
+                }}
+                transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut' }}
+                className="absolute -top-32 -left-32 w-[500px] h-[500px] rounded-full bg-gradient-to-br from-brand-400/30 to-brand-600/20 blur-3xl"
+              />
+              <motion.div
+                animate={{
+                  x: [0, -30, 40, 0],
+                  y: [0, 20, -30, 0],
+                  scale: [1, 1.05, 1.1, 1],
+                }}
+                transition={{ duration: 22, repeat: Infinity, ease: 'easeInOut' }}
+                className="absolute -top-10 right-0 w-[400px] h-[400px] rounded-full bg-gradient-to-br from-violet-400/25 to-fuchsia-500/15 blur-3xl"
+              />
+              <motion.div
+                animate={{
+                  x: [0, 20, -40, 0],
+                  y: [0, 30, -20, 0],
+                }}
+                transition={{ duration: 26, repeat: Infinity, ease: 'easeInOut' }}
+                className="absolute bottom-0 left-1/3 w-[450px] h-[450px] rounded-full bg-gradient-to-br from-emerald-400/20 to-teal-500/10 blur-3xl"
+              />
+            </>
+          )}
+          {/* Grid sutil */}
+          <div
+            className="absolute inset-0 opacity-[0.04] dark:opacity-[0.08]"
+            style={{
+              backgroundImage:
+                'linear-gradient(#0F172A 1px, transparent 1px), linear-gradient(90deg, #0F172A 1px, transparent 1px)',
+              backgroundSize: '56px 56px',
+              maskImage: 'radial-gradient(ellipse at center, black 30%, transparent 75%)',
+              WebkitMaskImage: 'radial-gradient(ellipse at center, black 30%, transparent 75%)',
+            }}
+          />
+          {/* Partículas flutuantes — drasticamente reduzidas no mobile
+              (máx. 6 em vez de 46). */}
+          {lightMode ? (
+            <ParticleField color="#2563EB" count={6} />
+          ) : (
+            <>
+              <ParticleField color="#2563EB" count={28} />
+              <ParticleField color="#8B5CF6" count={18} />
+            </>
+          )}
+          {lightMode ? <Meteors number={3} /> : <Meteors number={15} />}
+          {!reduced && <Noise opacity={0.025} />}
+        </motion.div>
 
       <motion.div style={{ y, opacity }} className="relative max-w-6xl mx-auto px-5 md:px-8">
         <motion.div
@@ -106,7 +131,7 @@ export function HomeHero() {
               <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
             </span>
             <TrendingDown className="w-3.5 h-3.5" />
-            Taxa mais justa do Brasil — 8% com teto de R$50
+            Taxa mais justa do Brasil — 8% com sem teto
           </motion.div>
 
           {/* H1 principal — animação letra a letra */}

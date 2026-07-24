@@ -44,6 +44,7 @@ interface ProductDetail {
   category?: string
   vendedor_nome?: string
   vendor?: { store_name?: string; nome?: string }
+  vendor_handle?: string
   imagem_capa?: string | null
   imageUrl?: string | null
   gradient?: string
@@ -276,6 +277,12 @@ export function ProductPageClient({ slug, initialProduct }: { slug: string; init
       },
     })
   }
+
+  const sellerHandle = product.vendor_handle || (() => {
+    const store = STORES.find((s) => s.name === product.vendedor_nome)
+    return store ? store.handle.replace('@', '') : null
+  })()
+  const sellerInitial = (product.vendedor_nome || 'V').charAt(0).toUpperCase()
 
   return (
     <>
@@ -700,29 +707,44 @@ export function ProductPageClient({ slug, initialProduct }: { slug: string; init
               <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
                 <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">Vendido por</p>
                 <div className="flex items-center gap-2.5">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 text-white font-black flex items-center justify-center">
-                    {(product.vendedor_nome || 'V').charAt(0).toUpperCase()}
-                  </div>
-                  <div>
-                    <p className="font-bold text-sm text-[#0F172A] dark:text-white">{product.vendedor_nome}</p>
-                    <div className="flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">
-                      <CheckCircle2 className="w-3 h-3" /> Verificado
-                    </div>
-                  </div>
-                  {(() => {
-                    const store = STORES.find(s => s.name === product.vendedor_nome)
-                    const handle = store ? store.handle.replace('@', '') : null
-                    if (!handle) return <div className="ml-auto" />
-                    return (
-                      <Link href={`/loja/${handle}`} className="ml-auto text-xs font-bold text-brand-600 dark:text-brand-400 hover:underline flex items-center gap-0.5 bg-brand-50 dark:bg-brand-950/30 px-3 py-1.5 rounded-full transition hover:bg-brand-100 dark:hover:bg-brand-900/40">
-                        <ExternalLink className="w-3 h-3" /> Ver loja
-                      </Link>
-                    )
-                  })()}
+                  {sellerHandle ? (
+                    <Link href={`/loja/${sellerHandle}`} onClick={(e) => e.stopPropagation()} className="flex items-center gap-2.5 group">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 text-white font-black flex items-center justify-center">
+                        {sellerInitial}
+                      </div>
+                      <div>
+                        <p className="font-bold text-sm text-[#0F172A] dark:text-white">@{product.vendedor_nome}</p>
+                        <div className="flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">
+                          <CheckCircle2 className="w-3 h-3" /> Verificado
+                        </div>
+                      </div>
+                    </Link>
+                  ) : (
+                    <>
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 text-white font-black flex items-center justify-center">
+                        {sellerInitial}
+                      </div>
+                      <div>
+                        <p className="font-bold text-sm text-[#0F172A] dark:text-white">{product.vendedor_nome}</p>
+                        <div className="flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">
+                          <CheckCircle2 className="w-3 h-3" /> Verificado
+                        </div>
+                      </div>
+                    </>
+                  )}
+                  {sellerHandle && (
+                    <Link
+                      href={`/loja/${sellerHandle}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="ml-auto text-xs font-bold text-brand-600 dark:text-brand-400 hover:underline flex items-center gap-0.5 bg-brand-50 dark:bg-brand-950/30 px-3 py-1.5 rounded-full transition hover:bg-brand-100 dark:hover:bg-brand-900/40"
+                    >
+                      <ExternalLink className="w-3 h-3" /> Ver loja
+                    </Link>
+                  )}
                 </div>
               </div>
 
-              {/* Formas de pagamento */}
+                            {/* Formas de pagamento */}
               <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
                 <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2 flex items-center gap-1">
                   <CreditCard className="w-3 h-3" /> Formas de pagamento
@@ -738,8 +760,8 @@ export function ProductPageClient({ slug, initialProduct }: { slug: string; init
         </div>
       </div>
 
-      {/* Barra flutuante MOBILE de compra (sempre visível no final da tela) */}
-      <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 pb-[env(safe-area-inset-bottom)]">
+      {/* Barra flutuante MOBILE de compra — fica ACIMA da bottom nav (mobile) */}
+      <div className="lg:hidden fixed inset-x-0 z-40 pb-[env(safe-area-inset-bottom)] bottom-[calc(env(safe-area-inset-bottom)+4.5rem)] md:bottom-0">
         <div className="bg-white/95 dark:bg-[#111827]/95 backdrop-blur-xl border-t border-black/10 dark:border-white/10 px-4 py-3 flex items-center gap-3 shadow-[0_-8px_30px_rgba(0,0,0,0.08)]">
           <button
             onClick={() => {

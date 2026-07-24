@@ -123,7 +123,7 @@ export function hermesReply(userMsg: string, historico: { de: 'user'|'hermes'; t
 
   if (intent === 'taxa') {
     return {
-      texto: `Taxas KIYVO (cobramos só quando você vende, zero mensalidade):\n\n🆓 Free: 8% + R$0,50 por venda (teto R$50)\n➕ Plus: 6,5% + R$0,40 (teto R$40)\n⭐ Pro: 5% + R$0,30 (teto R$30)\n💎 Vendor Pro: 3% + R$0,20 (teto R$20) + 5k vendas com taxa ZERO.\nNovos vendedores: 0% nas primeiras 5.000 vendas! Saque: mínimo R$30, taxa fixa R$0,99, PIX em 1 dia útil, saldo após 7 dias.`,
+      texto: `Taxas KIYVO (cobramos só quando você vende, zero mensalidade):\n\n🆓 Free: 8% + R$0,50 por venda (sem teto)\n➕ Plus: 6,5% + R$0,40 (teto R$40)\n⭐ Pro: 5% + R$0,30 (teto R$30)\n💎 Vendor Pro: 3% + R$0,20 (teto R$20) + 5k vendas com taxa ZERO.\nNovos vendedores: 0% nas primeiras 5.000 vendas! Saque: mínimo R$30, taxa fixa R$0,99, PIX em 1 dia útil, saldo após 7 dias.`,
       intent, confianca: 0.98,
       acoes: [{ label: 'Comparar planos', href: '/planos', icon: '📊' }]
     }

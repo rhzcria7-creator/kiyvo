@@ -25,7 +25,7 @@ const iconMap: Record<string, any> = {
 export function LongTailPage({
   titulo, subtitulo, concorrente = 'concorrência', concorrenteTaxa = 'taxas altas',
   concorrenteProblemas = [], kiyvoDiferenciais = [], comparativo = [], faq = [],
-  cta = { titulo: 'Começe a vender na KIYVO hoje', subtitulo: 'Taxa de 8% máxima (teto R$50), saque em 1 dia, e mais de 180 agentes IA para vender mais.', botao: 'Criar conta grátis', href: '/cadastro' },
+  cta = { titulo: 'Começe a vender na KIYVO hoje', subtitulo: 'Taxa de 8% máxima (sem teto), saque em 1 dia, e mais de 180 agentes IA para vender mais.', botao: 'Criar conta grátis', href: '/cadastro' },
   tags = [],
 }: LongTailProps) {
   return (

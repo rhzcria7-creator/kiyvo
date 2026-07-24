@@ -19,6 +19,7 @@ export interface Product {
   vendedor_nome?: string
   vendor_id?: string
   store_id?: string
+  vendor_handle?: string
   verificado?: boolean
   imagem_capa?: string | null
   gradient?: string
@@ -226,7 +227,7 @@ export function ProductCard({ produto, index = 0 }: { produto: Product; index?: 
               <p className="mt-1.5 text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 font-medium truncate flex items-center gap-1">
                 por{' '}
                 {(() => {
-                  const handle = findStoreHandle(produto.store_id || produto.vendor_id, produto.vendedor_nome)
+                  const handle = produto.vendor_handle || findStoreHandle(produto.store_id || produto.vendor_id, produto.vendedor_nome)
                   const verified = produto.verificado || STORES.some(s => s.name === produto.vendedor_nome && s.verified)
                   const content = (
                     <>

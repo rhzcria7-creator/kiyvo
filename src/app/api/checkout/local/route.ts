@@ -94,7 +94,8 @@ export async function POST(request: NextRequest) {
     }
 
     const total = Math.max(0, priceAfterPct - kdDiscountAmt)
-    const platformFee = Math.round(total * 0.1 * 100) / 100 // 10% taxa plataforma
+    // Taxa KIYVO: 8% + R$0,50, SEM teto (a menor do Brasil).
+    const platformFee = Math.round((total * 0.08 + 0.5) * 100) / 100
     const vendorNet = product.is_official ? total : Math.round((total - platformFee) * 100) / 100
 
     // ── Criar ordem ───────────────────────────────────

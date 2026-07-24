@@ -618,6 +618,17 @@ html, body {
 * { -webkit-text-size-adjust: 100%; }
 
 /* ═══════════════════════════════════════════════════════════════
+   PERFORMANCE — content-visibility: o browser PULA a renderização
+   (layout/paint) das seções fora da viewport. Ganho enorme de
+   performance em páginas longas no celular (menos CPU no scroll/load).
+   contain-intrinsic-size evita "pulo" na scrollbar.
+   ═══════════════════════════════════════════════════════════════ */
+.cv-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 800px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
    ANIMAÇÕES REACT BITS v10.6
    ═══════════════════════════════════════════════════════════════ */
 

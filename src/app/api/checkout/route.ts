@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
     let vendorStripeAccount: string | null = null
     let isOfficial = false
     let finalProductId: string | null = product_id || null
-    let commissionRate = 10
+    let commissionRate = 8 // Taxa KIYVO base: 8% + R$0,50, sem teto (menor do Brasil)
 
     // ── Produto oficial ──
     if (sku) {
@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
       price = Number(product.base_price || product.price)
       vendorId = String(vendorData.id)
       vendorStripeAccount = vendorData.stripe_account_id as string | null
-      commissionRate = Number(vendorData.commission_rate) || 10
+      commissionRate = Number(vendorData.commission_rate) || 8
 
       // Verificar estoque
       const { count: stock } = await admin
@@ -156,7 +156,8 @@ export async function POST(request: NextRequest) {
     // Como simplificação, usamos customer balance para boleto, mas aqui ficamos com card + opções.
     // PIX é tratado em /api/checkout/pix (in-page).
 
-    const platformFee = Math.round(price * (commissionRate / 100) * 100) / 100
+    // Taxa KIYVO: percentual do plano + R$0,50 fixa, SEM teto.
+    const platformFee = Math.round((price * (commissionRate / 100) + 0.5) * 100) / 100
     const vendorNet = vendorId ? Math.round((price - platformFee) * 100) / 100 : 0
 
     const session = await stripe.checkout.sessions.create({

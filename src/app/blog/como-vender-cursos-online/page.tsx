@@ -71,11 +71,11 @@ export default function Post() {
           <li><strong>Monetizze:</strong> 9,9% + R$1, interface confusa.</li>
           <li><strong>Eduzz:</strong> 9,9% + R$1, ferramentas limitadas.</li>
           <li><strong>Kiwify:</strong> 12% + R$1, relatos de bloqueios.</li>
-          <li><strong>KIYVO:</strong> 8% + R$0,50 com teto de R$50 por venda, saque PIX em 1 dia útil, 200+ agentes IA nativos.</li>
+          <li><strong>KIYVO:</strong> 8% + R$0,50 com sem teto por venda, saque PIX em 1 dia útil, 200+ agentes IA nativos.</li>
         </ul>
         <p>
-          Para produtos até R$500, todas funcionam. Acima de R$625, a KIYVO é a mais barata de longe
-          por causa do teto de R$50. Em um curso de R$2.000, a KIYVO cobra R$50 e a Hotmart cobra R$220,80 —
+          Para qualquer valor, a KIYVO tem a menor taxa do Brasil: 8% + R$0,50, sem teto.
+          por causa do sem teto. Em um curso de R$2.000, a KIYVO cobra R$50 e a Hotmart cobra R$220,80 —
           uma diferença de R$170 por venda.
         </p>
         <p><Link href="/melhor-plataforma-produtos-digitais">Comparativo completo das plataformas →</Link></p>

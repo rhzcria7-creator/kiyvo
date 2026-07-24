@@ -15,7 +15,7 @@ export default function MelhorPlataforma() {
       concorrente="Média do mercado"
       concorrenteProblemas={['Hotmart: 10,99% + R$1, saque 15+ dias', 'Monetizze: 9,9% + R$1', 'Eduzz: 9,9% + R$1', 'Kiwify: 12% + R$1', 'GGMax: relatos de bloqueio', 'Microsoft/Apple: 30%']}
       kiyvoDiferenciais={[
-        { icone: 'BadgePercent', titulo: 'Menor taxa: 8% máx (teto R$50)', desc: 'Acima de R$625, KIYVO cobra menos que todas.' },
+        { icone: 'BadgePercent', titulo: 'Menor taxa: 8% + R$0,50 (sem teto)', desc: 'A menor taxa do Brasil, em qualquer valor de venda.' },
         { icone: 'Clock', titulo: 'Saque PIX em 1 dia útil', desc: 'Mais rápido do Brasil.' },
         { icone: 'TrendingUp', titulo: '200+ agentes IA', desc: 'Copy, ROI, CRO, WhatsApp, VSL.' },
         { icone: 'Shield', titulo: 'Garantia de 7 dias', desc: 'Proteção para comprador e vendedor.' },
@@ -23,14 +23,14 @@ export default function MelhorPlataforma() {
         { icone: 'Zap', titulo: 'Boost por preço fixo', desc: 'Sem CPC leilão.' },
       ]}
       comparativo={[
-        { criterio: 'Taxa', concorrente: '9,9% a 30%', kiyvo: '8% + R$0,50 (teto R$50)' },
+        { criterio: 'Taxa', concorrente: '9,9% a 30%', kiyvo: '8% + R$0,50 (sem teto)' },
         { criterio: 'Teto por venda', concorrente: 'Sem teto', kiyvo: 'R$50' },
         { criterio: 'Saque', concorrente: '7-30 dias', kiyvo: '1 dia útil PIX' },
         { criterio: 'Taxa saque', concorrente: 'R$1,99 a R$9+', kiyvo: 'R$0,99 fixo' },
         { criterio: 'IA inclusa', concorrente: '0', kiyvo: '200+ agentes' },
       ]}
       faq={[
-        { pergunta: 'Qual tem a menor taxa em 2026?', resposta: 'KIYVO: 8% + R$0,50 com teto de R$50.' },
+        { pergunta: 'Qual tem a menor taxa em 2026?', resposta: 'KIYVO: 8% + R$0,50 com sem teto.' },
         { pergunta: 'Melhor para iniciantes?', resposta: 'KIYVO: sem mensalidade, agentes IA que fazem copy e precificação.' },
         { pergunta: 'Vale migrar da Hotmart/Kiwify?', resposta: 'Para produtos acima de R$500, a economia é grande. Você pode manter produtos nas duas.' },
         { pergunta: 'KIYVO é confiável?', resposta: 'Sim. CNPJ ativo, servidores no Brasil, página /transparencia pública.' },

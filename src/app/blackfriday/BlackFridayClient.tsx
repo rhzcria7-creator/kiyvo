@@ -73,7 +73,7 @@ export default function BlackFridayClient() {
       <section className="max-w-3xl mx-auto px-4 py-14">
         <div className="bg-gradient-to-br from-red-600 to-orange-600 rounded-[2rem] p-8 md:p-10 text-center">
           <h2 className="text-3xl font-black">Quer vender na Black Friday?</h2>
-          <p className="mt-3 text-white/90">Cadastre seu produto na KIYVO e lucre com o maior evento de compras do ano. Taxa de 8% máxima (teto R$50).</p>
+          <p className="mt-3 text-white/90">Cadastre seu produto na KIYVO e lucre com o maior evento de compras do ano. Taxa de 8% máxima (sem teto).</p>
           <Link href="/vender" className="mt-6 inline-flex items-center gap-2 bg-black text-white rounded-full px-8 py-4 font-black text-sm hover:bg-white hover:text-black transition">
             Começar a vender <Zap className="w-4 h-4" />
           </Link>

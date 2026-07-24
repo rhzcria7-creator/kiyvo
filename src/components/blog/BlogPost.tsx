@@ -56,7 +56,7 @@ export function BlogPost({ titulo, subtitulo, autor, data, tempoLeitura, categor
 
         <div className="mt-10 bg-[#0F172A] rounded-[2rem] p-8 text-center text-white">
           <h2 className="text-2xl font-black">Quer vender produtos digitais com taxa justa?</h2>
-          <p className="mt-2 text-slate-300 text-sm">Conheça a KIYVO — a plataforma brasileira com taxa de 8% máxima (teto R$50).</p>
+          <p className="mt-2 text-slate-300 text-sm">Conheça a KIYVO — a plataforma brasileira com taxa de 8% máxima (sem teto).</p>
           <Link href="/cadastro" className="mt-5 inline-flex items-center gap-2 bg-white text-black rounded-full px-7 py-3 font-black text-sm hover:bg-yellow-300">
             Criar conta grátis
           </Link>

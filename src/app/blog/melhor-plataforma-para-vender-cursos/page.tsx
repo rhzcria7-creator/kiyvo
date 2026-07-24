@@ -39,7 +39,7 @@ export default function Post() {
         <p>Ganhou fama mas taxa é 12% + R$1 — uma das mais altas. Muitos relatos de bloqueio.</p>
         <h2>KIYVO</h2>
         <ul>
-          <li><strong>8% + R$0,50 com teto R$50 por venda</strong></li>
+          <li><strong>8% + R$0,50 com sem teto por venda</strong></li>
           <li>Saque PIX em 1 dia útil</li>
           <li>200+ agentes IA de vendas inclusos</li>
           <li>Boost por preço fixo (de R$4,90)</li>
@@ -55,7 +55,7 @@ export default function Post() {
           <li>IA integrada: KIYVO 200+ agentes; outras 0</li>
         </ul>
         <h2>Qual escolher?</h2>
-        <p>Se você vende produtos caros (R$500+), <strong>KIYVO</strong> é escolha óbvia pelo teto de R$50. Para produtos baratos em massa, a KIYVO também é a mais barata e ainda tem ferramentas de IA. <Link href="/cadastro">Cadastre-se gratuitamente</Link>.</p>
+        <p>Se você vende produtos caros (R$500+), <strong>KIYVO</strong> é escolha óbvia pelo sem teto. Para produtos baratos em massa, a KIYVO também é a mais barata e ainda tem ferramentas de IA. <Link href="/cadastro">Cadastre-se gratuitamente</Link>.</p>
       </BlogPost>
     </>
   )

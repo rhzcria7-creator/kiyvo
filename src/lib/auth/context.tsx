@@ -18,6 +18,8 @@ interface Profile {
   full_name: string | null
   avatar_url: string | null
   bio?: string | null
+  banner_url?: string | null
+  tags?: string[]
   phone: string | null
   cpf: string | null
   birth_date?: string | null
@@ -225,6 +227,8 @@ function normalizeProfile(raw: Record<string, unknown>, email: string): Profile 
     full_name: raw.full_name ? String(raw.full_name) : null,
     avatar_url: raw.avatar_url ? String(raw.avatar_url) : null,
     bio: raw.bio ? String(raw.bio) : null,
+    banner_url: raw.banner_url ? String(raw.banner_url) : null,
+    tags: Array.isArray(raw.tags) ? (raw.tags as string[]) : [],
     phone: raw.phone ? String(raw.phone) : null,
     cpf: raw.cpf ? String(raw.cpf) : null,
     birth_date: raw.birth_date ? String(raw.birth_date) : null,

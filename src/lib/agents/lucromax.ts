@@ -15,11 +15,13 @@ export interface LucroMaxInput {
 }
 
 interface TaxaConfig { percent: number; fixa: number; cap: number }
+// Sem teto (cap: 0) — a taxa é sempre percentual + fixa, nunca limitada.
+// É a menor do Brasil (8% + R$0,50 no plano Free).
 const TAXAS: Record<string, TaxaConfig> = {
-  free: { percent: 8, fixa: 0.5, cap: 50 },
-  plus: { percent: 6.5, fixa: 0.4, cap: 40 },
-  pro: { percent: 5, fixa: 0.3, cap: 30 },
-  vendor_pro: { percent: 3, fixa: 0.2, cap: 20 },
+  free: { percent: 8, fixa: 0.5, cap: 0 },
+  plus: { percent: 6.5, fixa: 0.4, cap: 0 },
+  pro: { percent: 5, fixa: 0.3, cap: 0 },
+  vendor_pro: { percent: 3, fixa: 0.2, cap: 0 },
 }
 
 export async function runLucroMax(input: LucroMaxInput, _ctx?: AgentContext): Promise<AgentResult> {
@@ -42,8 +44,9 @@ export async function runLucroMax(input: LucroMaxInput, _ctx?: AgentContext): Pr
   const taxa = TAXAS[planoVendedor] || TAXAS.free
   const valorCupom = precoVenda * (cupomPercent / 100)
   const precoLiq = precoVenda - valorCupom
+  // Taxa percentual + fixa, SEM teto (cap: 0 significa "sem limite").
   let taxaKiyvo = precoLiq * (taxa.percent / 100) + taxa.fixa
-  if (taxaKiyvo > taxa.cap) taxaKiyvo = taxa.cap
+  if (taxa.cap > 0 && taxaKiyvo > taxa.cap) taxaKiyvo = taxa.cap
   const comissaoAfiliado = precoLiq * (afiliadoPercent / 100)
   const impostos = incluirImpostos ? precoLiq * 0.065 : 0 // Simples Nacional anexo III ~6,5% para digital
   const custosTotais = custoProduto + custoAnuncio + custoFrete + outrosCustos + taxaKiyvo + comissaoAfiliado + impostos
@@ -76,7 +79,7 @@ export async function runLucroMax(input: LucroMaxInput, _ctx?: AgentContext): Pr
         percentual: taxa.percent,
         fixa: taxa.fixa,
         total: round2(taxaKiyvo),
-        capAtingido: taxaKiyvo >= taxa.cap,
+        capAtingido: taxa.cap > 0 && taxaKiyvo >= taxa.cap,
         cap: taxa.cap,
       },
       comissaoAfiliado: round2(comissaoAfiliado),
@@ -102,7 +105,7 @@ export async function runLucroMax(input: LucroMaxInput, _ctx?: AgentContext): Pr
         { nome: 'Outros custos', valor: -round2(outrosCustos) },
         { nome: 'LUCRO LÍQUIDO', valor: round2(lucro), destaque: true },
       ],
-      transparencia: 'Na KIYVO a taxa máxima é de 8% + R$0,50 com teto de R$50. Sem taxas escondidas.',
+      transparencia: 'Na KIYVO a taxa é de 8% + R$0,50, sem teto — a menor do Brasil. Sem taxas escondidas.',
     },
   }
 }

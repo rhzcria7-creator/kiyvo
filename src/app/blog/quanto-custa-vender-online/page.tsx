@@ -36,7 +36,7 @@ export default function Post() {
           <li><strong>Monetizze:</strong> 9,9% + R$1,00</li>
           <li><strong>Eduzz:</strong> 9,9% + R$1,00</li>
           <li><strong>Kiwify:</strong> 12% + R$1,00</li>
-          <li><strong>KIYVO:</strong> 8% + R$0,50 com teto de R$50</li>
+          <li><strong>KIYVO:</strong> 8% + R$0,50 com sem teto</li>
         </ul>
         <p>Em um produto de <strong>R$97</strong>, KIYVO cobra R$8,26 contra R$12,64 da Kiwify. Em <strong>R$997</strong>, KIYVO cobra R$50 e Hotmart R$110,57.</p>
         <h2>2. Taxa do gateway (Stripe/Pagar.me)</h2>

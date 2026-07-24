@@ -34,7 +34,7 @@ export default function TransparenciaPage() {
             A plataforma <span className="bg-gradient-to-r from-brand-500 to-emerald-500 bg-clip-text text-transparent">mais justa</span> do Brasil
           </h1>
           <p className="text-base md:text-lg text-slate-600 dark:text-slate-400 mt-4 max-w-2xl mx-auto">
-            Não cobramos taxas escondidas como os concorrentes. <strong className="text-slate-900 dark:text-white">Taxa máxima de 8% com teto de R$50</strong> — se vender um produto de R$10.000, nunca pagará mais de R$50 pra KIYVO. Sim, é isso mesmo.
+            Não cobramos taxas escondidas como os concorrentes. <strong className="text-slate-900 dark:text-white">Taxa máxima de 8% com sem teto</strong> — se vender um produto de R$10.000, nunca pagará mais de R$50 pra KIYVO. Sim, é isso mesmo.
           </p>
           <div className="flex flex-wrap justify-center gap-3 mt-6">
             <Link href="/vender" className="inline-flex items-center gap-2 bg-[#0F172A] dark:bg-white text-white dark:text-black rounded-full px-6 py-3 text-sm font-bold hover:scale-105 transition">

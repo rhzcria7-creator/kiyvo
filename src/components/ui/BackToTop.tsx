@@ -32,7 +32,7 @@ export function BackToTop() {
           whileTap={{ scale: 0.9 }}
           whileHover={{ y: -3, scale: 1.08 }}
           aria-label="Voltar ao topo"
-          className="fixed bottom-[calc(env(safe-area-inset-bottom)+1.25rem)] right-4 z-[55] w-12 h-12 rounded-full bg-[#0F172A] text-white shadow-xl shadow-brand-500/30 flex items-center justify-center hover:bg-brand-600 transition-colors"
+          className="fixed bottom-[calc(env(safe-area-inset-bottom)+5.5rem)] right-4 z-[55] w-12 h-12 rounded-full bg-[#0F172A] text-white shadow-xl shadow-brand-500/30 flex items-center justify-center hover:bg-brand-600 transition-colors md:bottom-[calc(env(safe-area-inset-bottom)+1.25rem)]"
         >
           <ArrowUp className="w-5 h-5" />
         </motion.button>

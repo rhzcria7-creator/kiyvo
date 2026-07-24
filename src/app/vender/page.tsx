@@ -461,7 +461,7 @@ export default function AnunciarPage() {
                 )}
                 <p className="text-xs text-slate-500 mt-3 flex items-start gap-1.5">
                   <Info className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
-                  Taxas: 8% + R$0,50 por venda no plano Free. Seus recebíveis: <b>R$ {(Math.max(0, precoNum * 0.92 - 0.5)).toFixed(2).replace('.', ',')}</b> por unidade.
+                  Taxas: 8% + R$0,50 por venda no plano Free, <b>sem teto</b> — a menor do Brasil. Seus recebíveis: <b>R$ {(Math.max(0, precoNum * 0.92 - 0.5)).toFixed(2).replace('.', ',')}</b> por unidade.
                 </p>
               </Card>
 

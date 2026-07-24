@@ -6,7 +6,7 @@ const diferenciais = [
   {
     icone: <TrendingDown className="w-6 h-6" />,
     cor: 'from-emerald-500 to-green-600',
-    titulo: 'Taxa de 8% com teto de R$50',
+    titulo: 'Taxa de 8% com sem teto',
     desc: 'Vendeu um produto de R$10.000? Você paga R$50, não R$800 como nos concorrentes. Essa é a diferença de quem é justo.',
   },
   {

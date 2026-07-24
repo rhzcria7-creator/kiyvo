@@ -36,6 +36,9 @@ interface UserRecord {
   verification_status: 'unverified' | 'pending' | 'verified' | 'rejected'
   created_at: string
   avatar_url: string | null
+  banner_url: string | null
+  bio: string | null
+  tags: string[]
   total_purchases: number
   total_spent: number
   total_sales: number
@@ -261,7 +264,10 @@ function seedDatabase(): DB {
     cpf: null,
     verification_status: 'verified',
     created_at: now,
-    avatar_url: null,
+    avatar_url: 'https://i.pravatar.cc/300?img=12',
+    banner_url: null,
+    bio: 'Equipe oficial da KIYVO — o marketplace de produtos digitais com a menor taxa do Brasil. Suporte, lançamentos e novidades do ecossistema.',
+    tags: ['oficial', 'suporte', 'lançamentos', 'marketplace'],
     total_purchases: 0,
     total_spent: 0,
     total_sales: 0,
@@ -314,7 +320,10 @@ function seedDatabase(): DB {
     cpf: null,
     verification_status: 'verified',
     created_at: now,
-    avatar_url: null,
+    avatar_url: 'https://i.pravatar.cc/300?img=5',
+    banner_url: null,
+    bio: 'Loja demo da KIYVO — explore produtos, crie sua própria loja e teste todas as funcionalidades do marketplace.',
+    tags: ['demo', 'destaques', 'teste'],
     total_purchases: 3,
     total_spent: 149.7,
     total_sales: 0,
@@ -466,6 +475,37 @@ export function findUserByReferralCode(code: string): UserRecord | null {
   return db.users.find((u) => u.referral_code === upper) ?? null
 }
 
+// ── VENDEDOR (loja pública) ──────────────────────────────
+// Busca vendedor por @username (usa o handle da URL /loja/[handle]).
+export function getSellerByHandle(handle: string): UserRecord | null {
+  const db = getDb()
+  const h = handle.replace(/^@/, '').toLowerCase().trim()
+  if (!h) return null
+  return db.users.find((u) => u.username.toLowerCase() === h) ?? null
+}
+
+// Produtos de marketplace (não oficiais) de um vendedor.
+export function getSellerProducts(sellerId: string): ProductRecord[] {
+  const db = getDb()
+  return db.products.filter((p) => p.seller_id === sellerId && !p.is_official)
+}
+
+// Atualiza perfil de loja do vendedor (foto, banner, bio, tags).
+export function updateSellerProfile(
+  userId: string,
+  patch: { avatar_url?: string | null; banner_url?: string | null; bio?: string | null; tags?: string[] },
+): UserRecord | null {
+  const db = getDb()
+  const user = db.users.find((u) => u.id === userId)
+  if (!user) return null
+  if (patch.avatar_url !== undefined) user.avatar_url = patch.avatar_url
+  if (patch.banner_url !== undefined) user.banner_url = patch.banner_url
+  if (patch.bio !== undefined) user.bio = patch.bio
+  if (patch.tags !== undefined) user.tags = Array.isArray(patch.tags) ? patch.tags : []
+  persist()
+  return user
+}
+
 export function createUser(data: {
   email: string
   password: string
@@ -474,6 +514,9 @@ export function createUser(data: {
   phone?: string | null
   cpf?: string | null
   avatar_url?: string | null
+  banner_url?: string | null
+  bio?: string | null
+  tags?: string[]
   referred_by?: string | null
 }): UserRecord {
   const db = getDb()
@@ -521,6 +564,9 @@ export function createUser(data: {
     verification_status: isAdmin ? 'verified' : 'unverified',
     created_at: new Date().toISOString(),
     avatar_url: data.avatar_url ?? null,
+    banner_url: data.banner_url ?? null,
+    bio: data.bio ?? null,
+    tags: Array.isArray(data.tags) ? data.tags : [],
     total_purchases: 0,
     total_spent: 0,
     total_sales: 0,

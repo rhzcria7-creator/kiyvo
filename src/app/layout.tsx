@@ -16,8 +16,11 @@ import { FavoritesProvider } from '@/components/favorites/FavoritesProvider'
 import { FloatingCTA } from '@/components/ui/FloatingCTA'
 import TelegramSupport from '@/components/support/TelegramSupport'
 import { CartProvider } from '@/components/cart/CartProvider'
+import { CartNotifier } from '@/components/cart/CartNotifier'
 import { KYCProvider } from '@/components/kyc/KYCProvider'
 import { PilotTrigger } from '@/components/ui/PilotTrigger'
+import { MobileNavBar } from '@/components/layout/MobileNavBar'
+import { DemoModeBanner } from '@/components/system/DemoModeBanner'
 
 const FlashSaleBar = dynamic(() => import('@/components/home/FlashSaleBar').then(m => m.FlashSaleBar), { ssr: false })
 const SecurityInit = dynamic(() => import('@/components/SecurityInit').then(m => m.SecurityInit), { ssr: false })
@@ -156,10 +159,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <ClickSpark />
               <ScrollProgress />
               <UpdateBanner />
+              <DemoModeBanner />
               <Header />
               <FlashSaleBar />
               <ReferralProvider />
-              <div className="flex-1">{children}</div>
+              <div className="flex-1 pb-[calc(env(safe-area-inset-bottom)+4.5rem)] md:pb-0">{children}</div>
               <Footer />
               <BackToTop />
               <FloatingCTA />
@@ -168,6 +172,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <CommandK />
               <CommandKButton />
               <PilotTrigger />
+              <MobileNavBar />
+              <CartNotifier />
               <SecurityInit />
               <Toaster
                 position="top-right"

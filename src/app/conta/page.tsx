@@ -14,6 +14,7 @@ import { useAuth } from '@/lib/auth/context'
 import { formatBRL } from '@/domain/fees/FeeEngine'
 import { ShoppingBag, DollarSign, Package, Star, ArrowRight, User, Bell, Shield, Crown } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { StoreProfileEditor } from '@/components/account/StoreProfileEditor'
 
 interface OrderItem {
   id: string
@@ -121,6 +122,11 @@ export default function ContaPage() {
             <Link href="/vendor/onboarding/kyc" className="btn-primary text-sm py-2 shrink-0">Verificar agora</Link>
           </motion.div>
         )}
+
+        {/* Perfil da Loja (foto, banner, bio, tags) */}
+        <div className="mb-8">
+          <StoreProfileEditor />
+        </div>
 
         {/* Quick Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">

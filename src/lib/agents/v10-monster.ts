@@ -355,7 +355,7 @@ export async function roiads(input: ROIAdsInput_v10, ctx: AgentContext): Promise
         roas >= 2 ? 'ROAS saudável — pode escalar o orçamento em 20% por semana.' : 'ROAS baixo — melhore CTR e taxa de conversão antes de investir mais.',
         'Teste pelo menos 5 ângulos de criativo diferentes antes de concluir.',
         'Use retargeting para quem visitou o checkout mas não comprou (custo 3-5x menor).',
-        'Lembre-se: com a KIYVO a taxa é só 8%+R$0,50 (teto R$50), então sua margem é maior que em concorrentes.',
+        'Lembre-se: com a KIYVO a taxa é só 8%+R$0,50 (sem teto), então sua margem é maior que em concorrentes.',
       ],
       errosComuns: [
         'Calcular ROI só com base em faturamento (esquece custos de produto, plataforma e frete)',
