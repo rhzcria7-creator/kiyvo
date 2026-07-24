@@ -29,6 +29,9 @@ interface DashboardStats {
   totalPurchases: number
   totalSales: number
   rating: number
+  /** KD Points — moeda de recompensa oficial */
+  kdPoints: number
+  /** @deprecated alias legado — usar kdPoints */
   pdPoints: number
   availableBalance: number
   escrowBalance: number
@@ -63,6 +66,7 @@ export default function DashboardPage() {
     totalPurchases: 0,
     totalSales: 0,
     rating: 0,
+    kdPoints: 0,
     pdPoints: 0,
     availableBalance: 0,
     escrowBalance: 0,
@@ -93,11 +97,13 @@ export default function DashboardPage() {
 
         // Calcular stats a partir do profile
         if (profile) {
+          const kdPointsEarned = profile.kd_points || 0
           setStats({
             totalPurchases: profile.total_purchases || 0,
             totalSales: profile.total_sales || 0,
             rating: profile.rating || 0,
-            pdPoints: profile.kd_points || 0,
+            kdPoints: kdPointsEarned,
+            pdPoints: kdPointsEarned, // alias legado
             availableBalance: 0,
             escrowBalance: 0,
           })
@@ -123,7 +129,7 @@ export default function DashboardPage() {
     { label: 'Compras', value: stats.totalPurchases, icon: ShoppingBag, color: 'bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400' },
     { label: 'Vendas', value: stats.totalSales, icon: TrendingUp, color: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400' },
     { label: 'Avaliação', value: stats.rating, icon: Star, color: 'bg-amber-50 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400' },
-    { label: 'KD Points', value: stats.pdPoints, icon: Crown, color: 'bg-purple-50 text-purple-600 dark:bg-purple-950/50 dark:text-purple-400' },
+    { label: 'KD Points', value: stats.kdPoints, icon: Crown, color: 'bg-purple-50 text-purple-600 dark:bg-purple-950/50 dark:text-purple-400' },
   ]
 
   return (
@@ -149,7 +155,7 @@ export default function DashboardPage() {
                 <Shield size={16} /> Verificar conta
               </Link>
             )}
-            <Link href="/anunciar" className="btn-primary text-sm py-2">
+            <Link href="/vender" className="btn-primary text-sm py-2">
               + Anunciar
             </Link>
           </div>

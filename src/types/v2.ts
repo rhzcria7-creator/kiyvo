@@ -55,6 +55,9 @@ export interface UserProfile {
   verificationStatus: VerificationLevel
   sellerPlan: SellerPlan
   sellerLevel: SellerLevel
+  /** KD Points (moeda de recompensa oficial) */
+  kdPoints: number
+  /** Alias legado — @deprecated Use kdPoints */
   pdPoints: number
   totalSales: number
   totalPurchases: number

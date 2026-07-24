@@ -131,7 +131,7 @@ export default function TutorialVenderPage() {
 
         {/* CTA */}
         <FadeInOnScroll className="text-center">
-          <Link href="/anunciar" className="btn-primary text-lg px-10 py-4 inline-flex items-center gap-2">
+          <Link href="/vender" className="btn-primary text-lg px-10 py-4 inline-flex items-center gap-2">
             <Zap size={20} /> Começar a Vender
           </Link>
         </FadeInOnScroll>

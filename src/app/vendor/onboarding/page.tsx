@@ -236,7 +236,7 @@ export default function VendorOnboardingPage() {
                 Sua loja <strong>{storeName}</strong> está configurada e pronta para receber vendas. Comece publicando seus primeiros produtos!
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center mt-4">
-                <a href="/anunciar">
+                <a href="/vender">
                   <Button size="lg" icon={<ArrowRight size={18} />}>Publicar Primeiro Produto</Button>
                 </a>
                 <a href={`/store/${slug}`}>

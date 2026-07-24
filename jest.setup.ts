@@ -1,31 +1,17 @@
-// Jest setup — importa jest-dom matchers + polyfills
+// Jest setup pós-jsdom
+// Aqui ficam os matchers do @testing-library/jest-dom e qualquer ajuste final.
+// Polyfills de runtime (TextEncoder, crypto.subtle, Response) estão em jest.polyfills.ts,
+// pois precisam ser aplicados ANTES da criação do window pelo jsdom.
 
 import '@testing-library/jest-dom'
 
-// Polyfill para Response (não existe em jsdom)
-if (typeof globalThis.Response === 'undefined') {
-  class ResponsePolyfill {
-    status: number
-    ok: boolean
-    headers: Map<string, string>
-    private _body: string
-
-    constructor(body: string, init?: { status?: number; headers?: Record<string, string> }) {
-      this._body = body
-      this.status = init?.status ?? 200
-      this.ok = this.status >= 200 && this.status < 300
-      this.headers = new Map(Object.entries(init?.headers ?? {}))
-    }
-
-    async json(): Promise<unknown> {
-      return JSON.parse(this._body)
-    }
-
-    async text(): Promise<string> {
-      return this._body
-    }
+// Suprimir warnings do Next.js em ambiente de teste
+// (evita poluição do output quando o Next tenta logar info de roteamento)
+const originalWarn = console.warn
+console.warn = function (...args: unknown[]) {
+  // Ignorar warnings específicos do React/Next que não afetam testes
+  if (typeof args[0] === 'string' && /react-router|next\/router|useLayoutEffect/.test(args[0])) {
+    return
   }
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ;(globalThis as any).Response = ResponsePolyfill
+  originalWarn.apply(console, args)
 }

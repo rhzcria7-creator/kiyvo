@@ -150,7 +150,7 @@ export default function ContaLayout({ children }: { children: React.ReactNode })
 
           {/* Quick Actions */}
           <div className="mt-4 space-y-2">
-            <Link href="/anunciar" className="block">
+            <Link href="/vender" className="block">
               <Button size="sm" className="w-full" icon={<Package size={16} />}>
                 Anunciar Produto
               </Button>

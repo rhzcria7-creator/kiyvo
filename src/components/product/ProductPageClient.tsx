@@ -1,592 +1,879 @@
 'use client'
-
-// ─────────────────────────────────────────────────────────────
-// ProductPageClient — Página de Produto interativa
-// Recebe dados iniciais via props do server component
-// Galeria, Preço, Botão Comprar, Avaliações, Selos
-// Framer Motion para todas as animações
-// ─────────────────────────────────────────────────────────────
-
-import { useEffect, useState, useCallback } from 'react'
-import { formatPrice } from '@/lib/utils'
+// ProductPageClient — página de produto responsiva, bonita, animada, com botão de checkout
+// Funciona tanto com produtos do Supabase quanto produtos demo.
+import { useMemo, useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
-import { useAuth } from '@/lib/auth/context'
 import {
-  Star, Shield, Zap, ShoppingCart, Heart, Share2, Eye,
-  Clock, CheckCircle, AlertTriangle, ChevronRight, Copy,
-  Package, MessageCircle, ThumbsUp, Flag, Loader2,
+  Star, Shield, Zap, ShoppingCart, Heart, Share2, CheckCircle2,
+  Clock, Copy, Package, MessageCircle, Lock, ArrowLeft,
+  ShieldCheck, Award, Sparkles, Tag, CreditCard, TrendingUp, Ticket, Percent, X
 } from 'lucide-react'
-import { PageTransition } from '@/components/shared/PageTransition'
-
-interface ProductImage {
-  id: string
-  imageUrl: string
-  altText: string | null
-  isPrimary: boolean
-}
-
-interface ProductVariant {
-  id: string
-  sku: string
-  attributes: Record<string, string>
-  priceAdjustment: number
-  stock: number
-}
+import { useFavorites } from '@/lib/favorites/store'
+import { useCart } from '@/lib/cart/store'
+import { useProtectedAction } from '@/lib/auth/useProtectedAction'
+import { useReviews } from '@/lib/reviews/store'
+import { useAuth } from '@/lib/auth/context'
+import { useKYC } from '@/lib/kyc/store'
+import { useRecent } from '@/lib/recent/store'
+import { useNotif } from '@/lib/notifications/store'
+import { useKD } from '@/lib/kd/store'
+import { toast } from 'react-hot-toast'
+import { ProductCard } from '@/components/ProductCard'
+import { SimpleConfetti } from '@/components/ui/SimpleConfetti'
+import { DEMO_PRODUCTS } from '@/lib/catalog/demoProducts'
+import { GG_PRODUCTS } from '@/lib/catalog/ggmaxProducts'
+import { MEGA_PRODUCTS } from '@/lib/catalog/megaCatalog'
+import { STORES } from '@/lib/catalog/stores'
+import { ImagePlus, X as XIcon, ThumbsUp, Camera, ExternalLink } from 'lucide-react'
 
 interface ProductDetail {
-  id: string
-  title: string
-  slug: string
-  descriptionHtml: string
-  basePrice: number
-  originalPrice: number | null
-  currency: string
-  stockQuantity: number
-  isDigital: boolean
-  deliveryType: string
-  status: string
-  rating: number
-  reviewCount: number
-  salesCount: number
-  viewsCount: number
-  isFeatured: boolean
-  tags: string[]
-  images: ProductImage[]
-  vendor: {
-    id: string
-    storeName: string
-    slug: string
-    logoUrl: string | null
-    ratingAvg: number
-    totalSales: number
-    level: string
-  }
-  variants: ProductVariant[]
+  id?: string
+  titulo: string
+  title?: string
+  slug?: string
+  descricao?: string
+  descricao_curta?: string
+  description?: string
+  preco: number
+  preco_de?: number | null
+  basePrice?: number
+  originalPrice?: number | null
+  categoria?: string
+  category?: string
+  vendedor_nome?: string
+  vendor?: { store_name?: string; nome?: string }
+  imagem_capa?: string | null
+  imageUrl?: string | null
+  gradient?: string
+  emoji?: string
+  rating?: number
+  total_reviews?: number
+  reviewCount?: number
+  total_vendas?: number
+  salesCount?: number
+  boost?: boolean
+  isFeatured?: boolean
+  tipo?: string
 }
 
-interface Review {
-  id: string
-  rating: number
-  comment: string
-  isAnonymous: boolean
-  createdAt: string
-  reviewerName: string
+const CATEGORIES_BONITAS: Record<string, string> = {
+  marketing: 'Marketing', copywriting: 'Copywriting', planilhas: 'Planilhas', templates: 'Templates',
+  social: 'Redes Sociais', vendas: 'Vendas', mentoria: 'Mentoria', software: 'Software',
+  ebook: 'Ebook', curso: 'Curso', saude: 'Saúde', financas: 'Finanças', design: 'Design',
+  video: 'Vídeo', afiliados: 'Afiliados', beleza: 'Beleza', gastronomia: 'Gastronomia',
+  tecnologia: 'Tecnologia', juridico: 'Jurídico', produtividade: 'Produtividade', profissionais: 'Profissões',
+  prompts: 'Prompts IA', servico: 'Serviço', consultoria: 'Consultoria', pack: 'Pack',
+  script: 'Scripts', idiomas: 'Idiomas', livros: 'Livros', desenvolvimento: 'Programação',
 }
 
-// Mapear dados do servidor para o formato do client
-function mapServerProduct(data: Record<string, unknown>): ProductDetail | null {
-  try {
-    const vendor = (data.vendors || {}) as Record<string, unknown>
-    const images = ((data.product_images || []) as Array<Record<string, unknown>>).map((img) => ({
-      id: img.id as string,
-      imageUrl: img.image_url as string,
-      altText: img.alt_text as string | null,
-      isPrimary: img.is_primary as boolean,
-    }))
-
-    const variants = ((data.product_variants || []) as Array<Record<string, unknown>>).map((v) => ({
-      id: v.id as string,
-      sku: v.sku as string,
-      attributes: (v.attributes as Record<string, string>) || {},
-      priceAdjustment: Number(v.price_adjustment || 0),
-      stock: Number(v.stock || 0),
-    }))
-
-    return {
-      id: data.id as string,
-      title: data.title as string,
-      slug: data.slug as string,
-      descriptionHtml: (data.description as string) || '',
-      basePrice: Number(data.base_price || 0),
-      originalPrice: data.original_price ? Number(data.original_price) : null,
-      currency: (data.currency as string) || 'BRL',
-      stockQuantity: Number(data.stock_quantity || 0),
-      isDigital: (data.is_digital as boolean) || true,
-      deliveryType: (data.delivery_type as string) || 'automatic',
-      status: (data.status as string) || 'published',
-      rating: Number(data.rating || 0),
-      reviewCount: Number(data.review_count || 0),
-      salesCount: Number(data.sales_count || 0),
-      viewsCount: Number(data.views_count || 0),
-      isFeatured: (data.is_featured as boolean) || false,
-      tags: (data.tags as string[]) || [],
-      images,
-      vendor: {
-        id: String(vendor.id || ''),
-        storeName: (vendor.store_name as string) || 'Vendedor',
-        slug: (vendor.slug as string) || '',
-        logoUrl: (vendor.logo_url as string) || null,
-        ratingAvg: Number(vendor.rating_avg || 0),
-        totalSales: Number(vendor.total_sales || 0),
-        level: (vendor.level as string) || 'silver',
-      },
-      variants,
-    }
-  } catch {
-    return null
-  }
+// Emojis padrão por categoria se não vier
+const EMOJI_PADRAO: Record<string, string> = {
+  marketing: '📈', copywriting: '✍️', planilhas: '📊', templates: '🎨',
+  social: '📱', vendas: '💰', mentoria: '🎯', software: '⚙️',
+  ebook: '📖', curso: '📚', saude: '💪', financas: '💹', design: '🎨',
+  video: '🎥', afiliados: '🤝', beleza: '💄', gastronomia: '🍳',
+  tecnologia: '💻', juridico: '⚖️', produtividade: '⏰', profissionais: '🧑‍⚕️',
+  prompts: '🤖', servico: '🛎️', consultoria: '🧭', pack: '📦', script: '📝',
+  idiomas: '🌍', livros: '📚', desenvolvimento: '🧑‍💻',
 }
 
-function mapServerReviews(data: Array<Record<string, unknown>>): Review[] {
-  return data.map((r) => {
-    const reviewer = (r.reviewer as Record<string, unknown>) || {}
-    return {
-      id: r.id as string,
-      rating: Number(r.rating || 0),
-      comment: (r.comment as string) || '',
-      isAnonymous: (r.is_anonymous as boolean) || false,
-      createdAt: r.created_at as string,
-      reviewerName: r.is_anonymous
-        ? 'Anônimo'
-        : ((reviewer.full_name as string) || (reviewer.username as string) || 'Usuário'),
-    }
-  })
+const GRADIENTES = [
+  'from-rose-500 to-pink-600', 'from-orange-500 to-red-600', 'from-amber-400 to-orange-600',
+  'from-lime-400 to-green-600', 'from-emerald-500 to-teal-700', 'from-teal-400 to-cyan-600',
+  'from-sky-400 to-blue-600', 'from-blue-500 to-indigo-700', 'from-indigo-500 to-violet-700',
+  'from-violet-500 to-purple-700', 'from-purple-500 to-fuchsia-700', 'from-fuchsia-500 to-pink-700',
+  'from-pink-500 to-rose-700', 'from-slate-500 to-slate-800', 'from-brand-500 to-brand-700',
+]
+function pickGrad(seed: string) {
+  let h = 0
+  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) | 0
+  return GRADIENTES[Math.abs(h) % GRADIENTES.length]
 }
 
-export function ProductPageClient({
-  slug,
-  initialProduct,
-  initialReviews,
-}: {
-  slug: string
-  initialProduct: Record<string, unknown> | null
-  initialReviews: Array<Record<string, unknown>>
-}) {
+export function ProductPageClient({ slug, initialProduct }: { slug: string; initialProduct: Record<string, unknown> | null; initialReviews?: Array<Record<string, unknown>> }) {
   const router = useRouter()
+  const [comprando, setComprando] = useState(false)
+  const [copied, setCopied] = useState(false)
+  const [qty, setQty] = useState(1)
+  const { isFav, toggle: toggleFav } = useFavorites()
+  const { add: addToCart } = useCart()
+  const { guard, Modal: AuthModal } = useProtectedAction()
+
+  const product = useMemo<ProductDetail>(() => {
+    const raw = (initialProduct || {}) as Partial<ProductDetail> & Record<string, unknown>
+    return {
+      id: (raw.id as string) || slug,
+      titulo: (raw.titulo as string) || (raw.title as string) || 'Produto',
+      slug: (raw.slug as string) || slug,
+      descricao: (raw.descricao as string) || (raw.description as string) || '',
+      descricao_curta: (raw.descricao_curta as string) || ((raw.description as string) || '').substring(0, 160),
+      preco: Number(raw.preco ?? raw.basePrice ?? 0),
+      preco_de: raw.preco_de != null ? Number(raw.preco_de) : (raw.originalPrice ? Number(raw.originalPrice) : null),
+      categoria: (raw.categoria as string) || (raw.category as string) || 'outro',
+      vendedor_nome: (raw.vendedor_nome as string) || (raw.vendor as any)?.store_name || 'Vendedor KIYVO',
+      imagem_capa: (raw.imagem_capa as string | null) ?? (raw.imageUrl as string | null) ?? null,
+      gradient: (raw.gradient as string) || pickGrad(slug),
+      emoji: (raw.emoji as string) || EMOJI_PADRAO[(raw.categoria as string) || ''] || '✨',
+      rating: Number(raw.rating ?? 4.8),
+      total_reviews: Number(raw.total_reviews ?? raw.reviewCount ?? 127),
+      total_vendas: Number(raw.total_vendas ?? raw.salesCount ?? 0),
+      boost: Boolean(raw.boost ?? raw.isFeatured),
+      tipo: (raw.tipo as string) || 'digital',
+    }
+  }, [initialProduct, slug])
+
+  const preco = product.preco
+  const precoDe = product.preco_de && product.preco_de > preco ? product.preco_de : null
+  const desconto = precoDe ? Math.round((1 - preco / precoDe) * 100) : 0
+  const parcelas = Math.max(1, Math.min(12, Math.ceil(preco / 9.9)))
+  const parcelaValor = preco / parcelas
+  const catLabel = CATEGORIES_BONITAS[product.categoria || ''] || (product.categoria || 'Outros')
+
+  const garantiaDias = 7
+
+  // Reviews com mídia real
   const { user } = useAuth()
-
-  const [product, setProduct] = useState<ProductDetail | null>(
-    initialProduct ? mapServerProduct(initialProduct) : null
-  )
-  const [reviews, setReviews] = useState<Review[]>(
-    initialReviews.length > 0 ? mapServerReviews(initialReviews) : []
-  )
-  const [isLoading, setIsLoading] = useState(initialProduct === null)
-  const [error, setError] = useState<string | null>(null)
-  const [selectedImage, setSelectedImage] = useState(0)
-  const [selectedVariant, setSelectedVariant] = useState<string | null>(null)
-  const [isAddingToCart, setIsAddingToCart] = useState(false)
-  const [isFavorited, setIsFavorited] = useState(false)
-  const [showBuyModal, setShowBuyModal] = useState(false)
-
-  // Se não recebemos dados do servidor, buscar via API
+  const { init: initReviews, listForProduct, add: addReview, toggleLike, init: _ir, loaded: reviewsLoaded } = useReviews()
+  const { init: initKYC } = useKYC()
+  const { init: initRecent, add: addRecent } = useRecent()
+  useEffect(() => { initReviews(); initKYC(); initRecent() }, [initReviews, initKYC, initRecent])
+  // Marca produto como visto (para "recentemente vistos")
   useEffect(() => {
-    if (initialProduct) return
+    addRecent({
+      id: product.id || slug,
+      slug: product.slug || slug,
+      titulo: product.titulo,
+      preco: product.preco,
+      preco_de: product.preco_de,
+      emoji: product.emoji,
+      gradient: product.gradient,
+      categoria: product.categoria,
+      vendedor_nome: product.vendedor_nome,
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [product.id])
+  const [showReviewForm, setShowReviewForm] = useState(false)
+  const [reviewRating, setReviewRating] = useState(5)
+  const [reviewTitle, setReviewTitle] = useState('')
+  const [reviewBody, setReviewBody] = useState('')
+  const [reviewFotos, setReviewFotos] = useState<string[]>([])
+  const [enviandoReview, setEnviandoReview] = useState(false)
+  const reviews = listForProduct(product.id || slug)
+  const avgRating = reviews.length > 0 ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length : (product.rating || 4.8)
+  const totalReviews = reviews.length > 0 ? reviews.length : (product.total_reviews || 127)
 
-    async function loadProduct() {
-      setIsLoading(true)
-      setError(null)
-      try {
-        const response = await fetch(`/api/products?slug=${slug}`)
-        if (!response.ok) {
-          if (response.status === 404) throw new Error('Produto não encontrado')
-          throw new Error('Erro ao carregar produto')
-        }
-        const data = await response.json()
-        const mapped = mapServerProduct(data.product || data)
-        if (mapped) setProduct(mapped)
-        else throw new Error('Dados do produto inválidos')
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Erro desconhecido')
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    loadProduct()
-  }, [slug, initialProduct])
-
-  // Buscar reviews se não veio do servidor
-  useEffect(() => {
-    if (initialReviews.length > 0 || !product) return
-
-    async function loadReviews() {
-      try {
-        const res = await fetch(`/api/v1/reviews?product_id=${product?.id}&limit=20`)
-        if (res.ok) {
-          const data = await res.json()
-          setReviews(data.reviews || [])
-        }
-      } catch {
-        // Erro silencioso
-      }
-    }
-
-    loadReviews()
-  }, [product, initialReviews.length])
-
-  // Checkout
-  const handleBuy = useCallback(async () => {
-    if (!user) {
-      router.push(`/login?redirect=/p/${slug}`)
-      return
-    }
-    if (!product) return
-
-    setIsAddingToCart(true)
-    try {
-      const res = await fetch('/api/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          product_id: product.id,
-          variant_id: selectedVariant || undefined,
-        }),
-      })
-
-      const data = await res.json()
-      if (res.ok && data.url) {
-        window.location.href = data.url
-      } else {
-        setError(data.error || 'Erro ao criar checkout')
-      }
-    } catch {
-      setError('Erro de conexão. Tente novamente.')
-    } finally {
-      setIsAddingToCart(false)
-    }
-  }, [user, product, slug, selectedVariant, router])
-
-  // Favoritar
-  const toggleFavorite = useCallback(async () => {
-    if (!user || !product) return
-    try {
-      const res = await fetch('/api/v1/favorites', {
-        method: isFavorited ? 'DELETE' : 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ product_id: product.id }),
-      })
-      if (res.ok) setIsFavorited(!isFavorited)
-    } catch {
-      // Erro silencioso
-    }
-  }, [user, product, isFavorited])
-
-  // Loading state
-  if (isLoading) {
-    return (
-      <PageTransition>
-        <div className="flex items-center justify-center py-20">
-          <Loader2 size={32} className="animate-spin text-brand-600 dark:text-brand-400" />
-        </div>
-      </PageTransition>
-    )
+  async function handleFotoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files || [])
+    if (files.length === 0) return
+    const readers = files.slice(0, 4 - reviewFotos.length).map((f) => new Promise<string>((res) => {
+      if (f.size > 5 * 1024 * 1024) { toast.error('Foto muito grande (máx 5MB)'); res(''); return }
+      const reader = new FileReader()
+      reader.onload = () => res(String(reader.result || ''))
+      reader.readAsDataURL(f)
+    }))
+    const urls = (await Promise.all(readers)).filter(Boolean)
+    setReviewFotos(prev => [...prev, ...urls].slice(0, 4))
+    e.target.value = ''
   }
 
-  // Error state
-  if (error || !product) {
-    return (
-      <PageTransition>
-        <div className="max-w-4xl mx-auto px-4 py-20 text-center">
-          <AlertTriangle size={48} className="mx-auto text-amber-500 mb-4" />
-          <h1 className="font-display font-extrabold text-2xl text-surface-900 dark:text-white mb-2">
-            {error || 'Produto não encontrado'}
-          </h1>
-          <a href="/categorias" className="btn-primary inline-block mt-4">Ver Categorias</a>
-        </div>
-      </PageTransition>
-    )
+  function removerFoto(idx: number) {
+    setReviewFotos(prev => prev.filter((_, i) => i !== idx))
   }
 
-  const discount = product.originalPrice
-    ? Math.round(((product.originalPrice - product.basePrice) / product.originalPrice) * 100)
-    : 0
-  const primaryImage = product.images.find(i => i.isPrimary) || product.images[0]
-  const inStock = product?.stockQuantity ? product.stockQuantity > 0 : true
-  const isOwner = user?.id === product?.vendor?.id
+  function enviarReview() {
+    if (!user) { toast.error('Faça login para avaliar'); return }
+    if (reviewTitle.trim().length < 3) { toast.error('Digite um título'); return }
+    if (reviewBody.trim().length < 5) { toast.error('Escreva um comentário'); return }
+    setEnviandoReview(true)
+    try {
+      addReview({
+        productId: product.id || slug,
+        userId: user.id,
+        userName: user.email.split('@')[0] || 'Usuário',
+        rating: reviewRating,
+        title: reviewTitle.trim(),
+        body: reviewBody.trim(),
+        media: { fotos: reviewFotos, arquivos: [] },
+        verified: true,
+        recommends: reviewRating >= 4,
+      })
+      // Recompensa: +25 KD Points por avaliação (com foto +50)
+      const bonusKD = reviewFotos.length > 0 ? 50 : 25
+      ganharKD(bonusKD, `Avaliação em: ${product.titulo.slice(0, 30)}`)
+      pushNotif({ tipo: 'kd', titulo: `+${bonusKD} KD Points`, mensagem: 'Obrigado por avaliar! Você ganhou pontos.', link: '/recompensas', icone: '⭐' })
+      toast.success(`Avaliação publicada! +${bonusKD} KD 🎉`, { icon: '⭐' })
+      setReviewTitle(''); setReviewBody(''); setReviewFotos([]); setReviewRating(5); setShowReviewForm(false)
+    } finally { setEnviandoReview(false) }
+  }
+
+  function copiarLink() {
+    navigator.clipboard.writeText(`https://kiyvo.com.br/p/${product.slug}`).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    })
+  }
+
+  const { push: pushNotif } = useNotif()
+  const { init: initKD, ganhar: ganharKD } = useKD()
+  useEffect(() => { initKD() }, [initKD])
+  const [confettiKey, setConfettiKey] = useState(0)
+
+  // Produtos relacionados (mesma categoria, excluindo o atual) — usando any[] pra evitar conflitos de tipo
+  const produtosRelacionados = useMemo(() => {
+    const all: any[] = [...(DEMO_PRODUCTS as any[]), ...(GG_PRODUCTS as any[]), ...(MEGA_PRODUCTS as any[])]
+    return all
+      .filter((p: any) => p.id !== (product.id || slug) && (p.categoria === product.categoria || p.slug !== product.slug))
+      .sort(() => Math.random() - 0.5)
+      .slice(0, 4)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [product.id, product.categoria, slug])
+
+  function comprarAgora() {
+    guard('checkout', {
+      onSuccess: () => {
+        setComprando(true)
+        setConfettiKey(k => k + 1)
+        pushNotif({ tipo: 'compra', titulo: 'Indo para o checkout', mensagem: `Você está comprando: ${product.titulo}`, link: '/checkout', icone: '🛒' })
+        const params = new URLSearchParams({
+          produtoId: product.id || slug,
+          produtoSlug: product.slug || slug,
+          produtoNome: product.titulo,
+          preco: String(preco),
+          qty: String(qty),
+          emoji: product.emoji || '✨',
+          gradient: product.gradient || 'from-brand-500 to-brand-700',
+          categoria: product.categoria || 'digital',
+          vendedor: product.vendedor_nome || 'Vendedor KIYVO',
+        })
+        setTimeout(() => {
+          router.push(`/checkout?${params.toString()}`)
+        }, 450)
+      },
+    })
+  }
+
+  function adicionarCarrinho() {
+    guard('cart', {
+      onSuccess: () => {
+        addToCart({
+          id: product.id || slug,
+          titulo: product.titulo,
+          preco,
+          preco_de: precoDe,
+          gradient: product.gradient,
+          emoji: product.emoji,
+          slug: product.slug,
+          categoria: product.categoria,
+          vendedor_nome: product.vendedor_nome,
+          qty,
+        })
+        toast.success(`Adicionado ao carrinho! (${qty}x)`, {
+          icon: '🛒',
+          duration: 2000,
+        })
+      },
+    })
+  }
 
   return (
-    <PageTransition>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-sm text-surface-400 mb-6">
-          <Link href="/" className="hover:text-brand-500 transition-colors">Início</Link>
-          <ChevronRight size={14} />
-          <Link href="/categorias" className="hover:text-brand-500 transition-colors">Categorias</Link>
-          <ChevronRight size={14} />
-          <span className="text-surface-600 dark:text-surface-300 truncate">{product.title}</span>
-        </nav>
+    <>
+    <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0B0F1A]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+        {/* Navegação */}
+        <motion.button
+          initial={{ opacity: 0, x: -8 }}
+          animate={{ opacity: 1, x: 0 }}
+          onClick={() => router.back()}
+          className="flex items-center gap-1.5 text-sm font-semibold text-slate-600 dark:text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 mb-4"
+        >
+          <ArrowLeft className="w-4 h-4" /> Voltar
+        </motion.button>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
-          {/* Galeria de Imagens */}
-          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-            <div className="relative aspect-square rounded-2xl overflow-hidden bg-surface-100 dark:bg-surface-800 mb-4">
-              <AnimatePresence mode="wait">
-                <motion.img
-                  key={selectedImage}
-                  src={product.images[selectedImage]?.imageUrl || primaryImage?.imageUrl || '/placeholder-product.svg'}
-                  alt={product.images[selectedImage]?.altText || product.title}
-                  className="w-full h-full object-cover"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                />
-              </AnimatePresence>
-              {discount > 0 && (
-                <div className="absolute top-4 left-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold">
-                  -{discount}%
-                </div>
-              )}
-              {product.isFeatured && (
-                <div className="absolute top-4 right-4 bg-brand-500 text-white px-3 py-1 rounded-full text-sm font-bold">
-                  ⭐ Destaque
-                </div>
-              )}
-            </div>
-            {/* Thumbnails */}
-            {product.images.length > 1 && (
-              <div className="flex gap-2 overflow-x-auto">
-                {product.images.map((img, i) => (
-                  <button
-                    key={img.id}
-                    onClick={() => setSelectedImage(i)}
-                    className={`shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${
-                      selectedImage === i ? 'border-brand-500' : 'border-transparent opacity-70 hover:opacity-100'
-                    }`}
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-10">
+          {/* Coluna da esquerda: galeria */}
+          <div className="lg:col-span-3 space-y-4">
+            {/* Capa grande com gradiente */}
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className={`relative aspect-[4/3] sm:aspect-[16/10] rounded-[2rem] overflow-hidden bg-gradient-to-br ${product.gradient}`}
+            >
+              {/* Efeitos decorativos */}
+              <div className="absolute inset-0 opacity-20" style={{
+                backgroundImage: 'radial-gradient(circle at 20% 20%, rgba(255,255,255,0.7), transparent 40%), radial-gradient(circle at 80% 80%, rgba(0,0,0,0.5), transparent 50%)'
+              }} />
+              <div className="absolute inset-0 flex items-center justify-center">
+                {product.imagem_capa ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={product.imagem_capa} alt={product.titulo} className="w-full h-full object-cover" />
+                ) : (
+                  <motion.span
+                    initial={{ scale: 0.7, rotate: -4 }}
+                    animate={{ scale: 1, rotate: 0 }}
+                    transition={{ type: 'spring', stiffness: 180, delay: 0.2 }}
+                    className="text-[6rem] sm:text-[8rem] md:text-[10rem] drop-shadow-2xl"
                   >
-                    <img src={img.imageUrl} alt={img.altText || ''} className="w-full h-full object-cover" />
-                  </button>
+                    {product.emoji}
+                  </motion.span>
+                )}
+              </div>
+
+              {/* Badges */}
+              <div className="absolute top-3 left-3 right-3 flex items-start justify-between gap-2">
+                {desconto > 0 && (
+                  <motion.span
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ delay: 0.4 }}
+                    className="bg-red-500 text-white text-[10px] sm:text-xs font-black uppercase tracking-wider px-3 py-1.5 rounded-full shadow-xl"
+                  >
+                    -{desconto}%
+                  </motion.span>
+                )}
+                {product.boost && (
+                  <motion.span
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ delay: 0.5 }}
+                    className="ml-auto bg-amber-400 text-amber-950 text-[10px] sm:text-xs font-black uppercase tracking-wider px-3 py-1.5 rounded-full flex items-center gap-1 shadow-xl"
+                  >
+                    <Zap className="w-3.5 h-3.5" /> Destaque
+                  </motion.span>
+                )}
+              </div>
+
+              {/* Selo inferior */}
+              <div className="absolute bottom-3 left-3 flex items-center gap-1.5 bg-black/40 backdrop-blur-md text-white text-[10px] sm:text-xs font-bold px-2.5 py-1.5 rounded-full">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                Compra 100% segura
+              </div>
+            </motion.div>
+
+            {/* Descrição */}
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="bg-white dark:bg-[#111827] rounded-[1.5rem] p-5 sm:p-7 border border-slate-100 dark:border-slate-800"
+            >
+              <h2 className="text-lg sm:text-xl font-black text-[#0F172A] dark:text-white mb-3 flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-brand-500" /> Sobre este produto
+              </h2>
+              <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-line">
+                {product.descricao || product.descricao_curta || 'Produto digital com entrega automática. Ao comprar, você recebe acesso imediato após confirmação do pagamento. Qualquer dúvida, nosso suporte está disponível 7 dias por semana.'}
+              </p>
+
+              {/* O que você recebe */}
+              <div className="mt-6 grid sm:grid-cols-2 gap-3">
+                {[
+                  { icon: Package, texto: 'Entrega automática após compra' },
+                  { icon: Clock, texto: 'Acesso vitalício (exceto mentorias)' },
+                  { icon: ShieldCheck, texto: `Garantia de ${garantiaDias} dias` },
+                  { icon: MessageCircle, texto: 'Suporte direto com o vendedor' },
+                ].map((item, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, x: -8 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: i * 0.1 }}
+                    className="flex items-start gap-2.5 text-sm text-slate-700 dark:text-slate-300"
+                  >
+                    <div className="mt-0.5 w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center flex-shrink-0">
+                      <item.icon className="w-3.5 h-3.5" />
+                    </div>
+                    <span className="font-medium">{item.texto}</span>
+                  </motion.div>
                 ))}
               </div>
-            )}
-          </motion.div>
+            </motion.div>
 
-          {/* Informações do Produto */}
-          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
-            {/* Título e Tags */}
-            <div>
-              {product.tags.length > 0 && (
-                <div className="flex gap-2 mb-2">
-                  {product.tags.slice(0, 3).map((tag) => (
-                    <span key={tag} className="text-xs px-2 py-0.5 bg-brand-50 dark:bg-brand-950/50 text-brand-600 dark:text-brand-400 rounded-full">
-                      {tag}
-                    </span>
+                        {/* Reviews reais com upload de fotos */}
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="bg-white dark:bg-[#111827] rounded-[1.5rem] p-5 sm:p-7 border border-slate-100 dark:border-slate-800"
+            >
+              <h2 className="text-lg sm:text-xl font-black text-[#0F172A] dark:text-white mb-4 flex items-center gap-2 flex-wrap">
+                <Star className="w-5 h-5 text-amber-500 fill-amber-400" />
+                Avaliações ({totalReviews.toLocaleString('pt-BR')})
+                {user && (
+                  <button onClick={() => setShowReviewForm(v => !v)}
+                    className="ml-auto inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-brand-600 hover:bg-brand-700 text-white text-xs font-black shadow-md shadow-brand-500/20 transition">
+                    <Star className="w-3.5 h-3.5" /> {showReviewForm ? 'Fechar' : 'Avaliar'}
+                  </button>
+                )}
+              </h2>
+              <div className="flex items-center gap-3 mb-5">
+                <span className="text-4xl font-black text-[#0F172A] dark:text-white">{avgRating.toFixed(1)}</span>
+                <div>
+                  <div className="flex gap-0.5">
+                    {[1,2,3,4,5].map(s => (
+                      <Star key={s} className={`w-5 h-5 ${s <= Math.round(avgRating) ? 'fill-amber-400 text-amber-400' : 'text-slate-300 dark:text-slate-700'}`} />
+                    ))}
+                  </div>
+                  <p className="text-xs text-slate-500 mt-0.5">Baseado em {totalReviews.toLocaleString('pt-BR')} avaliações</p>
+                </div>
+              </div>
+
+              <AnimatePresence>
+                {showReviewForm && user && (
+                  <motion.div initial={{ opacity:0, height:0 }} animate={{ opacity:1, height:'auto' }} exit={{ opacity:0, height:0 }}
+                    className="overflow-hidden mb-5">
+                    <div className="bg-brand-50 dark:bg-brand-950/20 border border-brand-200 dark:border-brand-900 rounded-2xl p-4 space-y-3">
+                      <div>
+                        <label className="text-[11px] font-black uppercase tracking-widest text-slate-500 block mb-1.5">Sua nota</label>
+                        <div className="flex gap-1">
+                          {[1,2,3,4,5].map(s => (
+                            <button key={s} type="button" onClick={() => setReviewRating(s)} className="p-1 transition hover:scale-110">
+                              <Star className={`w-7 h-7 ${s <= reviewRating ? 'fill-amber-400 text-amber-400' : 'text-slate-300 dark:text-slate-600'}`} />
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-[11px] font-black uppercase tracking-widest text-slate-500 block mb-1.5">Título</label>
+                        <input value={reviewTitle} onChange={e => setReviewTitle(e.target.value)} maxLength={60}
+                          placeholder="Ex: Excelente material!"
+                          className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0F172A] px-4 py-2.5 text-sm focus:outline-none focus:border-brand-500" />
+                      </div>
+                      <div>
+                        <label className="text-[11px] font-black uppercase tracking-widest text-slate-500 block mb-1.5">Sua avaliação</label>
+                        <textarea value={reviewBody} onChange={e => setReviewBody(e.target.value)} maxLength={500} rows={3}
+                          placeholder="Conte sua experiência com este produto..."
+                          className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0F172A] px-4 py-2.5 text-sm focus:outline-none focus:border-brand-500 resize-none" />
+                      </div>
+                      <div>
+                        <label className="text-[11px] font-black uppercase tracking-widest text-slate-500 block mb-1.5 flex items-center gap-1">
+                          <Camera className="w-3 h-3" /> Fotos (até 4)
+                        </label>
+                        <div className="flex flex-wrap gap-2">
+                          {reviewFotos.map((url, i) => (
+                            <div key={i} className="relative w-16 h-16 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700">
+                              <img src={url} alt="" className="w-full h-full object-cover" />
+                              <button onClick={() => removerFoto(i)} className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-black/60 text-white flex items-center justify-center">
+                                <XIcon className="w-3 h-3" />
+                              </button>
+                            </div>
+                          ))}
+                          {reviewFotos.length < 4 && (
+                            <label className="w-16 h-16 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-600 flex flex-col items-center justify-center text-slate-400 hover:border-brand-500 hover:text-brand-500 cursor-pointer transition">
+                              <ImagePlus className="w-5 h-5" />
+                              <span className="text-[9px] font-black uppercase mt-0.5">Add</span>
+                              <input type="file" accept="image/*" multiple className="hidden" onChange={handleFotoUpload} />
+                            </label>
+                          )}
+                        </div>
+                      </div>
+                      <button onClick={enviarReview} disabled={enviandoReview}
+                        className="w-full bg-gradient-to-br from-brand-600 to-brand-700 hover:from-brand-700 hover:to-brand-800 text-white rounded-full py-3 font-black text-sm disabled:opacity-50 shadow-lg shadow-brand-500/20">
+                        {enviandoReview ? 'Publicando...' : 'Publicar avaliação'}
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {reviews.length === 0 ? (
+                <div className="text-center py-10 text-slate-400">
+                  <Star className="w-10 h-10 mx-auto mb-2 opacity-30" />
+                  <p className="text-sm font-bold">Ainda não há avaliações. Seja o primeiro!</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {reviews.slice(0, 10).map((r, i) => (
+                    <motion.div key={r.id}
+                      initial={{ opacity: 0, y: 8 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: i * 0.05 }}
+                      className="border-b border-slate-100 dark:border-slate-800 last:border-0 pb-4 last:pb-0"
+                    >
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 text-white font-black text-xs flex items-center justify-center">
+                          {r.userName.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-bold text-sm text-[#0F172A] dark:text-white flex items-center gap-1.5 flex-wrap">
+                            {r.userName}
+                            {r.verified && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />}
+                            {r.recommends && <span className="text-[9px] font-black uppercase bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 px-1.5 py-0.5 rounded-full">Recomenda</span>}
+                          </p>
+                          <p className="text-[10px] text-slate-400">{new Date(r.createdAt).toLocaleDateString('pt-BR')}</p>
+                        </div>
+                        <div className="flex gap-0.5">
+                          {[1,2,3,4,5].map(s => (
+                            <Star key={s} className={`w-3.5 h-3.5 ${s <= r.rating ? 'fill-amber-400 text-amber-400' : 'text-slate-300 dark:text-slate-700'}`} />
+                          ))}
+                        </div>
+                      </div>
+                      {r.title && <p className="font-black text-sm text-[#0F172A] dark:text-white pl-10 mb-1">{r.title}</p>}
+                      <p className="text-sm text-slate-600 dark:text-slate-400 pl-10 leading-relaxed">{r.body}</p>
+                      {r.media.fotos.length > 0 && (
+                        <div className="flex gap-2 pl-10 mt-2 flex-wrap">
+                          {r.media.fotos.map((f, j) => (
+                            <a key={j} href={f} target="_blank" rel="noopener noreferrer">
+                              <img src={f} alt="" className="w-16 h-16 rounded-lg object-cover border border-slate-200 dark:border-slate-700 hover:scale-105 transition" />
+                            </a>
+                          ))}
+                        </div>
+                      )}
+                      {user && (
+                        <div className="pl-10 mt-2">
+                          <button onClick={() => toggleLike(r.id, user.id)}
+                            className={`inline-flex items-center gap-1 text-xs font-bold transition ${r.likes.includes(user.id) ? 'text-brand-600' : 'text-slate-400 hover:text-brand-500'}`}>
+                            <ThumbsUp className={`w-3.5 h-3.5 ${r.likes.includes(user.id) ? 'fill-current' : ''}`} />
+                            {r.likes.length > 0 ? `Útil (${r.likes.length})` : 'Útil'}
+                          </button>
+                        </div>
+                      )}
+                    </motion.div>
                   ))}
                 </div>
               )}
-              <h1 className="font-display font-extrabold text-2xl lg:text-3xl text-surface-900 dark:text-white">
-                {product.title}
-              </h1>
-            </div>
+            </motion.div>
+          </div>
 
-            {/* Rating + Vendas */}
-            <div className="flex items-center gap-4 text-sm">
-              <div className="flex items-center gap-1">
-                <Star size={16} className="text-amber-400 fill-amber-400" />
-                <span className="font-semibold text-surface-900 dark:text-white">{product.rating.toFixed(1)}</span>
-                <span className="text-surface-400">({product.reviewCount} avaliações)</span>
-              </div>
-              <div className="flex items-center gap-1 text-surface-400">
-                <Eye size={14} />
-                <span>{product.viewsCount} visualizações</span>
-              </div>
-              <div className="flex items-center gap-1 text-surface-400">
-                <ShoppingCart size={14} />
-                <span>{product.salesCount} vendas</span>
-              </div>
-            </div>
-
-            {/* Preço */}
-            <div className="space-y-1">
-              <div className="flex items-baseline gap-3">
-                <span className="font-display font-extrabold text-3xl text-surface-900 dark:text-white">
-                  {formatPrice(product.basePrice)}
+          {/* Coluna da direita: compra */}
+          <div className="lg:col-span-2">
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1, duration: 0.5 }}
+              className="lg:sticky lg:top-24 bg-white dark:bg-[#111827] rounded-[2rem] border border-slate-100 dark:border-slate-800 p-5 sm:p-7 shadow-xl shadow-brand-500/5"
+            >
+              {/* Categoria */}
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-brand-600 dark:text-brand-400 bg-brand-500/10 px-2.5 py-1 rounded-full">
+                  {catLabel}
                 </span>
-                {product.originalPrice && discount > 0 && (
-                  <span className="text-lg text-surface-400 line-through">
-                    {formatPrice(product.originalPrice)}
+                {(product.total_vendas ?? 0) > 0 && (
+                  <span className="flex items-center gap-1 text-[10px] sm:text-[11px] font-bold text-slate-500 dark:text-slate-400">
+                    <TrendingUp className="w-3 h-3" /> +{(product.total_vendas ?? 0).toLocaleString('pt-BR')} vendas
                   </span>
                 )}
               </div>
-              <p className="text-xs text-surface-400">Pagamento seguro • Escrow KIYVO</p>
-            </div>
 
-            {/* Selos de confiança */}
-            <div className="flex gap-3">
-              <div className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400">
-                <Shield size={14} />
-                <span>Compra Garantida</span>
-              </div>
-              {product.isDigital && (
-                <div className="flex items-center gap-1.5 text-xs text-brand-600 dark:text-brand-400">
-                  <Zap size={14} />
-                  <span>Entrega Automática</span>
-                </div>
+              {/* Título */}
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-[#0F172A] dark:text-white leading-tight">
+                {product.titulo}
+              </h1>
+
+              {/* Subtítulo */}
+              {product.descricao_curta && (
+                <p className="text-sm text-slate-600 dark:text-slate-400 mt-2 leading-relaxed">{product.descricao_curta}</p>
               )}
-              <div className="flex items-center gap-1.5 text-xs text-surface-500">
-                <Clock size={14} />
-                <span>{product.deliveryType === 'automatic' ? 'Instantânea' : 'Até 24h'}</span>
-              </div>
-            </div>
 
-            {/* Variantes */}
-            {product.variants.length > 0 && (
-              <div className="space-y-2">
-                <h3 className="font-display font-bold text-sm text-surface-900 dark:text-white">Opções</h3>
-                <div className="flex gap-2 flex-wrap">
-                  {product.variants.map((variant) => (
-                    <button
-                      key={variant.id}
-                      onClick={() => setSelectedVariant(selectedVariant === variant.id ? null : variant.id)}
-                      className={`px-4 py-2 rounded-xl text-sm border transition-all ${
-                        selectedVariant === variant.id
-                          ? 'border-brand-500 bg-brand-50 dark:bg-brand-950/50 text-brand-600 dark:text-brand-400'
-                          : 'border-surface-200 dark:border-surface-700 hover:border-brand-300'
-                      }`}
-                    >
-                      {Object.values(variant.attributes).join(' · ') || variant.sku}
-                      {variant.priceAdjustment > 0 && (
-                        <span className="ml-1 text-xs">(+{formatPrice(variant.priceAdjustment)})</span>
-                      )}
-                    </button>
+              {/* Rating */}
+              <div className="flex items-center gap-2 mt-4">
+                <div className="flex gap-0.5">
+                  {[1,2,3,4,5].map(s => (
+                    <Star key={s} className={`w-4 h-4 ${s <= Math.round(product.rating || 0) ? 'fill-amber-400 text-amber-400' : 'text-slate-300 dark:text-slate-700'}`} />
+                  ))}
+                </div>
+                <span className="text-sm font-bold text-[#0F172A] dark:text-white">{product.rating?.toFixed(1)}</span>
+                <span className="text-xs text-slate-500">({product.total_reviews?.toLocaleString('pt-BR')} avaliações)</span>
+              </div>
+
+              {/* Preço */}
+              <div className="mt-6 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-2xl">
+                {precoDe && (
+                  <p className="text-sm text-slate-500 dark:text-slate-400 line-through">
+                    De R$ {precoDe.toFixed(2).replace('.', ',')}
+                  </p>
+                )}
+                <div className="flex items-baseline gap-2 flex-wrap">
+                  <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 self-end mb-1">Por apenas</span>
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl sm:text-4xl font-black text-[#0F172A] dark:text-white">R$ {preco.toFixed(2).replace('.', ',')}</span>
+                  {desconto > 0 && (
+                    <span className="bg-red-500 text-white text-xs font-black px-2 py-0.5 rounded-full">{desconto}% OFF</span>
+                  )}
+                </div>
+                {parcelas > 1 && preco >= 20 && (
+                  <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                    ou <strong className="text-emerald-600 dark:text-emerald-400">{parcelas}x de R$ {parcelaValor.toFixed(2).replace('.', ',')}</strong> sem juros no cartão
+                  </p>
+                )}
+                <p className="text-xs text-slate-500 mt-1">
+                  À vista no PIX: <strong>R$ {(preco * 0.95).toFixed(2).replace('.', ',')}</strong> (5% de desconto)
+                </p>
+              </div>
+
+              {/* Cupom automático de boas-vindas */}
+              <CupomAutomatico preco={preco} productId={product.id || slug} vendedor={product.vendedor_nome} />
+
+              {/* Quantidade */}
+              <div className="mt-4 flex items-center gap-3">
+                <span className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Quantidade</span>
+                <div className="flex items-center border border-slate-200 dark:border-slate-700 rounded-full">
+                  <button onClick={() => setQty(Math.max(1, qty - 1))} className="w-8 h-8 flex items-center justify-center font-bold text-slate-600 dark:text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 disabled:opacity-30" disabled={qty <= 1}>−</button>
+                  <span className="w-8 text-center font-bold text-sm text-[#0F172A] dark:text-white">{qty}</span>
+                  <button onClick={() => setQty(qty + 1)} className="w-8 h-8 flex items-center justify-center font-bold text-slate-600 dark:text-slate-400 hover:text-brand-600 dark:hover:text-brand-400">+</button>
+                </div>
+              </div>
+
+              {/* CTAs: Adicionar ao carrinho + Comprar agora */}
+              <div className="mt-5 flex flex-col gap-2">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={adicionarCarrinho}
+                  className="w-full bg-brand-600 hover:bg-brand-700 text-white rounded-full py-4 font-black text-base sm:text-lg flex items-center justify-center gap-2 shadow-lg shadow-brand-500/30 transition-all pulse-glow"
+                >
+                  <ShoppingCart className="w-5 h-5" />
+                  Adicionar ao carrinho
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.01 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={comprarAgora}
+                  disabled={comprando}
+                  className="w-full bg-transparent border-2 border-slate-200 dark:border-white/20 hover:border-[#0F172A] dark:hover:border-white text-[#0F172A] dark:text-white rounded-full py-3 font-bold text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-60"
+                >
+                  {comprando ? 'Processando...' : 'Comprar agora (1 clique)'}
+                </motion.button>
+              </div>
+
+              <motion.button
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
+                onClick={() => {
+                  toggleFav({
+                    id: product.id || slug,
+                    titulo: product.titulo,
+                    preco: preco,
+                    preco_de: precoDe,
+                    gradient: product.gradient,
+                    emoji: product.emoji,
+                    slug: product.slug,
+                    categoria: product.categoria,
+                    vendedor_nome: product.vendedor_nome,
+                  })
+                  toast.success(isFav(product.id || slug) ? 'Removido dos favoritos' : '❤️ Adicionado aos favoritos!')
+                }}
+                className={`w-full mt-2.5 border-2 rounded-full py-3 font-bold text-sm flex items-center justify-center gap-2 transition ${
+                  isFav(product.id || slug)
+                    ? 'bg-red-50 dark:bg-red-500/10 border-red-300 dark:border-red-500/40 text-red-600 dark:text-red-400'
+                    : 'bg-white dark:bg-transparent border-slate-200 dark:border-slate-700 hover:border-brand-500 dark:hover:border-brand-500 text-[#0F172A] dark:text-white'
+                }`}
+              >
+                <Heart className={`w-4 h-4 ${isFav(product.id || slug) ? 'fill-red-500' : ''}`} />
+                {isFav(product.id || slug) ? 'Nos favoritos' : 'Adicionar aos favoritos'}
+              </motion.button>
+
+              {/* Compartilhar */}
+              <button onClick={copiarLink} className="w-full mt-3 text-xs font-bold text-slate-500 hover:text-brand-600 dark:text-slate-400 flex items-center justify-center gap-1.5">
+                <AnimatePresence mode="wait">
+                  {copied ? (
+                    <motion.span key="copiado" initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
+                      <CheckCircle2 className="w-3.5 h-3.5" /> Link copiado!
+                    </motion.span>
+                  ) : (
+                    <motion.span key="compartilhar" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-1.5">
+                      <Share2 className="w-3.5 h-3.5" /> Compartilhar este produto
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </button>
+
+              {/* Selos */}
+              <div className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800 grid grid-cols-3 gap-2">
+                {[
+                  { icon: Lock, texto: 'Pagamento seguro' },
+                  { icon: ShieldCheck, texto: 'Privacidade LGPD' },
+                  { icon: Award, texto: 'Vendedor verificado' },
+                ].map((selo, i) => (
+                  <div key={i} className="flex flex-col items-center text-center gap-1 p-2">
+                    <selo.icon className="w-5 h-5 text-brand-500" />
+                    <p className="text-[10px] font-bold text-slate-600 dark:text-slate-400 leading-tight">{selo.texto}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Vendedor */}
+              <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">Vendido por</p>
+                <div className="flex items-center gap-2.5">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 text-white font-black flex items-center justify-center">
+                    {(product.vendedor_nome || 'V').charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <p className="font-bold text-sm text-[#0F172A] dark:text-white">{product.vendedor_nome}</p>
+                    <div className="flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">
+                      <CheckCircle2 className="w-3 h-3" /> Verificado
+                    </div>
+                  </div>
+                  {(() => {
+                    const store = STORES.find(s => s.name === product.vendedor_nome)
+                    const handle = store ? store.handle.replace('@', '') : null
+                    if (!handle) return <div className="ml-auto" />
+                    return (
+                      <Link href={`/loja/${handle}`} className="ml-auto text-xs font-bold text-brand-600 dark:text-brand-400 hover:underline flex items-center gap-0.5 bg-brand-50 dark:bg-brand-950/30 px-3 py-1.5 rounded-full transition hover:bg-brand-100 dark:hover:bg-brand-900/40">
+                        <ExternalLink className="w-3 h-3" /> Ver loja
+                      </Link>
+                    )
+                  })()}
+                </div>
+              </div>
+
+              {/* Formas de pagamento */}
+              <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2 flex items-center gap-1">
+                  <CreditCard className="w-3 h-3" /> Formas de pagamento
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {['PIX', 'Crédito', 'Débito', 'Boleto'].map(met => (
+                    <span key={met} className="text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-2 py-1 rounded-full">{met}</span>
                   ))}
                 </div>
               </div>
-            )}
-
-            {/* Botões de ação */}
-            <div className="flex gap-3">
-              <button
-                onClick={handleBuy}
-                disabled={!inStock || isAddingToCart || isOwner}
-                className="flex-1 btn-primary inline-flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isAddingToCart ? (
-                  <Loader2 size={18} className="animate-spin" />
-                ) : !inStock ? (
-                  'Esgotado'
-                ) : isOwner ? (
-                  'Seu produto'
-                ) : (
-                  <>
-                    <ShoppingCart size={18} />
-                    Comprar Agora
-                  </>
-                )}
-              </button>
-              <button
-                onClick={toggleFavorite}
-                className="p-3 rounded-xl border border-surface-200 dark:border-surface-700 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
-                aria-label={isFavorited ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
-              >
-                <Heart size={20} className={isFavorited ? 'fill-red-500 text-red-500' : 'text-surface-400'} />
-              </button>
-              <button
-                onClick={() => {
-                  navigator.clipboard.writeText(window.location.href)
-                }}
-                className="p-3 rounded-xl border border-surface-200 dark:border-surface-700 hover:bg-brand-50 dark:hover:bg-brand-950/30 transition-colors"
-                aria-label="Compartilhar"
-              >
-                <Share2 size={20} className="text-surface-400" />
-              </button>
-            </div>
-
-            {/* Vendor info */}
-            <div className="card-base p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-surface-100 dark:bg-surface-800 flex items-center justify-center overflow-hidden">
-                  {product.vendor.logoUrl ? (
-                    <img src={product.vendor.logoUrl} alt={product.vendor.storeName} className="w-full h-full object-cover" />
-                  ) : (
-                    <Package size={18} className="text-surface-400" />
-                  )}
-                </div>
-                <div className="flex-1">
-                  <Link href={`/vendedor/${product.vendor.slug}`} className="font-display font-bold text-sm text-surface-900 dark:text-white hover:text-brand-600 transition-colors">
-                    {product.vendor.storeName}
-                  </Link>
-                  <div className="flex items-center gap-2 text-xs text-surface-400">
-                    <Star size={12} className="text-amber-400 fill-amber-400" />
-                    <span>{product.vendor.ratingAvg.toFixed(1)}</span>
-                    <span>·</span>
-                    <span>{product.vendor.totalSales} vendas</span>
-                    {product.vendor.level !== 'silver' && (
-                      <>
-                        <span>·</span>
-                        <span className="text-brand-500 font-semibold">{product.vendor.level === 'diamond' ? '💎' : '🥇'}</span>
-                      </>
-                    )}
-                  </div>
-                </div>
-                <Link href={`/vendedor/${product.vendor.slug}`} className="text-xs text-brand-600 dark:text-brand-400 font-semibold">
-                  Ver loja →
-                </Link>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-
-        {/* Descrição */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="mt-12"
-        >
-          <h2 className="font-display font-bold text-xl text-surface-900 dark:text-white mb-4">Descrição</h2>
-          <div
-            className="prose prose-sm dark:prose-invert max-w-none card-base p-6"
-            dangerouslySetInnerHTML={{ __html: product.descriptionHtml || '<p>Sem descrição disponível.</p>' }}
-          />
-        </motion.div>
-
-        {/* Avaliações */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="mt-12"
-        >
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="font-display font-bold text-xl text-surface-900 dark:text-white">
-              Avaliações ({product.reviewCount})
-            </h2>
-            {user && !isOwner && (
-              <Link href={`/avaliar/${product.id}`} className="btn-secondary text-sm">
-                Avaliar produto
-              </Link>
-            )}
+            </motion.div>
           </div>
-
-          {reviews.length > 0 ? (
-            <div className="space-y-4">
-              {reviews.map((review) => (
-                <div key={review.id} className="card-base p-4">
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="flex items-center gap-1">
-                      {Array.from({ length: 5 }).map((_, i) => (
-                        <Star
-                          key={i}
-                          size={14}
-                          className={i < review.rating ? 'text-amber-400 fill-amber-400' : 'text-surface-200 dark:text-surface-700'}
-                        />
-                      ))}
-                    </div>
-                    <span className="text-sm font-medium text-surface-900 dark:text-white">
-                      {review.reviewerName}
-                    </span>
-                    <span className="text-xs text-surface-400">
-                      {new Date(review.createdAt).toLocaleDateString('pt-BR')}
-                    </span>
-                  </div>
-                  {review.comment && (
-                    <p className="text-sm text-surface-600 dark:text-surface-400">{review.comment}</p>
-                  )}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-8 card-base">
-              <MessageCircle size={32} className="mx-auto text-surface-300 mb-2" />
-              <p className="text-surface-500 dark:text-surface-400">Nenhuma avaliação ainda</p>
-              <p className="text-xs text-surface-400">Seja o primeiro a avaliar este produto!</p>
-            </div>
-          )}
-        </motion.div>
+        </div>
       </div>
-    </PageTransition>
+
+      {/* Barra flutuante MOBILE de compra (sempre visível no final da tela) */}
+      <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 pb-[env(safe-area-inset-bottom)]">
+        <div className="bg-white/95 dark:bg-[#111827]/95 backdrop-blur-xl border-t border-black/10 dark:border-white/10 px-4 py-3 flex items-center gap-3 shadow-[0_-8px_30px_rgba(0,0,0,0.08)]">
+          <button
+            onClick={() => {
+              toggleFav({
+                id: product.id || slug,
+                titulo: product.titulo,
+                preco: preco,
+                preco_de: precoDe,
+                gradient: product.gradient,
+                emoji: product.emoji,
+                slug: product.slug,
+                categoria: product.categoria,
+                vendedor_nome: product.vendedor_nome,
+              })
+              toast.success(isFav(product.id || slug) ? 'Removido dos favoritos' : '❤️ Adicionado aos favoritos!')
+            }}
+            className={`w-12 h-12 rounded-full border-2 flex items-center justify-center shrink-0 active:scale-95 transition-colors ${
+              isFav(product.id || slug)
+                ? 'border-red-300 dark:border-red-500/40 bg-red-50 dark:bg-red-500/10 text-red-500'
+                : 'border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-400'
+            }`}
+            aria-label="Favoritar"
+          >
+            <Heart className={`w-5 h-5 ${isFav(product.id || slug) ? 'fill-red-500' : ''}`} />
+          </button>
+          <div className="flex-1 min-w-0">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              À vista no PIX
+            </p>
+            <p className="text-lg font-black text-[#0F172A] dark:text-white leading-none">
+              R$ {(preco * 0.95).toFixed(2).replace('.', ',')}
+            </p>
+            <p className="text-[10px] text-slate-500 dark:text-slate-400 line-through">
+              R$ {(precoDe || (preco * 1.3)).toFixed(2).replace('.', ',')}
+            </p>
+          </div>
+          <motion.button
+            whileTap={{ scale: 0.96 }}
+            onClick={adicionarCarrinho}
+            className="bg-brand-600 text-white rounded-full px-5 py-3.5 font-black text-sm flex items-center gap-2 shadow-lg shadow-brand-500/30"
+          >
+            <ShoppingCart className="w-4 h-4" /> Add
+          </motion.button>
+        </div>
+      </div>
+      {/* Espaço para não cobrir conteúdo com a barra mobile */}
+      <div className="lg:hidden h-24" />
+
+      {/* Produtos relacionados */}
+      {produtosRelacionados.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-14 border-t border-slate-200/70 dark:border-slate-800">
+          <motion.div initial={{ opacity:0,y:10 }} whileInView={{ opacity:1,y:0 }} viewport={{ once:true }}
+            className="flex items-end justify-between mb-6">
+            <div>
+              <span className="text-[11px] font-black uppercase tracking-widest text-brand-600 dark:text-brand-400">Você também pode gostar</span>
+              <h2 className="text-2xl md:text-3xl font-black text-[#0F172A] dark:text-white">Produtos relacionados</h2>
+            </div>
+            <Link href="/buscar" className="text-xs font-black text-brand-600 dark:text-brand-400 hover:underline">Ver mais →</Link>
+          </motion.div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {produtosRelacionados.map((p, i) => (
+              <motion.div key={String(p.id || i)}
+                initial={{ opacity:0,y:20 }} whileInView={{ opacity:1,y:0 }} viewport={{ once:true }}
+                transition={{ delay: i*0.06, type:'spring', stiffness:200,damping:20 }}>
+                <ProductCard produto={p} />
+              </motion.div>
+            ))}
+          </div>
+        </section>
+      )}
+    </div>
+    <SimpleConfetti trigger={confettiKey} pieces={80} duration={1800} />
+    {AuthModal}
+    </>
   )
 }
+
+// Componente de cupom automático (gera cupom instantâneo para o comprador)
+function CupomAutomatico({ preco, productId, vendedor }: { preco: number; productId?: string; vendedor?: string }) {
+  const [copied, setCopied] = useState(false)
+  const [open, setOpen] = useState(true)
+  // Cupom entre 5% e 15% baseado no preço (maior preço -> maior desconto mas com teto de 15%)
+  const pct = useMemo(() => {
+    if (preco >= 200) return 15
+    if (preco >= 97) return 12
+    if (preco >= 47) return 10
+    if (preco >= 19) return 7
+    return 5
+  }, [preco])
+  const code = useMemo(() => {
+    const base = (vendedor || 'KIYVO').replace(/[^a-zA-Z]/g, '').slice(0,4).toUpperCase() || 'KIYVO'
+    const rand = Math.random().toString(36).slice(2,6).toUpperCase()
+    return `${base}${pct}${rand}`
+  }, [pct, vendedor])
+  const valorEconomia = (preco * pct / 100).toFixed(2).replace('.', ',')
+
+  function copiar() {
+    try {
+      navigator.clipboard?.writeText(code)
+      setCopied(true)
+      toast.success('Cupom copiado! Aplique no checkout.')
+      setTimeout(() => setCopied(false), 3000)
+    } catch { toast.error('Copie manualmente: ' + code) }
+  }
+
+  if (!open) return null
+
+  return (
+    <motion.div initial={{ opacity:0,y:10 }} animate={{ opacity:1,y:0 }}
+      className="mt-4 p-4 rounded-2xl bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white relative overflow-hidden">
+      <div className="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-white/10" />
+      <div className="absolute -left-4 -bottom-4 w-20 h-20 rounded-full bg-white/10" />
+      <button onClick={() => setOpen(false)} className="absolute top-2 right-2 text-white/70 hover:text-white">
+        <X className="w-4 h-4" />
+      </button>
+      <div className="relative flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
+          <Ticket className="w-5 h-5" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-[10px] font-black uppercase tracking-widest text-white/80 flex items-center gap-1">
+            <Sparkles className="w-3 h-3" /> Cupom exclusivo para você
+          </p>
+          <p className="text-sm font-black">
+            <span className="text-2xl">{pct}% OFF</span> <span className="font-normal text-white/90 text-xs">· economize R${valorEconomia}</span>
+          </p>
+          <button onClick={copiar} className="mt-2 inline-flex items-center gap-2 bg-white text-violet-700 rounded-full px-3 py-1.5 text-xs font-black hover:bg-white/90 transition">
+            {copied ? <><CheckCircle2 className="w-3.5 h-3.5" /> Copiado!</> : <><Percent className="w-3.5 h-3.5" />{code} <Copy className="w-3 h-3" /> Copiar</>}
+          </button>
+          <p className="text-[10px] text-white/80 mt-1.5">Aplique no checkout · válido só para esta sessão</p>
+        </div>
+      </div>
+    </motion.div>
+  )
+}
+
+

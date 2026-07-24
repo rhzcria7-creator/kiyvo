@@ -100,7 +100,7 @@ export default function ContaPage() {
             <Link href="/buyer/settings">
               <Button variant="ghost" size="sm" icon={<Bell size={18} />}>Notificações</Button>
             </Link>
-            <Link href="/anunciar">
+            <Link href="/vender">
               <Button size="sm">Anunciar</Button>
             </Link>
           </div>

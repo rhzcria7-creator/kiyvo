@@ -2,9 +2,10 @@
 
 import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
-import { ArrowRight, Shield, Zap, Award, Globe, Layers } from 'lucide-react'
+import { ArrowRight, Shield, Zap, Award } from 'lucide-react'
 import { motion } from 'framer-motion'
 import dynamic from 'next/dynamic'
+import { BlurText } from '@/components/ui/BlurText'
 
 const Hero3D = dynamic(() => import('./Hero3D').then((mod) => ({ default: mod.Hero3D })), {
   ssr: false,
@@ -48,28 +49,27 @@ export function Hero() {
             className="inline-flex items-center gap-2 px-3 py-1.5 bg-brand-50 dark:bg-brand-950/60 border border-brand-100 dark:border-brand-800/40 rounded-full mb-6"
           >
             <span className="w-2 h-2 bg-brand-500 rounded-full animate-pulse" />
-            <span className="text-sm font-medium text-brand-700 dark:text-brand-300 font-display">+1M usuários confiam no Kiyvo</span>
+            <span className="text-sm font-medium text-brand-700 dark:text-brand-300 font-display">+1M usuários confiam na Kiyvo</span>
           </motion.div>
 
-          {/* Heading */}
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="font-display font-extrabold text-4xl sm:text-5xl lg:text-6xl text-surface-900 dark:text-white leading-[1.1] tracking-tight"
-          >
-            O marketplace de{' '}
-            <span className="gradient-text">tudo que é digital</span>
-          </motion.h1>
+          {/* Heading com efeito BlurText (2 frases separadas para o gradient) */}
+          <h1 className="font-display font-extrabold text-4xl sm:text-5xl lg:text-6xl text-surface-900 dark:text-white leading-[1.1] tracking-tight">
+            <span className="inline-block">
+              <BlurText as="span" text="O marketplace de" delay={0.05} duration={0.5} stagger={0.03} animateOnMount />
+            </span>{' '}
+            <span className="gradient-text inline-block">
+              <BlurText as="span" text="tudo que é digital" delay={0.35} duration={0.55} stagger={0.04} animateOnMount />
+            </span>
+          </h1>
 
           {/* Subtitle */}
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
+            transition={{ duration: 0.6, delay: 0.7 }}
             className="mt-5 text-lg text-surface-500 dark:text-surface-400 leading-relaxed max-w-lg"
           >
-            Jogos, software, cursos, e-books, templates, gift cards e muito mais. Compre e venda com segurança nível bancário no Kiyvo.
+            Jogos, software, cursos, e-books, templates, gift cards e muito mais. Compre e venda com segurança nível bancário na Kiyvo.
           </motion.p>
 
           {/* CTA */}
@@ -84,7 +84,7 @@ export function Hero() {
                 Explorar Catálogo
               </Button>
             </Link>
-            <Link href="/anunciar">
+            <Link href="/vender">
               <Button variant="secondary" size="lg">
                 Comece a Vender
               </Button>

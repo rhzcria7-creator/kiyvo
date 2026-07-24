@@ -1,154 +1,143 @@
-// ─────────────────────────────────────────────────────────────
 // /p/[slug] — Server Component para Página de Produto
-// Busca dados no servidor (SEO, OpenGraph, performance)
-// Passa dados para o client component interativo
-// ─────────────────────────────────────────────────────────────
-
-import { Metadata } from 'next'
+// Tenta Supabase; se falhar/não encontrar, cai para DEMO_PRODUCTS para não deixar a página vazia.
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import { ProductPageClient } from '@/components/product/ProductPageClient'
+import { DEMO_PRODUCTS } from '@/lib/catalog/demoProducts'
+import { GG_PRODUCTS } from '@/lib/catalog/ggmaxProducts'
+import { MEGA_PRODUCTS } from '@/lib/catalog/megaCatalog'
+
+// Todos os produtos para busca (fallback sem Supabase) — 789 produtos
+const ALL_DEMO = [...DEMO_PRODUCTS, ...GG_PRODUCTS, ...MEGA_PRODUCTS]
 
 interface PageProps {
   params: Promise<{ slug: string }>
 }
 
-// Gerar metadata dinâmica para SEO
+function normalizeProduct(raw: Record<string, unknown>): Record<string, unknown> {
+  // Normaliza nomes de campos (title→titulo, base_price→preco, etc.)
+  const p = { ...raw }
+  if (!p.titulo && p.title) p.titulo = p.title
+  if (!p.descricao_curta && p.short_description) p.descricao_curta = p.short_description
+  if (!p.descricao && p.description) p.descricao = p.description
+  if (p.preco === undefined && p.base_price !== undefined) p.preco = p.base_price
+  if (p.preco_de === undefined && p.original_price !== undefined) p.preco_de = p.original_price
+  if (!p.categoria && p.category) p.categoria = p.category
+  if (!p.vendedor_nome && p.vendor) {
+    const v = (p.vendor as Record<string, unknown>) || {}
+    p.vendedor_nome = v.store_name || v.nome || 'Vendedor'
+  }
+  if (p.rating === undefined && p.average_rating !== undefined) p.rating = p.average_rating
+  if (!p.total_reviews && p.review_count) p.total_reviews = p.review_count
+  if (!p.total_vendas && p.sales_count) p.total_vendas = p.sales_count
+  if (p.boost === undefined && p.is_featured !== undefined) p.boost = p.is_featured
+  return p
+}
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params
-
-  try {
-    const admin = createAdminClient()
-    if (!admin) return { title: 'Produto — KIYVO' }
-
-    const { data: product } = await admin
-      .from('products')
-      .select('title, description, base_price, slug, status')
-      .eq('slug', slug)
-      .eq('status', 'published')
-      .single()
-
-    if (!product) return { title: 'Produto não encontrado — KIYVO' }
-
-    const p = product as Record<string, unknown>
-    const title = p.title as string
-    const description = (p.description as string) || `Compre ${title} com segurança no KIYVO`
-    const price = Number(p.base_price || 0)
-
+  // Primeiro tentar demo
+  const demo = ALL_DEMO.find(d => d.slug === slug || d.id === slug)
+  if (demo) {
     return {
-      title: `${title} — KIYVO`,
-      description: description.substring(0, 160),
+      title: `${demo.titulo} — KIYVO`,
+      description: (demo as any).descricao_curta,
       openGraph: {
-        title: `${title} — KIYVO`,
-        description: description.substring(0, 160),
-        url: `https://kiyvo.com/p/${slug}`,
+        title: `${demo.titulo} — KIYVO`,
+        description: (demo as any).descricao_curta,
+        url: `https://kiyvo.com.br/p/${(demo as any).slug}`,
         type: 'website',
         siteName: 'KIYVO',
       },
-      twitter: {
-        card: 'summary_large_image',
-        title: `${title} — R$ ${price.toFixed(2)}`,
-        description: description.substring(0, 160),
-      },
     }
-  } catch {
-    return { title: 'Produto — KIYVO' }
   }
+  try {
+    const supabase = createClient()
+    const { data } = await supabase
+      .from('products')
+      .select('titulo,title,descricao_curta,short_description,preco,base_price')
+      .eq('slug', slug)
+      .eq('status', 'active')
+      .maybeSingle()
+    if (data) {
+      const n = normalizeProduct(data as Record<string, unknown>)
+      const title = String(n.titulo || 'Produto')
+      const desc = String(n.descricao_curta || '').substring(0, 160)
+      return {
+        title: `${title} — KIYVO`,
+        description: desc || `Compre ${title} na KIYVO`,
+      }
+    }
+  } catch {}
+  return { title: 'Produto — KIYVO' }
 }
-
-// ISR: revalidar a cada 5 minutos
-export const revalidate = 300
 
 export default async function ProductPage({ params }: PageProps) {
   const { slug } = await params
 
+  // 1) Tentar demo primeiro (instantâneo)
+  const demo = ALL_DEMO.find(d => d.slug === slug || d.id === slug)
+
+  // 2) Tentar Supabase
   let product: Record<string, unknown> | null = null
   let reviews: Array<Record<string, unknown>> = []
-
-  try {
-    const admin = createAdminClient()
-
-    if (admin) {
-      // Buscar produto com vendor e imagens
-      const { data: productData } = await admin
-        .from('products')
-        .select(`
-          id, title, slug, description, base_price, original_price,
-          currency, stock_quantity, is_digital, delivery_type, status,
-          rating, review_count, sales_count, views_count, is_featured, tags,
-          category_id,
-          vendors!inner(id, user_id, store_name, slug, logo_url, rating_avg, total_sales, level, commission_rate),
-          product_images(id, image_url, alt_text, is_primary, sort_order),
-          product_variants(id, sku, attributes, price_adjustment, stock)
-        `)
-        .eq('slug', slug)
-        .eq('status', 'published')
-        .single()
-
-      if (productData) {
-        product = productData as Record<string, unknown>
-
-        // Incrementar view count
-        await admin.rpc('increment_product_views', { product_id_input: product.id })
-
-        // Buscar reviews
-        const { data: reviewsData } = await admin
-          .from('reviews')
-          .select('id, rating, comment, is_anonymous, created_at, reviewer:profiles!reviews_reviewer_id_fkey(full_name, username)')
-          .eq('product_id', product.id)
-          .eq('is_visible', true)
-          .order('created_at', { ascending: false })
-          .limit(20)
-
-        reviews = (reviewsData || []) as Array<Record<string, unknown>>
+  if (!demo) {
+    try {
+      const supabase = createClient()
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+      if (supabaseUrl && supabaseUrl !== 'https://placeholder.supabase.co') {
+        const { data } = await supabase
+          .from('products')
+          .select('*')
+          .eq('slug', slug)
+          .eq('status', 'active')
+          .maybeSingle()
+        if (data) {
+          product = normalizeProduct(data as Record<string, unknown>)
+        }
       }
-    }
-  } catch {
-    // Se Supabase não estiver disponível, component client tenta via API
+    } catch {}
+  } else {
+    product = demo as unknown as Record<string, unknown>
   }
 
   if (!product) {
-    // Não temos dados no servidor — o client tenta via API
-    return <ProductPageClient slug={slug} initialProduct={null} initialReviews={[]} />
+    // Tenta por ID literal
+    const byId = ALL_DEMO.find(d => d.id === slug)
+    if (byId) product = byId as unknown as Record<string, unknown>
   }
 
-  // Gerar JSON-LD para produto (SEO)
+  if (!product) {
+    notFound()
+  }
+
+  // JSON-LD
+  const preco = Number(product.preco || 0)
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Product',
-    name: product.title,
-    description: (product.description as string) || '',
-    url: `https://kiyvo.com/p/${slug}`,
+    name: product.titulo,
+    description: (product.descricao as string) || (product.descricao_curta as string) || '',
+    url: `https://kiyvo.com.br/p/${slug}`,
     offers: {
       '@type': 'Offer',
-      price: product.base_price,
+      price: preco.toFixed(2),
       priceCurrency: 'BRL',
-      availability: Number(product.stock_quantity || 0) > 0
-        ? 'https://schema.org/InStock'
-        : 'https://schema.org/SoldOut',
-      seller: {
-        '@type': 'Organization',
-        name: 'KIYVO',
-      },
+      availability: 'https://schema.org/InStock',
+      seller: { '@type': 'Organization', name: 'KIYVO' },
     },
-    aggregateRating: Number(product.review_count || 0) > 0 ? {
+    aggregateRating: Number(product.rating || 0) > 0 ? {
       '@type': 'AggregateRating',
-      ratingValue: product.rating,
-      reviewCount: product.review_count,
+      ratingValue: Number(product.rating),
+      reviewCount: Number(product.total_reviews || 0),
     } : undefined,
   }
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
-      <ProductPageClient
-        slug={slug}
-        initialProduct={product}
-        initialReviews={reviews}
-      />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <ProductPageClient slug={slug} initialProduct={product} initialReviews={reviews} />
     </>
   )
 }

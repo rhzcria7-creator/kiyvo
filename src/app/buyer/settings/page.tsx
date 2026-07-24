@@ -109,7 +109,7 @@ export default function BuyerSettingsPage() {
                   disabled
                   className="flex-1 px-4 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-xl text-slate-400 cursor-not-allowed"
                 />
-                {user?.email_confirmed_at && (
+                {profile?.verification_status === 'verified' && (
                   <span className="text-xs text-emerald-400 flex items-center gap-1">
                     <Mail className="w-3 h-3" /> Verificado
                   </span>

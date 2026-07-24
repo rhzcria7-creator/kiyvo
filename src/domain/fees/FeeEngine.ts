@@ -25,7 +25,16 @@ export type ProductType =
 /** Tipo de licença disponível */
 export type LicenseType = 'personal' | 'commercial' | 'extended_commercial' | 'enterprise' | 'custom'
 
-/** Plano do vendedor — define taxas diferenciadas */
+/**
+ * Plano de fidelidade do COMPRADOR — define cashback em KD Points e benefícios.
+ * Free (sem plano): 15% — já é MUITO acima do mercado (GGMAX/Gamemarket dão 1-2%)
+ * Básico: 25%
+ * Pro: 35% + benefícios extras
+ * Plus: 50% — cashback MÁXIMO do mercado + benefícios premium
+ */
+export type LoyaltyPlan = 'free' | 'basic' | 'pro' | 'plus'
+
+/** Plano do VENDEDOR — define taxas diferenciadas */
 export type SellerPlan = 'free' | 'starter' | 'pro' | 'business' | 'enterprise'
 
 /** Nível do vendedor — baseado em volume e reputação */
@@ -181,7 +190,35 @@ const LEVEL_FEE_DISCOUNTS: Record<SellerLevel, number> = {
 /** Taxa de afiliado padrão */
 const DEFAULT_AFFILIATE_RATE = 0.05 // 5%
 
-/** Percentual de cashback em pontos (1% do valor = 1 PD Point por real) */
+/**
+ * Taxa de cashback em KD Points por plano de fidelidade (COMPRADOR).
+ * Valores MUITO acima do mercado (GGMAX/Gamemarket dão de 1% a 3%):
+ * - Free (sem plano): 15% (1 ponto por ~R$6.67)
+ * - Básico: 25%
+ * - Pro: 35% + prioridade de suporte, saques instantâneos
+ * - Plus: 50% — CASHBACK MÁXIMO do mercado, zero taxas de saque, suporte VIP
+ *
+ * Os pontos são descontos em COMPRAS FUTURAS, não saque direto.
+ * Isso evita problemas de sustentabilidade: o cliente sempre volta.
+ */
+const KD_POINTS_RATE: Record<LoyaltyPlan, number> = {
+  free: 0.15,
+  basic: 0.25,
+  pro: 0.35,
+  plus: 0.50,
+}
+
+/** Desconto MÁXIMO aplicável via KD Points em um pedido (para evitar 100% off) */
+export const KD_POINTS_MAX_DISCOUNT_PERCENT = 0.5 // 50% do valor
+
+/** Regra de conversão ao USAR pontos: 100 KD Points = R$ 1,00 */
+export const KD_POINTS_VALUE_BRL = 100 // 100 pontos = R$ 1
+
+/**
+ * Custo INTERNO da plataforma para o programa de pontos (provisionamento).
+ * Não é a taxa dada ao comprador — é quanto a plataforma provisiona por transação.
+ * O cashback real ao comprador varia por plano (KD_POINTS_RATE).
+ */
 const POINTS_CASHBACK_RATE = 0.01 // 1%
 
 // ─── FEE ENGINE ──────────────────────────────────────────────
@@ -458,9 +495,59 @@ export function formatBRL(value: number): string {
   return formatPrice(value)
 }
 
-/** Calcula KD Points ganhos em uma compra (1 point por real gasto) */
+/**
+ * Calcula KD Points ganhos em uma compra, com base no plano de fidelidade do comprador.
+ *
+ * Cashback agressivo vs. mercado (GGMAX/Gamemarket dão ~1-2%):
+ * - Sem plano (free): 15% de volta
+ * - Básico: 25%
+ * - Pro: 35%
+ * - Plus: 50% (topo de linha)
+ *
+ * Regra: 1 KD Point = R$ 0,01 ao resgatar (100 pts = R$ 1)
+ * Então R$ 100 em compras no plano Plus = 5000 KD Points = R$ 50 em desconto futuro.
+ */
+export function calculateKDPoints(price: number, plan: LoyaltyPlan = 'free'): number {
+  const rate = KD_POINTS_RATE[plan] ?? KD_POINTS_RATE.free
+  // 1 ponto = R$0.01 em cashback, então price BRL * rate * 100 = pontos
+  return Math.floor(price * rate * 100)
+}
+
+/**
+ * Converte uma quantidade de KD Points para valor em BRL (ao resgatar).
+ * 100 KD Points = R$ 1,00
+ */
+export function kdPointsToBRL(points: number): number {
+  return Math.max(0, points) / KD_POINTS_VALUE_BRL
+}
+
+/**
+ * Converte valor em BRL para quantidade de KD Points necessária.
+ */
+export function brlToKDPoints(brl: number): number {
+  return Math.ceil(Math.max(0, brl) * KD_POINTS_VALUE_BRL)
+}
+
+/**
+ * Calcula o desconto máximo aplicável em KD Points para um valor de pedido.
+ * Limitado em KD_POINTS_MAX_DISCOUNT_PERCENT (50%) para sustentabilidade.
+ */
+export function calculateMaxKDPointsDiscount(
+  subtotalBRL: number,
+  availablePoints: number
+): { pointsUsed: number; discountBRL: number } {
+  const maxPointsBySubtotal = brlToKDPoints(subtotalBRL * KD_POINTS_MAX_DISCOUNT_PERCENT)
+  const pointsUsed = Math.min(availablePoints, maxPointsBySubtotal)
+  const discountBRL = kdPointsToBRL(pointsUsed)
+  return { pointsUsed, discountBRL }
+}
+
+/**
+ * Alias legado para calculateKDPoints (compatibilidade retroativa).
+ * @deprecated Use calculateKDPoints — KD Points é o nome oficial da moeda.
+ */
 export function calculatePDPoints(price: number): number {
-  return Math.floor(price) // 1 point por real
+  return calculateKDPoints(price)
 }
 
 /** Verifica se o preço mínimo é respeitado */

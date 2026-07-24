@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="220" height="60" viewBox="0 0 220 60" fill="none" role="img" aria-label="Kiyvo">
+  <defs>
+    <linearGradient id="g" x1="0" y1="10" x2="40" y2="50" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#3B82F6"/>
+      <stop offset="100%" stop-color="#1D4ED8"/>
+    </linearGradient>
+    <linearGradient id="s" x1="0" y1="10" x2="0" y2="50" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.35"/>
+      <stop offset="50%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <!-- Ícone 40x40 centralizado verticalmente na área de 60px de altura (y=10) -->
+  <g transform="translate(0,10)">
+    <rect x="0.5" y="0.5" width="39" height="39" rx="9" fill="url(#g)"/>
+    <rect x="0.5" y="0.5" width="39" height="10" rx="9" fill="url(#s)"/>
+    <g stroke="#FFFFFF" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="10" y1="9" x2="10" y2="31"/>
+      <line x1="28" y1="10" x2="10" y2="20"/>
+      <line x1="10" y1="20" x2="28" y2="30"/>
+    </g>
+  </g>
+  <!-- Wordmark: font-size ~25 (para altura total de 40px = icon size), baseline y=38 -->
+  <g font-family="'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif" font-weight="800" font-size="26" letter-spacing="-0.04em">
+    <text x="52" y="38" fill="#0F172A">Kiy</text>
+    <text x="107" y="38" fill="#2563EB">vo</text>
+  </g>
+</svg>

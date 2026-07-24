@@ -1,4 +1,4 @@
-import { MetadataRoute } from 'next'
+import type { MetadataRoute } from 'next'
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://kiyvo.com.br'
 
@@ -6,32 +6,17 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: 'Kiyvo — Marketplace de Produtos Digitais',
     short_name: 'Kiyvo',
-    description: 'Compre e venda tudo que é digital: jogos, software, cursos, e-books, templates, gift cards e muito mais.',
+    description: 'O marketplace de TUDO que é digital no Brasil. Compre e venda jogos, software, cursos, gift cards e mais.',
     start_url: '/',
     display: 'standalone',
-    background_color: '#0F172A',
+    background_color: '#FAFAFA',
     theme_color: '#2563EB',
-    orientation: 'portrait-primary',
-    icons: [
-      {
-        src: `${BASE_URL}/icon-192.png`,
-        sizes: '192x192',
-        type: 'image/png',
-      },
-      {
-        src: `${BASE_URL}/icon-512.png`,
-        sizes: '512x512',
-        type: 'image/png',
-      },
-      {
-        src: `${BASE_URL}/icon-512.png`,
-        sizes: '512x512',
-        type: 'image/png',
-        purpose: 'maskable',
-      },
-    ],
-    categories: ['shopping', 'business', 'lifestyle'],
     lang: 'pt-BR',
-    dir: 'ltr',
+    orientation: 'portrait',
+    icons: [
+      { src: `${BASE_URL}/favicon.svg`, sizes: 'any', type: 'image/svg+xml' },
+      { src: `${BASE_URL}/logo.svg`, sizes: 'any', type: 'image/svg+xml', purpose: 'maskable' },
+    ],
+    categories: ['shopping', 'business', 'productivity'],
   }
 }

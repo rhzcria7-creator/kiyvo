@@ -4,9 +4,15 @@
 // ─────────────────────────────────────────────────────────────
 
 // Fee Engine — Motor de Taxas
-export { FeeEngine, feeEngine, formatBRL, calculatePDPoints, validateMinimumPrice } from './fees/FeeEngine'
+export {
+  FeeEngine, feeEngine, formatBRL,
+  calculateKDPoints, calculatePDPoints,
+  kdPointsToBRL, brlToKDPoints, calculateMaxKDPointsDiscount,
+  KD_POINTS_VALUE_BRL, KD_POINTS_MAX_DISCOUNT_PERCENT,
+  validateMinimumPrice
+} from './fees/FeeEngine'
 export type {
-  ProductType, LicenseType, SellerPlan, SellerLevel, PaymentMethod,
+  ProductType, LicenseType, LoyaltyPlan, SellerPlan, SellerLevel, PaymentMethod,
   RiskCategory, FeeRule, FeeCondition, FeeTier, FeeCalculation,
   FeeBreakdownItem, FeeCalculationParams
 } from './fees/FeeEngine'

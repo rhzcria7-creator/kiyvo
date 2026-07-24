@@ -1,168 +1,119 @@
 'use client'
-
-import { useState, useEffect } from 'react'
-import { formatPrice } from '@/lib/utils'
+// /ofertas — Produtos com maior desconto no catálogo (ordenados por % off)
+import { useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
-import { Flame, Clock, Tag, ArrowRight, Loader2, AlertCircle, PackageOpen } from 'lucide-react'
-import { PageTransition } from '@/components/shared/PageTransition'
-import { StaggerContainer, StaggerItem, FadeInOnScroll } from '@/components/animations'
-import Link from 'next/link'
-import Image from 'next/image'
-import { Badge } from '@/components/ui/Badge'
-
-interface ProductData {
-  id: string
-  title: string
-  slug: string
-  price: number
-  original_price: number | null
-  image_url: string | null
-  category_name: string
-  seller_name: string
-  delivery_type: string
-  sales_count: number
-  rating: number
-}
+import { Flame, Percent, Sparkles, Filter, Tag } from 'lucide-react'
+import { Header } from '@/components/layout/Header'
+import { Footer } from '@/components/layout/Footer'
+import { ProductCard, type Product } from '@/components/ProductCard'
 
 export default function OfertasPage() {
-  const [products, setProducts] = useState<ProductData[]>([])
+  const [produtos, setProdutos] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [minDesconto, setMinDesconto] = useState(20)
+  const [maxPreco, setMaxPreco] = useState(200)
+  const [somenteEntregaAuto, setSomenteEntregaAuto] = useState(false)
 
   useEffect(() => {
-    async function fetchFeatured() {
-      try {
-        const res = await fetch('/api/search?q=&featured=true&limit=20')
-        if (!res.ok) throw new Error('Erro ao buscar ofertas')
-        const data = await res.json()
-        setProducts(data.products || [])
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Erro desconhecido')
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchFeatured()
+    setLoading(true)
+    fetch(`/api/v1/products?limit=200&ordenar=desconto`)
+      .then(r => r.json())
+      .then(data => setProdutos(data?.data || []))
+      .catch(() => setProdutos([]))
+      .finally(() => setLoading(false))
   }, [])
 
+  const ofertas = useMemo(() => {
+    return produtos
+      .map(p => {
+        const de = p.preco_de && p.preco_de > p.preco ? p.preco_de : p.preco * 1.4
+        const descPct = Math.round((1 - p.preco / de) * 100)
+        return { ...p, _de: de, _desc: descPct }
+      })
+      .filter(p => p._desc >= minDesconto && p.preco <= maxPreco)
+      .filter(p => !somenteEntregaAuto || p.entrega_automatica !== false)
+      .sort((a, b) => b._desc - a._desc)
+  }, [produtos, minDesconto, maxPreco, somenteEntregaAuto])
 
   return (
-    <PageTransition>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
-        <FadeInOnScroll>
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-12 h-12 bg-red-50 rounded-xl flex items-center justify-center">
-              <Flame size={24} className="text-red-500" />
+    <>
+      <Header />
+      <main className="min-h-screen bg-[#FAFAFA] dark:bg-[#0B0F1A] pb-20">
+        <section className="relative bg-gradient-to-br from-red-500 via-rose-500 to-orange-500 text-white overflow-hidden">
+          <div className="absolute inset-0 opacity-20">
+            <div className="absolute -top-20 -right-20 w-96 h-96 rounded-full bg-yellow-300 blur-3xl" />
+          </div>
+          <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-12 md:py-16">
+            <motion.div initial={{ opacity:0,y:10 }} animate={{ opacity:1,y:0 }}
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/20 backdrop-blur text-[11px] font-black uppercase tracking-widest mb-4">
+              <Flame className="w-3.5 h-3.5 animate-pulse" /> Ofertas relâmpago
+            </motion.div>
+            <h1 className="text-4xl md:text-6xl font-black leading-tight">As melhores ofertas<br/>do marketplace</h1>
+            <p className="mt-3 text-white/90 max-w-xl">Produtos com desconto de até 90% — entrega automática, garantia de 7 dias e devolução fácil.</p>
+            <div className="mt-5 flex flex-wrap gap-6 text-sm font-black">
+              <span className="flex items-center gap-1.5"><Percent className="w-4 h-4" /> Até 90% OFF</span>
+              <span className="flex items-center gap-1.5"><Tag className="w-4 h-4" /> Cupons automáticos</span>
+              <span className="flex items-center gap-1.5"><Sparkles className="w-4 h-4" /> Novas ofertas todo dia</span>
             </div>
-            <div>
-              <h1 className="font-display font-extrabold text-3xl text-surface-900 dark:text-white">Ofertas em Destaque</h1>
-              <p className="text-surface-500 dark:text-surface-400 text-sm">Os melhores descontos em produtos digitais</p>
+          </div>
+        </section>
+
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+          {/* Filtros */}
+          <div className="bg-white dark:bg-[#0F172A] rounded-2xl p-4 border border-slate-100 dark:border-slate-800 mb-6 flex flex-wrap items-center gap-4">
+            <span className="flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-slate-500"><Filter className="w-4 h-4" />Filtros</span>
+            <label className="flex items-center gap-2 text-xs font-bold">
+              Mínimo desconto:
+              <select value={minDesconto} onChange={e => setMinDesconto(Number(e.target.value))}
+                className="bg-slate-100 dark:bg-white/10 rounded-lg px-2 py-1 outline-none">
+                {[10,20,30,40,50,60].map(v => <option key={v} value={v}>{v}%</option>)}
+              </select>
+            </label>
+            <label className="flex items-center gap-2 text-xs font-bold">
+              Máx. preço:
+              <input type="range" min="10" max="500" step="10" value={maxPreco} onChange={e => setMaxPreco(Number(e.target.value))} className="accent-red-500" />
+              <span className="font-black">R${maxPreco}</span>
+            </label>
+            <label className="flex items-center gap-2 text-xs font-bold cursor-pointer select-none">
+              <input type="checkbox" checked={somenteEntregaAuto} onChange={e => setSomenteEntregaAuto(e.target.checked)} className="w-4 h-4 accent-emerald-500" />
+              Entrega automática
+            </label>
+            <span className="ml-auto text-xs font-black text-slate-500">{ofertas.length} ofertas</span>
+          </div>
+
+          {/* Grid */}
+          {loading ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {Array.from({ length: 12 }).map((_, i) => (
+                <div key={i} className="bg-white dark:bg-[#0F172A] rounded-[2rem] p-3 border border-slate-100 dark:border-slate-800">
+                  <div className="aspect-[4/3] rounded-xl bg-slate-100 dark:bg-white/5 animate-pulse" />
+                  <div className="h-4 bg-slate-100 dark:bg-white/5 rounded mt-3 animate-pulse" />
+                  <div className="h-3 bg-slate-100 dark:bg-white/5 rounded mt-2 w-2/3 animate-pulse" />
+                </div>
+              ))}
             </div>
-          </div>
-        </FadeInOnScroll>
-
-        {/* Countdown banner */}
-        <FadeInOnScroll delay={0.1}>
-          <div className="mt-8 p-6 bg-gradient-to-r from-brand-600 to-brand-800 rounded-2xl text-white flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <Clock size={24} />
-              <div>
-                <p className="font-display font-bold">Ofertas por tempo limitado</p>
-                <p className="text-brand-200 text-sm">Descontos de até 70% em produtos selecionados</p>
-              </div>
+          ) : ofertas.length === 0 ? (
+            <div className="text-center py-20">
+              <Flame className="w-12 h-12 mx-auto text-slate-300 mb-3" />
+              <p className="font-black text-slate-500">Nenhuma oferta com esses filtros</p>
             </div>
-            <Link href="/planos" className="bg-white text-brand-700 px-5 py-2.5 rounded-xl font-display font-semibold text-sm hover:bg-brand-50 transition-colors flex items-center gap-2">
-              Ver planos <ArrowRight size={16} />
-            </Link>
-          </div>
-        </FadeInOnScroll>
-
-        {/* Loading */}
-        {loading && (
-          <div className="flex flex-col items-center justify-center py-20 gap-3">
-            <Loader2 size={32} className="animate-spin text-brand-600" />
-            <p className="text-surface-500 text-sm">Carregando ofertas...</p>
-          </div>
-        )}
-
-        {/* Error */}
-        {!loading && error && (
-          <div className="flex flex-col items-center justify-center py-20 gap-3">
-            <AlertCircle size={32} className="text-red-500" />
-            <p className="text-surface-600 text-sm">{error}</p>
-            <button onClick={() => window.location.reload()} className="btn-secondary text-sm mt-2">Tentar novamente</button>
-          </div>
-        )}
-
-        {/* Empty */}
-        {!loading && !error && products.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-20 gap-3">
-            <PackageOpen size={32} className="text-surface-300" />
-            <p className="text-surface-500 text-lg font-display font-bold">Nenhuma oferta disponível no momento</p>
-            <p className="text-surface-400 text-sm">Novas ofertas serão adicionadas em breve.</p>
-          </div>
-        )}
-
-        {/* Products grid */}
-        {!loading && !error && products.length > 0 && (
-          <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 mt-8">
-            {products.map((product) => {
-              const discount = product.original_price ? Math.round((1 - product.price / product.original_price) * 100) : 0
-              return (
-                <StaggerItem key={product.id}>
-                  <Link href={`/p/${product.slug}`} className="card-base overflow-hidden group block">
-                    <div className="relative aspect-[4/3] overflow-hidden bg-surface-100">
-                      {product.image_url ? (
-                        <Image src={product.image_url} alt={product.title} fill className="object-cover transition-transform duration-500 group-hover:scale-105" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw" />
-                      ) : (
-                        <div className="absolute inset-0 flex items-center justify-center text-surface-300">
-                          <PackageOpen size={32} />
-                        </div>
-                      )}
-                      {discount > 0 && <Badge variant="danger" className="absolute top-2 left-2">-{discount}%</Badge>}
-                    </div>
-                    <div className="p-4">
-                      <p className="text-xs text-surface-400 mb-1">{product.category_name}</p>
-                      <h3 className="font-display font-bold text-surface-900 text-sm line-clamp-2 group-hover:text-brand-600 transition-colors">{product.title}</h3>
-                      <div className="flex items-baseline gap-2 mt-2">
-                        <span className="font-display font-extrabold text-brand-600">{formatPrice(product.price)}</span>
-                        {product.original_price && <span className="text-xs text-surface-400 line-through">{formatPrice(product.original_price)}</span>}
-                      </div>
-                      <div className="flex items-center gap-2 mt-2 text-xs text-surface-400">
-                        <span>{product.seller_name}</span>
-                        <span>•</span>
-                        <span>{product.sales_count} vendas</span>
-                      </div>
-                    </div>
-                  </Link>
-                </StaggerItem>
-              )
-            })}
-          </StaggerContainer>
-        )}
-
-        {/* Coupon Section */}
-        <FadeInOnScroll className="mt-12">
-          <div className="card-base p-8 text-center">
-            <Tag size={32} className="text-brand-600 mx-auto mb-3" />
-            <h2 className="font-display font-extrabold text-xl text-surface-900">Cupons Disponíveis</h2>
-            <p className="text-surface-500 text-sm mt-1 mb-6">Use estes cupons para obter descontos extras</p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl mx-auto">
-              {[
-                { code: 'WELCOME10', discount: '10%', desc: 'Primeira compra' },
-                { code: 'DIGITAL20', discount: '20%', desc: 'Produtos digitais' },
-                { code: 'KIYVO15', discount: '15%', desc: 'Qualquer produto' },
-              ].map((coupon) => (
-                <motion.div key={coupon.code} whileHover={{ scale: 1.03 }} className="p-4 border-2 border-dashed border-brand-200 rounded-xl bg-brand-50">
-                  <p className="font-mono font-bold text-brand-700 text-lg">{coupon.code}</p>
-                  <p className="text-brand-600 font-display font-bold">{coupon.discount} OFF</p>
-                  <p className="text-xs text-surface-500 mt-1">{coupon.desc}</p>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+              {ofertas.map((p, i) => (
+                <motion.div key={p.id}
+                  initial={{ opacity:0,y:20 }} whileInView={{ opacity:1,y:0 }} viewport={{ once: true }} transition={{ delay: Math.min(i*0.04,0.5) }}
+                  className="relative">
+                  <div className="absolute -top-2 -left-2 z-10 bg-red-500 text-white text-[10px] font-black px-2 py-1 rounded-full shadow-lg flex items-center gap-1">
+                    <Flame className="w-3 h-3" /> -{p._desc}%
+                  </div>
+                  <ProductCard produto={p} index={i} />
                 </motion.div>
               ))}
             </div>
-          </div>
-        </FadeInOnScroll>
-      </div>
-    </PageTransition>
+          )}
+        </div>
+      </main>
+      <Footer />
+    </>
   )
 }

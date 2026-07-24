@@ -7,6 +7,7 @@ const config = {
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
+  setupFiles: ['<rootDir>/jest.polyfills.ts'],
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   transform: {
     '^.+\\.tsx?$': ['ts-jest', {
@@ -27,6 +28,10 @@ const config = {
       lines: 50,
       statements: 50,
     },
+  },
+  testEnvironmentOptions: {
+    // Necessário para jsdom não sobrescrever o crypto que injetamos
+    customExportConditions: [''],
   },
 }
 

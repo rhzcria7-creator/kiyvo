@@ -88,7 +88,7 @@ export function FeaturedProductsClient({ products }: { products: FeaturedProduct
               <p className="text-surface-500 dark:text-surface-400 text-sm mt-2">
                 Os melhores produtos digitais estão chegando. Fique ligado!
               </p>
-              <Link href="/anunciar" className="btn-primary inline-block mt-4 text-sm">
+              <Link href="/vender" className="btn-primary inline-block mt-4 text-sm">
                 Seja o primeiro a anunciar
               </Link>
             </motion.div>

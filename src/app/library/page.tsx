@@ -1,219 +1,207 @@
 'use client'
-
-import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { PageTransition } from '@/components/shared/PageTransition'
-import { FadeInOnScroll } from '@/components/animations'
-import { Button } from '@/components/ui/Button'
-import { BookOpen, Download, Key, Code, GraduationCap, FileText, Layout, Package, Search, Filter, ExternalLink, Clock, CheckCircle, AlertTriangle } from 'lucide-react'
-import toast from 'react-hot-toast'
+// /library — Biblioteca de produtos comprados pelo usuário.
+// Downloads FUNCIONAM de verdade: baixa o arquivo real ou gera um comprovante de acesso.
+// Comentários em PT-BR.
+import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
-
-/** Tipo de filtro da biblioteca */
-type LibraryFilter = 'all' | 'software' | 'course' | 'ebook' | 'template' | 'asset' | 'license' | 'service' | 'api'
-
-/** Item mock da biblioteca — em produção virá do Supabase */
-interface LibraryItem {
-  id: string
-  orderId: string
-  productTitle: string
-  productType: string
-  category: string
-  sellerName: string
-  purchasedAt: string
-  price: number
-  deliveryType: string
-  status: 'delivered' | 'confirmed' | 'expired'
-  hasDownload: boolean
-  hasLicense: boolean
-  version: string | null
-  downloadCount: number
-  maxDownloads: number
-  expiresAt: string | null
-}
-
-const mockLibrary: LibraryItem[] = [
-  { id: 'l1', orderId: 'PD-2607-100001', productTitle: 'Windows 11 Pro — Licença Vitalícia', productType: 'software', category: 'Software & Licenças', sellerName: 'SoftVault', purchasedAt: '17/07/2026', price: 49.90, deliveryType: 'license_key', status: 'confirmed', hasDownload: false, hasLicense: true, version: null, downloadCount: 0, maxDownloads: 0, expiresAt: null },
-  { id: 'l2', orderId: 'PD-2607-100002', productTitle: 'Curso Completo Programação Full Stack — 120h', productType: 'course', category: 'Cursos Online', sellerName: 'EduPro', purchasedAt: '15/07/2026', price: 34.90, deliveryType: 'course_access', status: 'delivered', hasDownload: false, hasLicense: false, version: null, downloadCount: 0, maxDownloads: 0, expiresAt: null },
-  { id: 'l3', orderId: 'PD-2607-100003', productTitle: 'Pack 500+ Templates Canva — Instagram & TikTok', productType: 'template', category: 'Design & Templates', sellerName: 'DesignLab', purchasedAt: '14/07/2026', price: 19.90, deliveryType: 'download', status: 'confirmed', hasDownload: true, hasLicense: false, version: '2.1', downloadCount: 2, maxDownloads: 5, expiresAt: '13/08/2026' },
-  { id: 'l4', orderId: 'PD-2607-100004', productTitle: 'E-book: Marketing Digital 360° — 3ª Edição', productType: 'ebook', category: 'E-books & PDFs', sellerName: 'DigitalMax', purchasedAt: '12/07/2026', price: 14.90, deliveryType: 'download', status: 'confirmed', hasDownload: true, hasLicense: false, version: '3.0', downloadCount: 1, maxDownloads: 5, expiresAt: '11/08/2026' },
-  { id: 'l5', orderId: 'PD-2607-100005', productTitle: 'Plugin WordPress — SEO Pro Pack v3.0', productType: 'software', category: 'Plugins & Extensões', sellerName: 'DesignLab', purchasedAt: '10/07/2026', price: 39.90, deliveryType: 'download', status: 'delivered', hasDownload: true, hasLicense: true, version: '3.0.2', downloadCount: 3, maxDownloads: 5, expiresAt: '09/08/2026' },
-  { id: 'l6', orderId: 'PD-2607-100006', productTitle: 'Asset Pack 3D — Low Poly Nature', productType: 'asset', category: '3D & Modelos', sellerName: 'PixelKing', purchasedAt: '08/07/2026', price: 24.90, deliveryType: 'download', status: 'confirmed', hasDownload: true, hasLicense: false, version: '1.5', downloadCount: 1, maxDownloads: 5, expiresAt: '07/08/2026' },
-]
-
-const filterOptions: { id: LibraryFilter; label: string; icon: React.ReactNode }[] = [
-  { id: 'all', label: 'Todos', icon: <BookOpen size={14} /> },
-  { id: 'software', label: 'Software', icon: <Code size={14} /> },
-  { id: 'course', label: 'Cursos', icon: <GraduationCap size={14} /> },
-  { id: 'ebook', label: 'E-books', icon: <FileText size={14} /> },
-  { id: 'template', label: 'Templates', icon: <Layout size={14} /> },
-  { id: 'asset', label: 'Assets', icon: <Package size={14} /> },
-  { id: 'license', label: 'Licenças', icon: <Key size={14} /> },
-]
+import { motion } from 'framer-motion'
+import { Package, Download, Star, Clock, Search, Library as LibIcon, BookOpen, Shield, Sparkles, CheckCircle2 } from 'lucide-react'
+import { usePurchases } from '@/lib/purchases/store'
+import { useAuth } from '@/lib/auth/context'
+import { Header } from '@/components/layout/Header'
+import { Footer } from '@/components/layout/Footer'
+import { toast } from 'react-hot-toast'
 
 export default function LibraryPage() {
-  const [activeFilter, setActiveFilter] = useState<LibraryFilter>('all')
-  const [searchQuery, setSearchQuery] = useState('')
+  const { user } = useAuth()
+  const { init, list } = usePurchases()
+  const [busca, setBusca] = useState('')
+  const [loaded, setLoaded] = useState(false)
 
-  const filteredItems = mockLibrary.filter((item) => {
-    if (activeFilter !== 'all' && item.productType !== activeFilter) return false
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase()
-      return item.productTitle.toLowerCase().includes(q) || item.sellerName.toLowerCase().includes(q)
-    }
-    return true
-  })
+  useEffect(() => { init(); setLoaded(true) }, [init])
 
-  const handleDownload = (item: LibraryItem) => {
-    if (item.downloadCount >= item.maxDownloads) {
-      toast.error('Limite de downloads atingido')
-      return
+  const compras = useMemo(() => {
+    const todos = list()
+    if (!busca.trim()) return todos
+    const q = busca.toLowerCase()
+    return todos.filter(p => p.titulo.toLowerCase().includes(q) || (p.vendedor_nome||'').toLowerCase().includes(q) || (p.categoria||'').toLowerCase().includes(q))
+  }, [list, busca])
+
+  const totalGasto = compras.reduce((s, p) => s + p.preco, 0)
+
+  function baixar(p: ReturnType<typeof list>[number]) {
+    try {
+      if (p.arquivos && p.arquivos.length > 0) {
+        // Baixa o arquivo real (URL blob)
+        const a = document.createElement('a')
+        a.href = p.arquivos[0].url
+        a.download = p.arquivos[0].nome
+        a.target = '_blank'
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        toast.success('Download iniciado!', { icon: '⬇️' })
+        return
+      }
+      // Fallback: gera um arquivo .txt com os dados de acesso
+      const conteudo = `KIYVO - ACESSO AO PRODUTO
+==================================
+Produto: ${p.titulo}
+Código: ${p.id}
+Comprado em: ${new Date(p.compradoEm).toLocaleString('pt-BR')}
+Valor: R$ ${p.preco.toFixed(2).replace('.', ',')}
+Vendedor: ${p.vendedor_nome || 'KIYVO'}
+==================================
+INSTRUÇÕES:
+Seu produto foi liberado automaticamente.
+
+Para acessar:
+1. Entre na KIYVO
+2. Vá em Minha Biblioteca
+3. Clique em "Ver" para abrir a página do produto
+
+Em caso de dúvidas, contate o suporte: https://t.me/kiyvosuporte
+Garantia de 7 dias — devolução 100% se não ficar satisfeito.
+`
+      const blob = new Blob([conteudo], { type: 'text/plain;charset=utf-8' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `${p.id}-acesso.txt`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      setTimeout(() => URL.revokeObjectURL(url), 1000)
+      toast.success('Arquivo de acesso baixado!', { icon: '📄' })
+    } catch {
+      toast.error('Erro ao baixar. Tente novamente.')
     }
-    toast.success(`Download iniciado: ${item.productTitle}`)
   }
 
   return (
-    <PageTransition>
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          <h1 className="font-display font-extrabold text-2xl lg:text-3xl text-surface-900 dark:text-white flex items-center gap-3">
-            <BookOpen size={28} className="text-brand-600 dark:text-brand-400" />
-            Minha Biblioteca
-          </h1>
-          <p className="text-surface-500 dark:text-surface-400 text-sm mt-1">
-            Todos os seus produtos digitais em um só lugar
-          </p>
-        </motion.div>
-
-        {/* Search & Filters */}
-        <FadeInOnScroll className="mt-6">
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="relative flex-1">
-              <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-surface-400" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Buscar na biblioteca..."
-                className="input-base pl-10"
-              />
+    <>
+      <Header />
+      <main className="min-h-screen bg-[#FAFAFA] dark:from-[#0B0F1A] dark:to-[#0B0F1A] pb-24">
+        <section className="relative bg-gradient-to-br from-brand-600 via-brand-700 to-violet-700 text-white overflow-hidden">
+          <div className="absolute inset-0 pointer-events-none">
+            <div className="absolute -top-10 -right-10 w-60 h-60 rounded-full bg-white/10 blur-3xl" />
+            <div className="absolute -bottom-10 -left-10 w-60 h-60 rounded-full bg-violet-400/20 blur-3xl" />
+          </div>
+          <div className="relative max-w-5xl mx-auto px-4 sm:px-6 py-10">
+            <motion.div initial={{ opacity:0,y:10 }} animate={{ opacity:1,y:0 }} className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-white/80 mb-2">
+              <LibIcon className="w-3.5 h-3.5" /> Sua biblioteca
+            </motion.div>
+            <h1 className="text-3xl md:text-5xl font-black leading-tight">Meus produtos digitais</h1>
+            <p className="text-white/80 mt-2 max-w-xl">
+              Todos os produtos que você comprou ficam disponíveis aqui para download, sempre que quiser.
+              Acesso vitalício para qualquer compra na KIYVO.
+            </p>
+            <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <Stat icon={<Package className="w-4 h-4" />} valor={String(compras.length)} label="Produtos" />
+              <Stat icon={<Star className="w-4 h-4" />} valor={`R$${totalGasto.toFixed(2).replace('.',',')}`} label="Total investido" />
+              <Stat icon={<Download className="w-4 h-4" />} valor="∞" label="Downloads" />
+              <Stat icon={<Shield className="w-4 h-4" />} valor="7 dias" label="Garantia" />
             </div>
           </div>
+        </section>
 
-          <div className="flex gap-2 mt-3 overflow-x-auto no-scrollbar pb-1">
-            {filterOptions.map((filter) => (
-              <button
-                key={filter.id}
-                onClick={() => setActiveFilter(filter.id)}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold font-display whitespace-nowrap flex items-center gap-1.5 transition-all ${
-                  activeFilter === filter.id
-                    ? 'bg-brand-600 text-white'
-                    : 'bg-surface-50 dark:bg-surface-800 text-surface-600 dark:text-surface-400 hover:bg-brand-50 dark:hover:bg-brand-950/50'
-                }`}
-              >
-                {filter.icon}
-                {filter.label}
-              </button>
-            ))}
-          </div>
-        </FadeInOnScroll>
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
+          {/* Busca */}
+          <motion.div initial={{ opacity:0,y:8 }} animate={{ opacity:1,y:0 }} className="relative mb-6 max-w-md">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar na biblioteca..."
+              className="w-full pl-11 pr-4 py-3 rounded-full bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-slate-800 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 text-sm transition" />
+          </motion.div>
 
-        {/* Items */}
-        <div className="mt-6 space-y-3">
-          <AnimatePresence>
-            {filteredItems.length === 0 ? (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-16">
-                <BookOpen size={40} className="text-surface-300 dark:text-surface-600 mx-auto mb-4" />
-                <p className="text-surface-500 dark:text-surface-400">Nenhum item encontrado</p>
-                <Link href="/categorias" className="mt-4 inline-block">
-                  <Button variant="secondary" size="sm">Explorar Produtos</Button>
-                </Link>
-              </motion.div>
-            ) : (
-              filteredItems.map((item, i) => (
-                <motion.div
-                  key={item.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, x: -50 }}
-                  transition={{ delay: i * 0.05 }}
-                  className="card-base p-4 sm:p-5 hover:shadow-card-hover dark:hover:shadow-dark-glow transition-shadow"
-                >
-                  <div className="flex gap-4">
-                    {/* Icon */}
-                    <div className="w-12 h-12 rounded-xl bg-brand-50 dark:bg-brand-950/50 flex items-center justify-center shrink-0">
-                      {item.productType === 'software' && <Code size={20} className="text-brand-600 dark:text-brand-400" />}
-                      {item.productType === 'course' && <GraduationCap size={20} className="text-brand-600 dark:text-brand-400" />}
-                      {item.productType === 'ebook' && <FileText size={20} className="text-brand-600 dark:text-brand-400" />}
-                      {item.productType === 'template' && <Layout size={20} className="text-brand-600 dark:text-brand-400" />}
-                      {item.productType === 'asset' && <Package size={20} className="text-brand-600 dark:text-brand-400" />}
-                      {item.productType === 'license' && <Key size={20} className="text-brand-600 dark:text-brand-400" />}
+          {!user ? (
+            <motion.div initial={{ opacity:0,y:10 }} animate={{ opacity:1,y:0 }}
+              className="bg-white dark:bg-[#0F172A] rounded-[2rem] p-10 text-center border border-slate-100 dark:border-slate-800 shadow-lg">
+              <BookOpen className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+              <h2 className="text-xl font-black mb-2 text-[#0F172A] dark:text-white">Faça login para ver sua biblioteca</h2>
+              <p className="text-slate-500 text-sm mb-5">Entre com a mesma conta usada nas compras para ver todos os produtos que você já adquiriu.</p>
+              <Link href="/login?redirect=/library" className="inline-flex items-center gap-2 bg-[#0F172A] text-white rounded-full px-6 py-3 font-black text-sm hover:bg-black transition shadow-lg">
+                Entrar
+              </Link>
+            </motion.div>
+          ) : !loaded ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="bg-white dark:bg-[#0F172A] rounded-[1.5rem] p-5 border border-slate-100 dark:border-slate-800 animate-pulse">
+                  <div className="aspect-video rounded-xl bg-slate-100 dark:bg-white/5" />
+                  <div className="h-4 bg-slate-100 dark:bg-white/5 rounded mt-4" />
+                  <div className="h-3 bg-slate-100 dark:bg-white/5 rounded mt-2 w-2/3" />
+                </div>
+              ))}
+            </div>
+          ) : compras.length === 0 ? (
+            <motion.div initial={{ opacity:0,y:10 }} animate={{ opacity:1,y:0 }}
+              className="bg-white dark:bg-[#0F172A] rounded-[2rem] p-10 text-center border border-slate-100 dark:border-slate-800 shadow-lg">
+              <Sparkles className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+              <h2 className="text-xl font-black mb-2 text-[#0F172A] dark:text-white">Sua biblioteca está vazia</h2>
+              <p className="text-slate-500 text-sm mb-5">Quando você comprar algo na KIYVO, os produtos aparecerão aqui com botão de download.</p>
+              <div className="flex flex-wrap gap-3 justify-center">
+                <Link href="/buscar" className="inline-flex items-center gap-2 bg-brand-600 text-white rounded-full px-6 py-3 font-black text-sm hover:bg-brand-700 transition shadow-lg shadow-brand-500/30">Explorar produtos</Link>
+                <Link href="/ofertas" className="inline-flex items-center gap-2 border-2 border-slate-200 dark:border-slate-700 rounded-full px-6 py-3 font-black text-sm hover:border-brand-500 transition">Ver ofertas</Link>
+              </div>
+            </motion.div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {compras.map((p, i) => (
+                <motion.div key={p.id}
+                  initial={{ opacity:0,y:20 }} whileInView={{ opacity:1,y:0 }} viewport={{ once: true }} transition={{ delay: Math.min(i*0.04,0.4), type: 'spring', stiffness: 200, damping: 20 }}
+                  className="group bg-white dark:bg-[#0F172A] rounded-[1.5rem] overflow-hidden border border-slate-100 dark:border-slate-800 hover:shadow-xl hover:border-brand-300 dark:hover:border-brand-700 transition-all">
+                  <Link href={p.productSlug ? `/p/${p.productSlug}` : '#'} className="block">
+                    <div className={`aspect-[5/3] bg-gradient-to-br ${p.gradient || 'from-brand-500 to-violet-600'} flex items-center justify-center relative overflow-hidden`}>
+                      <motion.span
+                        initial={{ scale: 0.7 }} whileInView={{ scale: 1 }} viewport={{ once: true }}
+                        transition={{ type: 'spring', stiffness: 200, delay: i*0.04 + 0.1 }}
+                        className="text-6xl md:text-7xl drop-shadow-lg group-hover:scale-110 transition-transform"
+                      >
+                        {p.emoji || '📦'}
+                      </motion.span>
+                      <span className="absolute top-3 left-3 bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-full flex items-center gap-1 shadow-md">
+                        <CheckCircle2 className="w-3 h-3" /> Entregue
+                      </span>
+                      <span className="absolute top-3 right-3 bg-black/30 backdrop-blur text-white text-[10px] font-black px-2 py-1 rounded-full">
+                        R${p.preco.toFixed(2).replace('.',',')}
+                      </span>
                     </div>
-
-                    {/* Info */}
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-display font-semibold text-sm text-surface-900 dark:text-white line-clamp-1">
-                        {item.productTitle}
-                      </h3>
-                      <div className="flex flex-wrap items-center gap-2 mt-1">
-                        <span className="text-xs text-surface-400">{item.sellerName}</span>
-                        <span className="text-xs text-surface-300">•</span>
-                        <span className="text-xs text-surface-400">{item.purchasedAt}</span>
-                        {item.version && (
-                          <>
-                            <span className="text-xs text-surface-300">•</span>
-                            <span className="text-xs text-surface-400">v{item.version}</span>
-                          </>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2 mt-2">
-                        <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
-                          item.status === 'confirmed' ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400' :
-                          item.status === 'delivered' ? 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400' :
-                          'bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400'
-                        }`}>
-                          {item.status === 'confirmed' ? '✓ Confirmado' : item.status === 'delivered' ? 'Entregue' : 'Expirado'}
-                        </span>
-                        {item.hasDownload && (
-                          <span className="text-xs text-surface-400 flex items-center gap-1">
-                            <Download size={10} /> {item.downloadCount}/{item.maxDownloads} downloads
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Actions */}
-                    <div className="flex flex-col gap-2 shrink-0">
-                      {item.hasDownload && (
-                        <Button
-                          size="sm"
-                          variant={item.downloadCount >= item.maxDownloads ? 'ghost' : 'primary'}
-                          icon={<Download size={14} />}
-                          onClick={() => handleDownload(item)}
-                          disabled={item.downloadCount >= item.maxDownloads}
-                        >
-                          Download
-                        </Button>
-                      )}
-                      {item.hasLicense && (
-                        <Button size="sm" variant="secondary" icon={<Key size={14} />}>
-                          Ver Chave
-                        </Button>
-                      )}
-                      {!item.hasDownload && !item.hasLicense && (
-                        <Button size="sm" variant="secondary" icon={<ExternalLink size={14} />}>
-                          Acessar
-                        </Button>
-                      )}
+                  </Link>
+                  <div className="p-4">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-brand-600">{p.categoria || 'Produto digital'}</p>
+                    <h3 className="font-black text-base text-[#0F172A] dark:text-white mt-0.5 line-clamp-2">{p.titulo}</h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-1">
+                      <Clock className="w-3 h-3" /> {new Date(p.compradoEm).toLocaleDateString('pt-BR')}
+                    </p>
+                    {p.vendedor_nome && <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">por <b className="text-slate-700 dark:text-slate-300">{p.vendedor_nome}</b></p>}
+                    <div className="mt-3 flex gap-2">
+                      <button onClick={() => baixar(p)}
+                        className="flex-1 inline-flex items-center justify-center gap-1.5 bg-gradient-to-br from-brand-600 to-brand-700 hover:from-brand-700 hover:to-brand-800 text-white rounded-full py-2.5 font-black text-xs shadow-md shadow-brand-500/20 hover:shadow-lg transition-all hover:scale-[1.02] active:scale-95">
+                        <Download className="w-3.5 h-3.5" /> Baixar
+                      </button>
+                      <Link href={p.productSlug ? `/p/${p.productSlug}` : '#'}
+                        className="px-4 inline-flex items-center justify-center rounded-full border-2 border-slate-200 dark:border-slate-700 font-black text-xs hover:border-brand-500 hover:bg-brand-50 dark:hover:bg-brand-950/20 transition">
+                        Ver
+                      </Link>
                     </div>
                   </div>
                 </motion.div>
-              ))
-            )}
-          </AnimatePresence>
+              ))}
+            </div>
+          )}
         </div>
-      </div>
-    </PageTransition>
+      </main>
+      <Footer />
+    </>
+  )
+}
+
+function Stat({ icon, valor, label }: { icon: React.ReactNode; valor: string; label: string }) {
+  return (
+    <motion.div initial={{ opacity:0,y:10 }} whileInView={{ opacity:1,y:0 }} viewport={{ once: true }}
+      className="bg-white/15 backdrop-blur rounded-2xl p-3 border border-white/20 hover:bg-white/20 transition">
+      <div className="flex items-center gap-1.5 text-white/80 text-[10px] font-black uppercase tracking-widest">{icon}{label}</div>
+      <p className="text-xl font-black mt-1">{valor}</p>
+    </motion.div>
   )
 }

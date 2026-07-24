@@ -70,7 +70,7 @@ export default function AnunciosPage() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
         <div className="flex items-center justify-between mb-6">
           <h1 className="font-display font-extrabold text-2xl text-surface-900 dark:text-white">Meus Anúncios</h1>
-          <Link href="/anunciar"><Button size="sm" icon={<Plus size={16} />}>Novo Anúncio</Button></Link>
+          <Link href="/vender"><Button size="sm" icon={<Plus size={16} />}>Novo Anúncio</Button></Link>
         </div>
 
         {loading ? (
@@ -124,7 +124,7 @@ export default function AnunciosPage() {
             <Package size={48} className="text-surface-300 dark:text-surface-600 mx-auto mb-4" />
             <p className="text-surface-400 dark:text-surface-500 text-lg">Nenhum anúncio ainda</p>
             <p className="text-surface-400 dark:text-surface-500 text-sm mt-2">Crie seu primeiro anúncio e comece a vender</p>
-            <Link href="/anunciar" className="btn-primary mt-4 inline-block">Criar Primeiro Anúncio</Link>
+            <Link href="/vender" className="btn-primary mt-4 inline-block">Criar Primeiro Anúncio</Link>
           </div>
         )}
       </div>

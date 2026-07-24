@@ -26,9 +26,9 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
       transition={{ duration: 0.45, delay: index * 0.06, ease: [0.25, 0.46, 0.45, 0.94] }}
     >
       <Link href={`/produto/${product.id}`} className="block group">
-        <div className="card-base overflow-hidden hover:-translate-y-1 hover:shadow-card-hover hover:border-brand-200/60">
+        <div className="card-base overflow-hidden hover:-translate-y-1 hover:shadow-card-hover hover:border-brand-200/60 bg-white dark:bg-white/[0.04] dark:border-white/10">
           {/* Image */}
-          <div className="relative aspect-[4/3] overflow-hidden bg-surface-100">
+          <div className="relative aspect-[4/3] overflow-hidden bg-[#F1F5F9] dark:bg-white/5">
             <Image
               src={product.image}
               alt={product.title}
@@ -54,34 +54,39 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
           {/* Content */}
           <div className="p-4">
             <p className="text-xs font-medium text-brand-600 mb-1 font-display">{product.category}</p>
-            <h3 className="font-display font-bold text-surface-900 text-sm line-clamp-2 group-hover:text-brand-600 transition-colors leading-snug">
+            <h3 className="font-display font-bold text-[#0F172A] dark:text-white text-sm line-clamp-2 group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors leading-snug">
               {product.title}
             </h3>
 
             {/* Seller */}
-            <div className="flex items-center gap-2 mt-2.5">
+            <div className="flex items-center gap-1.5 mt-2.5">
               <img
                 src={product.seller.avatar}
                 alt={product.seller.name}
                 className="w-5 h-5 rounded-full object-cover"
               />
-              <span className="text-xs text-surface-500 truncate">{product.seller.name}</span>
+              <span className="text-xs text-surface-500 dark:text-white/60 truncate">{product.seller.name}</span>
               {product.seller.verified && (
-                <span className="text-brand-500 text-xs" title="Verificado">✓</span>
+                <span
+                  title="Vendedor verificado"
+                  className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 text-white"
+                >
+                  <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </span>
               )}
             </div>
 
             {/* Price + Rating */}
-            <div className="flex items-end justify-between mt-3 pt-3 border-t border-surface-100">
+            <div className="flex items-end justify-between mt-3 pt-3 border-t border-black/5 dark:border-white/10">
               <div>
                 {product.originalPrice && (
-                  <p className="text-xs text-surface-400 line-through">{formatPrice(product.originalPrice)}</p>
+                  <p className="text-xs text-[#94A3B8] dark:text-white/40 line-through">{formatPrice(product.originalPrice)}</p>
                 )}
-                <p className="font-display font-extrabold text-lg text-surface-900">{formatPrice(product.price)}</p>
+                <p className="font-display font-extrabold text-lg text-[#0F172A] dark:text-white">{formatPrice(product.price)}</p>
               </div>
-              <div className="flex items-center gap-1 text-xs text-surface-400">
+              <div className="flex items-center gap-1 text-xs text-[#94A3B8] dark:text-white/40">
                 <Star size={12} className="fill-amber-400 text-amber-400" />
-                <span className="font-medium text-surface-600">{product.rating}</span>
+                <span className="font-medium text-[#475569] dark:text-white/70">{product.rating}</span>
                 <span>({product.reviews})</span>
               </div>
             </div>

@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     const requiredTables = [
       'profiles', 'categories', 'products', 'product_images', 'orders',
       'order_messages', 'reviews', 'favorites', 'verifications', 'withdrawals',
-      'coupons', 'notifications', 'kd_points_transactions', 'blog_posts',
+      'coupons', 'notifications', 'kd_transactions', 'blog_posts',
       'subscriptions', 'interventions', 'community_posts', 'community_comments',
       'community_likes', 'chat_conversations', 'chat_messages',
       'affiliate_referrals', 'search_history', 'stripe_payments', 'disputes',

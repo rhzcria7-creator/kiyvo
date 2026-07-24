@@ -181,16 +181,16 @@ export function AnimatedMegaphone({ className = 'w-16 h-16' }: { className?: str
   )
 }
 
-// ─── Spinning Coin ───────────────────────────────────────────
+// ─── Spinning Coin (KD Points) ──────────────────────────────
 export function SpinningCoin({ className = 'w-12 h-12' }: { className?: string }) {
   return (
-    <motion.div className={className} style={{ perspective: 200 }}>
+    <motion.div className={className} style={{ perspective: 300 }}>
       <motion.div
-        className="w-full h-full rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center border-4 border-amber-300 shadow-lg"
+        className="w-full h-full rounded-full bg-gradient-to-br from-amber-300 to-amber-500 flex items-center justify-center border-[3px] border-amber-200 shadow-[0_0_20px_rgba(245,158,11,0.4)]"
         animate={{ rotateY: [0, 360] }}
-        transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+        transition={{ duration: 2.4, repeat: Infinity, ease: 'linear' }}
       >
-        <span className="font-display font-extrabold text-amber-900 text-lg">K</span>
+        <span className="font-display font-extrabold text-amber-900 text-[0.65em] tracking-tight">KD</span>
       </motion.div>
     </motion.div>
   )

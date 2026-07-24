@@ -116,7 +116,7 @@ export default function VendasPage() {
             <TrendingUp size={48} className="text-surface-300 dark:text-surface-600 mx-auto mb-4" />
             <p className="text-surface-400 dark:text-surface-500 text-lg">Nenhuma venda ainda</p>
             <p className="text-surface-400 dark:text-surface-500 text-sm mt-2">Comece a anunciar seus produtos digitais</p>
-            <Link href="/anunciar" className="btn-primary mt-4 inline-block">Criar Primeiro Anúncio</Link>
+            <Link href="/vender" className="btn-primary mt-4 inline-block">Criar Primeiro Anúncio</Link>
           </div>
         )}
       </div>

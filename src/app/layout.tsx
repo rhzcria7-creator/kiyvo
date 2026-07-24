@@ -1,4 +1,5 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
+import dynamic from 'next/dynamic'
 import './globals.css'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
@@ -7,6 +8,21 @@ import { ThemeProvider } from '@/lib/theme/ThemeProvider'
 import { Toaster } from 'react-hot-toast'
 import { ScrollProgress } from '@/components/ui/AdvancedAnimations'
 import { CommandK, CommandKButton } from '@/components/ui/CommandK'
+import ClickSpark from '@/components/ui/ClickSpark'
+import { ReferralProvider } from '@/components/referral/ReferralProvider'
+import { UpdateBanner } from '@/components/layout/UpdateBanner'
+import { BackToTop } from '@/components/ui/BackToTop'
+import { FavoritesProvider } from '@/components/favorites/FavoritesProvider'
+import { FloatingCTA } from '@/components/ui/FloatingCTA'
+import TelegramSupport from '@/components/support/TelegramSupport'
+import { CartProvider } from '@/components/cart/CartProvider'
+import { KYCProvider } from '@/components/kyc/KYCProvider'
+import { PilotTrigger } from '@/components/ui/PilotTrigger'
+
+const FlashSaleBar = dynamic(() => import('@/components/home/FlashSaleBar').then(m => m.FlashSaleBar), { ssr: false })
+const SecurityInit = dynamic(() => import('@/components/SecurityInit').then(m => m.SecurityInit), { ssr: false })
+
+const KiyaWidget = dynamic(() => import('@/components/support/KiyaWidget'), { ssr: false })
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://kiyvo.com.br'
 
@@ -62,9 +78,25 @@ export const metadata: Metadata = {
   alternates: {
     canonical: BASE_URL,
   },
+  icons: {
+    icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+    ],
+    apple: '/logo.svg',
+    shortcut: '/favicon.svg',
+  },
   verification: {
     google: 'google-site-verification-code',
   },
+}
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#FFFFFF' },
+    { media: '(prefers-color-scheme: dark)', color: '#0F172A' },
+  ],
+  width: 'device-width',
+  initialScale: 1,
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -74,7 +106,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* Fontes — preload para performance (não bloqueia render) */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
         {/* Structured Data — JSON-LD */}
         <script
           type="application/ld+json"
@@ -101,7 +133,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               '@type': 'Organization',
               name: 'Kiyvo',
               url: BASE_URL,
-              logo: `${BASE_URL}/logo.png`,
+              logo: `${BASE_URL}/logo-full.svg`,
               sameAs: [
                 'https://twitter.com/kiyvo',
                 'https://discord.gg/kiyvo',
@@ -116,29 +148,43 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
       </head>
-      <body className="min-h-screen flex flex-col">
+      <body className="min-h-screen flex flex-col bg-[#FAFAFA] dark:bg-[#0B0F1A] text-[#0F172A] dark:text-white antialiased selection:bg-brand-600 selection:text-white">
         <ThemeProvider>
+          <KYCProvider>
           <AuthProvider>
-            <ScrollProgress />
-            <Header />
-            <div className="flex-1">{children}</div>
-            <Footer />
-            <CommandK />
-            <CommandKButton />
-            <Toaster
-              position="top-right"
-              toastOptions={{
-                duration: 3000,
-                style: {
-                  borderRadius: '12px',
-                  background: '#0F172A',
-                  color: '#fff',
-                  fontSize: '14px',
-                  fontFamily: 'var(--font-display)',
-                },
-              }}
-            />
+            <FavoritesProvider>
+              <ClickSpark />
+              <ScrollProgress />
+              <UpdateBanner />
+              <Header />
+              <FlashSaleBar />
+              <ReferralProvider />
+              <div className="flex-1">{children}</div>
+              <Footer />
+              <BackToTop />
+              <FloatingCTA />
+              <KiyaWidget />
+              <TelegramSupport />
+              <CommandK />
+              <CommandKButton />
+              <PilotTrigger />
+              <SecurityInit />
+              <Toaster
+                position="top-right"
+                toastOptions={{
+                  duration: 3000,
+                  style: {
+                    borderRadius: '12px',
+                    background: '#0F172A',
+                    color: '#fff',
+                    fontSize: '14px',
+                    fontFamily: 'var(--font-display)',
+                  },
+                }}
+              />
+            </FavoritesProvider>
           </AuthProvider>
+          </KYCProvider>
         </ThemeProvider>
       </body>
     </html>
