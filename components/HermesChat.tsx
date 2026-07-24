@@ -1,4 +1,5 @@
 // components/HermesChat.tsx
+// -----------------------------------------------------------------------------
 // Chat moderno (Tailwind, Dark Mode) para o Hermes Agent.
 //
 // REGRA DO PROJETO KIYVO: o nome exibido na UI é "Kiya" (nunca "Hermes").
@@ -6,13 +7,16 @@
 //
 // SEGURANÇA: só renderiza se houver um usuário autenticado no Firebase
 // (onAuthStateChanged / currentUser). Sem sessão ativa, mostra CTA de login.
+// O ID token do Firebase é injetado no hook para validação na Edge Function.
+// -----------------------------------------------------------------------------
 
-import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
+import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { getFirebaseAuth } from '@/lib/firebase/client'
 import { onAuthStateChanged, type User } from 'firebase/auth'
 import { useHermes, type HermesMessage } from '../hooks/useHermes'
-import { Send, Bot, User as UserIcon, RotateCcw, AlertCircle, Lock } from 'lucide-react'
+import { Send, Bot, User as UserIcon, RotateCcw, AlertCircle, Lock, Square } from 'lucide-react'
 
 interface HermesChatProps {
   /** Cliente Supabase usado para chamar a Edge Function. */
@@ -23,6 +27,8 @@ interface HermesChatProps {
   placeholder?: string
   /** Altura máxima da área de mensagens (qualquer classe/valor Tailwind). */
   className?: string
+  /** Usa streaming SSE (typing em tempo real). Padrão: true. */
+  stream?: boolean
 }
 
 export function HermesChat({
@@ -31,6 +37,7 @@ export function HermesChat({
   assistantName = 'Kiya',
   placeholder = 'Pergunte qualquer coisa...',
   className = 'h-[28rem]',
+  stream = true,
 }: HermesChatProps) {
   const [currentUser, setCurrentUser] = useState<User | null>(null)
   const [authReady, setAuthReady] = useState(false)
@@ -52,12 +59,14 @@ export function HermesChat({
 
   if (!currentUser) {
     return (
-      <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-white/10 bg-[#0B0F1A] p-8 text-center text-slate-300">
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-white/10 bg-[#0B0F1A] p-8 text-center text-slate-300"
+      >
         <Lock className="h-8 w-8 text-slate-500" />
-        <p className="text-sm font-medium">
-          Faça login para conversar com {assistantName}.
-        </p>
-      </div>
+        <p className="text-sm font-medium">Faça login para conversar com {assistantName}.</p>
+      </motion.div>
     )
   }
 
@@ -68,6 +77,8 @@ export function HermesChat({
       assistantName={assistantName}
       placeholder={placeholder}
       className={className}
+      stream={stream}
+      getIdToken={useCallback(() => currentUser.getIdToken(), [currentUser])}
     />
   )
 }
@@ -78,10 +89,24 @@ interface ChatWindowProps {
   assistantName: string
   placeholder: string
   className: string
+  stream: boolean
+  getIdToken: () => Promise<string | null>
 }
 
-function ChatWindow({ supabase, functionName, assistantName, placeholder, className }: ChatWindowProps) {
-  const { messages, loading, error, sendMessage, reset } = useHermes({ supabase, functionName })
+function ChatWindow({
+  supabase,
+  functionName,
+  assistantName,
+  placeholder,
+  className,
+  stream,
+  getIdToken,
+}: ChatWindowProps) {
+  const { messages, loading, error, sendMessage, stop, reset } = useHermes({
+    supabase,
+    functionName,
+    getIdToken,
+  })
   const [input, setInput] = useState('')
   const scrollRef = useRef<HTMLDivElement>(null)
 
@@ -93,7 +118,7 @@ function ChatWindow({ supabase, functionName, assistantName, placeholder, classN
   function handleSubmit(e: FormEvent) {
     e.preventDefault()
     if (!input.trim() || loading) return
-    void sendMessage(input)
+    void sendMessage(input, { stream })
     setInput('')
   }
 
@@ -105,7 +130,12 @@ function ChatWindow({ supabase, functionName, assistantName, placeholder, classN
   }
 
   return (
-    <div className="flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#0B0F1A] shadow-2xl">
+    <motion.div
+      initial={{ opacity: 0, scale: 0.98 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.25 }}
+      className="flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#0B0F1A] shadow-2xl"
+    >
       {/* Cabeçalho */}
       <header className="flex items-center justify-between border-b border-white/10 bg-white/5 px-4 py-3">
         <div className="flex items-center gap-2">
@@ -132,9 +162,11 @@ function ChatWindow({ supabase, functionName, assistantName, placeholder, classN
         {messages.length === 0 && (
           <p className="text-center text-xs text-slate-500">Diga olá para começar 👋</p>
         )}
-        {messages.map((m: HermesMessage) => (
-          <Bubble key={m.id} role={m.role} content={m.content} assistantName={assistantName} />
-        ))}
+        <AnimatePresence initial={false}>
+          {messages.map((m: HermesMessage) => (
+            <Bubble key={m.id} role={m.role} content={m.content} assistantName={assistantName} />
+          ))}
+        </AnimatePresence>
         {loading && (
           <div className="flex items-center gap-2 text-xs text-slate-400">
             <Bot className="h-4 w-4 animate-pulse" /> {assistantName} está digitando...
@@ -158,24 +190,52 @@ function ChatWindow({ supabase, functionName, assistantName, placeholder, classN
           placeholder={placeholder}
           className="max-h-32 flex-1 resize-none rounded-xl border border-white/10 bg-[#111827] px-3 py-2 text-sm text-white placeholder:text-slate-500 outline-none transition focus:border-violet-500"
         />
-        <button
-          type="submit"
-          disabled={loading || !input.trim()}
-          className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-600 text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
-          aria-label="Enviar"
-        >
-          <Send className="h-4 w-4" />
-        </button>
+        {loading ? (
+          <button
+            type="button"
+            onClick={stop}
+            className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-white/10 text-white transition hover:bg-white/20"
+            aria-label="Parar"
+          >
+            <Square className="h-4 w-4" />
+          </button>
+        ) : (
+          <button
+            type="submit"
+            disabled={!input.trim()}
+            className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-600 text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+            aria-label="Enviar"
+          >
+            <Send className="h-4 w-4" />
+          </button>
+        )}
       </form>
-    </div>
+    </motion.div>
   )
 }
 
-function Bubble({ role, content, assistantName }: { role: HermesMessage['role']; content: string; assistantName: string }) {
+function Bubble({
+  role,
+  content,
+  assistantName,
+}: {
+  role: HermesMessage['role']
+  content: string
+  assistantName: string
+}) {
   const isUser = role === 'user'
-  const Icon: ReactNode = isUser ? <UserIcon className="h-4 w-4" /> : <Bot className="h-4 w-4" />
+  const Icon: ReactNode = isUser ? (
+    <UserIcon className="h-4 w-4" />
+  ) : (
+    <Bot className="h-4 w-4" />
+  )
   return (
-    <div className={`flex gap-2 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.2 }}
+      className={`flex gap-2 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}
+    >
       <div
         className={`flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full ${
           isUser ? 'bg-white/10 text-white' : 'bg-gradient-to-br from-violet-500 to-fuchsia-600 text-white'
@@ -185,13 +245,11 @@ function Bubble({ role, content, assistantName }: { role: HermesMessage['role'];
       </div>
       <div
         className={`max-w-[80%] whitespace-pre-wrap rounded-2xl px-3 py-2 text-sm ${
-          isUser
-            ? 'rounded-tr-sm bg-violet-600 text-white'
-            : 'rounded-tl-sm bg-white/5 text-slate-100'
+          isUser ? 'rounded-tr-sm bg-violet-600 text-white' : 'rounded-tl-sm bg-white/5 text-slate-100'
         }`}
       >
         {content || `(${assistantName} não retornou conteúdo)`}
       </div>
-    </div>
+    </motion.div>
   )
 }
