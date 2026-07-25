@@ -1,0 +1,4 @@
+// v0.0.1 — Atribuição de afiliado com janela de 30 dias e proteção de comissão.
+export interface AffiliateAttribution { affiliateId: string; buyerId: string; clickedAt: Date; expiresAt: Date }
+export function createAffiliateAttribution(affiliateId: string, buyerId: string, now = new Date()): AffiliateAttribution | null { if (!affiliateId || !buyerId || affiliateId === buyerId) return null; return { affiliateId, buyerId, clickedAt: now, expiresAt: new Date(now.getTime() + 30 * 86_400_000) } }
+export function calculateAffiliateCommission(orderTotal: number, commissionPercent: number, attribution: AffiliateAttribution, buyerId: string, now = new Date()): number { if (attribution.buyerId !== buyerId || attribution.expiresAt < now || commissionPercent < 0 || commissionPercent > 70 || !Number.isFinite(orderTotal)) return 0; return Math.round(Math.max(0, orderTotal) * commissionPercent) / 100 }

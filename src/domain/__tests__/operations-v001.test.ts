@@ -1,0 +1,9 @@
+import { validatePixKey, quotePayout } from '@/domain/payouts/PayoutEngine'
+import { createAffiliateAttribution, calculateAffiliateCommission } from '@/domain/affiliates/AffiliateEngine'
+import { createOrderTimeline } from '@/domain/orders/OrderTimeline'
+import { assessKycSubmission } from '@/domain/kyc/KycRiskEngine'
+import { generateGiftCardCode, validateGiftCardAmount } from '@/domain/giftcards/GiftCardEngine'
+import { shouldSendCartReminder } from '@/domain/abandonment/CartAbandonmentEngine'
+import { signWebhookPayload, verifyWebhookPayload } from '@/lib/webhooks/signature'
+import { rankSearchResult } from '@/domain/search/SearchRankingEngine'
+describe('v0.0.1 operations engines', () => { it('protege fluxos financeiros e de parceiro', () => { expect(validatePixKey('user@example.com','email')).toBe(true); expect(quotePayout(30,30).netAmount).toBe(29.01); const attribution = createAffiliateAttribution('a','b')!; expect(calculateAffiliateCommission(100,10,attribution,'b')).toBe(10); expect(calculateAffiliateCommission(100,10,attribution,'a')).toBe(0) }); it('cobre operação, trust e assinatura', () => { expect(createOrderTimeline('delivered')).toHaveLength(4); expect(assessKycSubmission({ documentProvided:false,selfieProvided:false,bankAccountMatches:false,accountAgeDays:0,riskScore:0 }).decision).toBe('rejected_incomplete'); const card=generateGiftCardCode(); expect(card.hash).toHaveLength(64); expect(validateGiftCardAmount(50)).toBe(true); expect(shouldSendCartReminder({ updatedAt:new Date(Date.now()-3_600_001),emailConsent:true,reminderCount:0 })).toBe(true); const signature=signWebhookPayload('data','secret'); expect(verifyWebhookPayload('data',signature,'secret')).toBe(true); expect(rankSearchResult({ textRank:1,rating:5,reviewCount:10,sales:100,boost:false })).toBeGreaterThan(0) }) })

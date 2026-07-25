@@ -1,0 +1,5 @@
+// v0.0.1 — Timeline única para comprador, suporte e auditoria.
+export type TimelineStatus = 'pending_payment' | 'paid' | 'delivered' | 'in_dispute' | 'refunded' | 'completed'
+export interface TimelineEvent { status: TimelineStatus; label: string; completed: boolean; date?: string }
+const labels: Record<TimelineStatus, string> = { pending_payment: 'Aguardando pagamento', paid: 'Pagamento confirmado', delivered: 'Entrega liberada', in_dispute: 'Disputa em análise', refunded: 'Reembolso concluído', completed: 'Pedido concluído' }
+export function createOrderTimeline(current: TimelineStatus, dates: Partial<Record<TimelineStatus, string>> = {}): TimelineEvent[] { const sequence: TimelineStatus[] = current === 'in_dispute' ? ['pending_payment','paid','delivered','in_dispute'] : current === 'refunded' ? ['pending_payment','paid','delivered','refunded'] : ['pending_payment','paid','delivered','completed']; const currentIndex = sequence.indexOf(current); return sequence.map((status, index) => ({ status, label: labels[status], completed: index <= currentIndex, date: dates[status] })) }

@@ -1,0 +1,4 @@
+// v0.0.1 — KYC orientado a revisão humana; não toma decisão biométrica automática.
+export interface KycRiskInput { documentProvided: boolean; selfieProvided: boolean; bankAccountMatches: boolean; accountAgeDays: number; riskScore: number }
+export type KycDecision = 'approved_for_review' | 'manual_review' | 'rejected_incomplete'
+export function assessKycSubmission(input: KycRiskInput): { decision: KycDecision; reasons: string[] } { const reasons: string[] = []; if (!input.documentProvided || !input.selfieProvided) { reasons.push('Documento e selfie são obrigatórios.'); return { decision: 'rejected_incomplete', reasons } } if (!input.bankAccountMatches) reasons.push('Titularidade bancária precisa de confirmação.'); if (input.accountAgeDays < 1) reasons.push('Conta recém-criada requer revisão.'); if (input.riskScore >= 60) reasons.push('Sinais de risco exigem análise humana.'); return { decision: reasons.length ? 'manual_review' : 'approved_for_review', reasons } }
