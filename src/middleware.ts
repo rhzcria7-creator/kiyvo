@@ -303,6 +303,8 @@ const PUBLIC_PREFIXES = [
   '/api/v1/boost/pricing',
   // Avaliações publicadas podem ser lidas; POST exige sessão no handler.
   '/api/v1/reviews/verified',
+  // Cron usa segredo Bearer próprio, sem depender de sessão de navegador.
+  '/api/cron/release-escrow',
   // Tokens de entrega são capacidades temporárias verificadas na própria rota.
   '/api/v1/delivery/',
   '/api/auth/',   // TODAS as rotas de auth (login, signup, firebase, logout, me) são públicas — senão o próprio login é bloqueado
