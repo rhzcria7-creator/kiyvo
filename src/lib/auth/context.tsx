@@ -110,7 +110,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     ;(async () => {
       const { createClient } = await import('@/lib/supabase/client')
       const supabase = createClient()
-      const { data } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      const { data } = supabase.auth.onAuthStateChange(async (_event: string, session: any) => {
         if (session?.user) {
           setUser({ id: session.user.id, email: session.user.email || '' })
           const { data: p } = await supabase.from('profiles').select('*').eq('id', session.user.id).maybeSingle()

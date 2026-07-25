@@ -128,7 +128,7 @@ export async function POST(req: NextRequest) {
     })
 
     return NextResponse.json({ ok: true, bid, source: 'local' })
-  } catch (e) {
+  } catch (e: any) {
     const msg = e instanceof Error ? e.message : 'Erro ao enviar proposta'
     return NextResponse.json({ error: msg }, { status: 500 })
   }

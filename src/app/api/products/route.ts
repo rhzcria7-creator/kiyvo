@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
     const { data, error, count } = await query
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     return NextResponse.json({ products: data || [], total: count || 0 })
-  } catch (e) {
+  } catch (e: any) {
     return NextResponse.json({ error: e instanceof Error ? e.message : 'Erro' }, { status: 500 })
   }
 }
@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     return NextResponse.json({ ok: true, product: data })
-  } catch (e) {
+  } catch (e: any) {
     return NextResponse.json({ error: e instanceof Error ? e.message : 'Erro' }, { status: 500 })
   }
 }

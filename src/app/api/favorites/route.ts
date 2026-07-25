@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
 
     await supabase.from('profiles').update({ metadata: { ...md, favorites: updated } }).eq('id', user.id)
     return NextResponse.json({ favorites: updated })
-  } catch (e) {
+  } catch (e: any) {
     return NextResponse.json({ error: e instanceof Error ? e.message : 'Erro' }, { status: 500 })
   }
 }

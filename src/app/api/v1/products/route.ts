@@ -1,174 +1,94 @@
-// GET /api/v1/products — lista pública de produtos ativos com paginação, busca, categoria
-// Usa Supabase real se conectado, senão retorna produtos demo realistas (gerados localmente).
+// ─────────────────────────────────────────────────────────────
+// Products API v0.0.1 — CRUD de produtos real com Supabase
+// Fallback DEMO_PRODUCTS se Supabase não existe
+// ─────────────────────────────────────────────────────────────
+
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
-import { DEMO_PRODUCTS } from '@/lib/catalog/demoProducts'
-import { GG_PRODUCTS } from '@/lib/catalog/ggmaxProducts'
-import { MEGA_PRODUCTS } from '@/lib/catalog/megaCatalog'
+import { createClient } from '@supabase/supabase-js'
+import { rateLimitMiddleware } from '@/lib/rate-limit/supabaseRateLimit'
 
-// Todos os produtos demo combinados: demo 58 + ggmax 50 + mega 681 = 789 produtos
-const ALL_DEMO_PRODUCTS = [
-  ...DEMO_PRODUCTS.map((p: any) => ({ ...p, source: 'demo' })),
-  ...GG_PRODUCTS.map((p: any) => ({ ...p, source: 'gg' })),
-  ...MEGA_PRODUCTS.map((p: any) => ({ ...p, source: 'mega' })),
+const DEMO_PRODUCTS = [
+  { id: 'demo_1', title: 'KIYVO Premium Plugin', slug: 'kiyvo-premium-plugin', price: 97, category: 'software', rating: 4.8, sales: 1234, thumbnail: 'https://picsum.photos/seed/p1/400/300' },
+  { id: 'demo_2', title: 'Curso Marketing Digital 2026', slug: 'curso-marketing-digital', price: 197, category: 'cursos', rating: 4.9, sales: 892, thumbnail: 'https://picsum.photos/seed/p2/400/300' },
+  { id: 'demo_3', title: 'E-book Receitas Fit', slug: 'ebook-receitas-fit', price: 27, category: 'ebooks', rating: 4.5, sales: 3456, thumbnail: 'https://picsum.photos/seed/p3/400/300' },
+  { id: 'demo_4', title: 'Template Bootstrap 5', slug: 'template-bootstrap-5', price: 47, category: 'templates', rating: 4.7, sales: 567, thumbnail: 'https://picsum.photos/seed/p4/400/300' },
 ]
 
-// Cache curto em memória para não bater toda hora no Supabase
-type CacheEntry = { data: any[]; timestamp: number }
-let cache: CacheEntry | null = null
-const CACHE_TTL = 30_000 // 30 segundos
-
-export const dynamic = 'force-dynamic'
-
-// Normaliza produto do Supabase para o formato esperado pelo frontend
-function normalizeSupabaseProduct(p: any) {
-  return {
-    id: p.id,
-    slug: p.slug || p.id,
-    titulo: p.titulo || p.name || 'Produto sem nome',
-    descricao_curta: p.descricao_curta || p.short_description || p.description?.slice(0, 120) || '',
-    descricao: p.descricao || p.description || '',
-    preco: Number(p.preco ?? p.price ?? 0),
-    preco_de: p.preco_de ? Number(p.preco_de) : (p.compare_at_price ? Number(p.compare_at_price) : null),
-    categoria: p.categoria || p.category || 'outro',
-    tipo: p.tipo || p.type || 'digital',
-    vendedor_nome: p.vendor?.nome || p.vendor?.full_name || p.vendedor_nome || 'Vendedor',
-    vendor_id: p.vendor_id || p.vendor?.id,
-    // Produtos do Supabase sem imagem recebem capa gradiente aleatória para parecer bonito
-    gradient: p.gradient || pickGradient(p.titulo || p.id || ''),
-    emoji: p.emoji || pickEmoji(p.categoria || p.category || ''),
-    imagem_capa: p.imagem_capa || p.image_url || p.image || null,
-    rating: Number(p.rating ?? p.average_rating ?? 4.7),
-    total_reviews: Number(p.total_reviews ?? p.reviews_count ?? Math.floor(Math.random() * 200) + 30),
-    total_vendas: Number(p.total_vendas ?? p.sales_count ?? 0),
-    boost: Boolean(p.boost || p.is_featured),
-    created_at: p.created_at,
-  }
-}
-
-const GRADIENTS = [
-  'from-rose-500 to-pink-600', 'from-orange-500 to-red-600', 'from-amber-400 to-orange-600',
-  'from-yellow-400 to-amber-600', 'from-lime-400 to-green-600', 'from-emerald-500 to-teal-700',
-  'from-teal-400 to-cyan-600', 'from-sky-400 to-blue-600', 'from-blue-500 to-indigo-700',
-  'from-indigo-500 to-violet-700', 'from-violet-500 to-purple-700', 'from-purple-500 to-fuchsia-700',
-  'from-fuchsia-500 to-pink-700', 'from-pink-500 to-rose-700', 'from-slate-500 to-slate-800',
-]
-function pickGradient(seed: string) {
-  let h = 0
-  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) | 0
-  return GRADIENTS[Math.abs(h) % GRADIENTS.length]
-}
-
-const EMOJI_BY_CAT: Record<string, string> = {
-  marketing: '📣', copywriting: '✍️', planilhas: '📊', templates: '🎨', curso: '📚',
-  social: '📱', vendas: '💰', mentoria: '🎯', software: '⚙️', ebook: '📖',
-  saude: '💪', financas: '💹', design: '🎨', video: '🎥', afiliados: '🤝', beleza: '💄',
-  gastronomia: '🍳', tecnologia: '💻', juridico: '⚖️', produtividade: '⏰', profissionais: '🧑‍⚕️',
-  prompts: '🤖', servico: '🛎️', consultoria: '🧭', planilha: '📊', pack: '📦', script: '📝',
-  idiomas: '🌍', desenvolvimento: '🧑‍💻', livros: '📚', outror: '✨',
-}
-function pickEmoji(cat: string) {
-  return EMOJI_BY_CAT[cat.toLowerCase()] || '✨'
+function getSupabaseClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (url && key) return createClient(url, key, { auth: { persistSession: false } })
+  return null
 }
 
 export async function GET(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url)
-    const page = Math.max(1, parseInt(searchParams.get('page') || '1'))
-    const limit = Math.min(200, parseInt(searchParams.get('limit') || '24'))
-    const busca = (searchParams.get('q') || '').trim().toLowerCase()
-    const categoria = (searchParams.get('categoria') || '').trim()
-    const tipo = (searchParams.get('tipo') || '').trim()
-    const ordenar = searchParams.get('ordenar') || 'destaque'
-    const offset = (page - 1) * limit
-
-    const now = Date.now()
-    let produtos: any[] = []
-    let supabaseOk = false
-
-    if (cache && now - cache.timestamp < CACHE_TTL) {
-      produtos = cache.data
-    } else {
-      try {
-        const supabase = createClient()
-        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
-        if (supabaseUrl && supabaseUrl !== 'https://placeholder.supabase.co') {
-          const { data, error } = await supabase
-            .from('products')
-            .select('id,slug,titulo,descricao_curta,preco,preco_de,categoria,tipo,vendedor_nome,vendor_id,imagem_capa,rating,total_reviews,total_vendas,boost,is_featured,created_at')
-            .eq('status', 'active')
-            .limit(200)
-          if (!error && data && data.length > 0) {
-            produtos = data.map(normalizeSupabaseProduct)
-            supabaseOk = true
-          }
-        }
-      } catch {
-        supabaseOk = false
-      }
-
-      if (!supabaseOk) {
-        // Usar produtos demo ricos (com gradientes, emojis e aparência de produtos reais)
-        produtos = [...ALL_DEMO_PRODUCTS]
-      }
-      cache = { data: produtos, timestamp: now }
-    }
-
-    let filtrados = produtos
-    if (busca) {
-      filtrados = filtrados.filter((p) =>
-        (p.titulo || '').toLowerCase().includes(busca) ||
-        (p.descricao_curta || '').toLowerCase().includes(busca) ||
-        (p.categoria || '').toLowerCase().includes(busca) ||
-        (p.vendedor_nome || '').toLowerCase().includes(busca)
-      )
-    }
-    if (categoria && categoria !== 'todos') {
-      filtrados = filtrados.filter((p) => (p.categoria || '') === categoria)
-    }
-    if (tipo && tipo !== 'todos') {
-      filtrados = filtrados.filter((p) => (p.tipo || '') === tipo)
-    }
-
-    switch (ordenar) {
-      case 'preco_asc':
-        filtrados = [...filtrados].sort((a, b) => (a.preco || 0) - (b.preco || 0)); break
-      case 'preco_desc':
-        filtrados = [...filtrados].sort((a, b) => (b.preco || 0) - (a.preco || 0)); break
-      case 'vendidos':
-        filtrados = [...filtrados].sort((a, b) => (b.total_vendas || 0) - (a.total_vendas || 0)); break
-      case 'rating':
-        filtrados = [...filtrados].sort((a, b) => (b.rating || 0) - (a.rating || 0)); break
-      case 'recentes':
-        filtrados = [...filtrados].sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()); break
-      case 'destaque':
-      default:
-        filtrados = [...filtrados].sort((a, b) => {
-          if (a.boost && !b.boost) return -1
-          if (!a.boost && b.boost) return 1
-          return (b.total_vendas || 0) - (a.total_vendas || 0)
-        })
-    }
-
-    const total = filtrados.length
-    const paginados = filtrados.slice(offset, offset + limit)
-
-    return NextResponse.json({
-      ok: true,
-      data: paginados,
-      meta: {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-        source: supabaseOk ? 'supabase' : 'demo',
-      },
-    })
-  } catch {
-    return NextResponse.json({
-      ok: true,
-      data: ALL_DEMO_PRODUCTS,
-      meta: { total: ALL_DEMO_PRODUCTS.length, page: 1, limit: 24, totalPages: Math.ceil(ALL_DEMO_PRODUCTS.length / 24), source: 'demo-fallback' },
-    })
+  // Rate limit
+  const rateLimitResult = await rateLimitMiddleware(request, 'api')
+  if (rateLimitResult) {
+    return NextResponse.json({ error: 'Rate limit exceeded', ...rateLimitResult }, { status: 429 })
   }
+
+  const { searchParams } = new URL(request.url)
+  const page = parseInt(searchParams.get('page') || '1')
+  const limit = parseInt(searchParams.get('limit') || '20')
+  const category = searchParams.get('category')
+  const sort = searchParams.get('sort') || 'newest'
+  const minPrice = searchParams.get('minPrice')
+  const maxPrice = searchParams.get('maxPrice')
+  const sellerId = searchParams.get('sellerId')
+  const ids = searchParams.get('ids') // comma separated
+
+  const supabase = getSupabaseClient()
+
+  if (supabase) {
+    try {
+      let query = supabase.from('products').select('*', { count: 'exact' })
+
+      if (category && category !== 'all') query = query.eq('category', category)
+      if (minPrice) query = query.gte('price', parseFloat(minPrice))
+      if (maxPrice) query = query.lte('price', parseFloat(maxPrice))
+      if (sellerId) query = query.eq('seller_id', sellerId)
+      if (ids) {
+        const idArr = ids.split(',').filter(Boolean)
+        query = query.in('id', idArr)
+      }
+
+      switch (sort) {
+        case 'price_asc': query = query.order('price', { ascending: true }); break
+        case 'price_desc': query = query.order('price', { ascending: false }); break
+        case 'rating': query = query.order('rating', { ascending: false }); break
+        case 'sales': query = query.order('total_sales', { ascending: false }); break
+        default: query = query.order('created_at', { ascending: false })
+      }
+
+      const from = (page - 1) * limit
+      const to = from + limit - 1
+      query = query.range(from, to)
+
+      const { data, error, count } = await query
+
+      if (error) throw error
+
+      return NextResponse.json({
+        products: data,
+        total: count || 0,
+        page,
+        totalPages: Math.ceil((count || 0) / limit),
+      })
+    } catch (err) {
+      console.error('Supabase products error:', err)
+      // Fallback to demo
+    }
+  }
+
+  // DEMO fallback
+  let products = DEMO_PRODUCTS
+  if (category && category !== 'all') products = products.filter(p => p.category === category)
+  
+  return NextResponse.json({
+    products,
+    total: products.length,
+    page: 1,
+    totalPages: 1,
+  })
 }

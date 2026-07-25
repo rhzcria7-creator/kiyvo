@@ -65,7 +65,7 @@ export async function GET() {
       friend_discount_pct: 5,
       available_earnings: earnings,
     })
-  } catch (e) {
+  } catch (e: any) {
     const msg = e instanceof Error ? e.message : 'Erro ao carregar indicações'
     return NextResponse.json({ error: msg }, { status: 500 })
   }

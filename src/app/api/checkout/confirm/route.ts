@@ -53,7 +53,7 @@ export async function GET(req: NextRequest) {
       paid,
       amount: intent.amount / 100,
     })
-  } catch (e) {
+  } catch (e: any) {
     return NextResponse.json({ error: e instanceof Error ? e.message : 'Erro' }, { status: 500 })
   }
 }

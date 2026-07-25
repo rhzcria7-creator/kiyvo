@@ -62,7 +62,7 @@ export function useNotifications(userId: string | null) {
           table: 'notifications',
           filter: `user_id=eq.${userId}`,
         },
-        (payload) => {
+        (payload: any) => {
           const notification = payload.new as Notification
           setNotifications((prev) => [notification, ...prev])
           setUnreadCount((prev) => prev + 1)
@@ -85,7 +85,7 @@ export function useNotifications(userId: string | null) {
           table: 'notifications',
           filter: `user_id=eq.${userId}`,
         },
-        (payload) => {
+        (payload: any) => {
           const updated = payload.new as Notification
           setNotifications((prev) =>
             prev.map((n) => (n.id === updated.id ? updated : n))

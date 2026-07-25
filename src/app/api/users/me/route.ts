@@ -36,7 +36,7 @@ export async function GET(req: Request) {
       },
       profile: profile || null,
     })
-  } catch (e) {
+  } catch (e: any) {
     return NextResponse.json({ error: e instanceof Error ? e.message : 'Erro' }, { status: 500 })
   }
 }

@@ -82,7 +82,7 @@ export function subscribeToUserConversations(
         schema: 'public',
         table: 'chat_conversations',
       },
-      (payload) => {
+      (payload: any) => {
         // Filtrar conversas do usuário
         const newRecord = payload.new as Record<string, unknown>
         if (newRecord.buyer_id === userId || newRecord.vendor_id === userId) {
@@ -97,7 +97,7 @@ export function subscribeToUserConversations(
         schema: 'public',
         table: 'chat_conversations',
       },
-      (payload) => {
+      (payload: any) => {
         const newRecord = payload.new as Record<string, unknown>
         if (newRecord.buyer_id === userId || newRecord.vendor_id === userId) {
           onUpdate(newRecord)
@@ -131,7 +131,7 @@ export function trackPresence(
     config: { presence: { key: userId } },
   })
 
-  channel.subscribe(async (status) => {
+  channel.subscribe(async (status: any) => {
     if (status === 'SUBSCRIBED') {
       await channel.track({
         user_id: userId,
@@ -192,7 +192,7 @@ export function onTypingIndicator(
   channel: RealtimeChannel,
   callback: (data: { user_id: string; user_name: string; typing: boolean }) => void
 ): void {
-  channel.on('broadcast', { event: 'typing' }, (payload) => {
+  channel.on('broadcast', { event: 'typing' }, (payload: any) => {
     callback(payload.payload as { user_id: string; user_name: string; typing: boolean })
   })
 }

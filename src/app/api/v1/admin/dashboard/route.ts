@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 // ─────────────────────────────────────────────────────────────
 // API Admin Dashboard — Métricas reais do Supabase
 // PROTEGIDO: Requer autenticação de administrador

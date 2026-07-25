@@ -189,7 +189,7 @@ export async function POST(req: NextRequest) {
       pix_copia_cola: pixInfo.data || '',
       expires_at: expiresAt,
     })
-  } catch (e) {
+  } catch (e: any) {
     const msg = e instanceof Error ? e.message : 'Erro ao criar PIX'
     return NextResponse.json({ error: msg }, { status: 500 })
   }

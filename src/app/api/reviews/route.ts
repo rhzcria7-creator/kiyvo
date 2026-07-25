@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
       review = data
     }
     return NextResponse.json({ ok: true, review })
-  } catch (e) {
+  } catch (e: any) {
     return NextResponse.json({ error: e instanceof Error ? e.message : 'Erro' }, { status: 500 })
   }
 }
