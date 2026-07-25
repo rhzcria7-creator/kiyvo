@@ -1,0 +1,6 @@
+// v0.0.1 — Ledger de dupla entrada e saldos por disponibilidade.
+export type LedgerDirection = 'debit'|'credit'
+export interface LedgerPosting { accountId:string; direction:LedgerDirection; amount:number; availableAt?:Date }
+export function validateJournal(postings: LedgerPosting[]): boolean { const debit=postings.filter(p=>p.direction==='debit').reduce((s,p)=>s+p.amount,0); const credit=postings.filter(p=>p.direction==='credit').reduce((s,p)=>s+p.amount,0); return postings.length>=2 && debit>0 && Math.abs(debit-credit)<.001 }
+export function calculateBalances(postings: LedgerPosting[], accountId:string, now=new Date()) { let pending=0, available=0; postings.filter(p=>p.accountId===accountId).forEach(p=>{ const sign=p.direction==='credit'?1:-1; if(p.availableAt&&p.availableAt>now) pending+=p.amount*sign; else available+=p.amount*sign }); return { available:Math.round(available*100)/100,pending:Math.round(pending*100)/100,total:Math.round((available+pending)*100)/100 } }
+export function createEscrowJournal(buyerAccount:string, sellerPendingAccount:string, amount:number, availableAt:Date): LedgerPosting[] { if(amount<=0) throw new Error('Valor inválido.'); return [{accountId:buyerAccount,direction:'debit',amount},{accountId:sellerPendingAccount,direction:'credit',amount,availableAt}] }
