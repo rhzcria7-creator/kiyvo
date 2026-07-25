@@ -1,6 +1,7 @@
 'use client'
 // KiyaWidget — Chat rápido flutuante com a Kiya (assistente oficial da KIYVO).
 // Conecta ao cérebro da plataforma com conhecimento real. O motor interno NUNCA é mencionado.
+// Atalhos two-sided (comprador / vendedor / cupons / segurança) e UX mais polida.
 // Comentários em PT-BR.
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -8,24 +9,34 @@ import { MessageCircle, X, Send, Sparkles, User as UserIcon, Phone } from 'lucid
 
 interface Msg { role: 'user' | 'assistant'; text: string }
 
-const GREETING = 'Oi! 👋 Eu sou a Kiya, assistente da KIYVO.\n\nPosso te ajudar com produtos, lojas, venda, pagamentos, cupons, KYC e mais. O que você precisa?'
+const GREETING =
+  'Oi! 👋 Eu sou a Kiya, assistente da KIYVO.\n\n' +
+  'Te ajudo a comprar com segurança ou a começar a vender e lucrar de verdade. Por onde quer começar?'
+
+// Atalhos two-sided: atraem os dois públicos do marketplace.
+const QUICK = [
+  { emoji: '🛍️', label: 'Quero comprar', text: 'Quero comprar um produto na KIYVO, como funciona e é seguro?' },
+  { emoji: '💰', label: 'Quero vender', text: 'Quero começar a vender na KIYVO, quais as taxas e como recebo?' },
+  { emoji: '🎟️', label: 'Cupons', text: 'Quais cupons estão ativos agora e como aplico no checkout?' },
+  { emoji: '🔒', label: 'Segurança', text: 'A KIYVO é segura? Como funciona a proteção ao comprador e ao vendedor?' },
+]
 
 export default function KiyaWidget() {
   const [open, setOpen] = useState(false)
   const [mensagens, setMensagens] = useState<Msg[]>([{ role: 'assistant', text: GREETING }])
   const [input, setInput] = useState('')
   const [enviando, setEnviando] = useState(false)
+  const [mostrarAtalhos, setMostrarAtalhos] = useState(true)
   const scrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' })
   }, [mensagens, open])
 
-  async function enviar(e?: React.FormEvent) {
-    e?.preventDefault()
-    if (!input.trim() || enviando) return
-    const pergunta = input.trim()
-    setInput('')
+  async function sendText(texto: string) {
+    const pergunta = texto.trim()
+    if (!pergunta || enviando) return
+    setMostrarAtalhos(false)
     setEnviando(true)
     setMensagens((m) => [...m, { role: 'user', text: pergunta }])
     try {
@@ -35,16 +46,34 @@ export default function KiyaWidget() {
         body: JSON.stringify({ message: pergunta }),
       })
       const data = await resp.json()
-      const texto = data?.data?.texto || data?.resposta || 'Desculpe, não entendi. Tente novamente.'
-      setMensagens((m) => [...m, { role: 'assistant', text: texto }])
+      const resposta = data?.data?.texto || data?.resposta || 'Desculpe, não entendi. Tente novamente.'
+      setMensagens((m) => [...m, { role: 'assistant', text: resposta }])
     } catch {
-      setMensagens((m) => [...m, { role: 'assistant', text: 'Erro de conexão. Tente novamente ou fale com nosso suporte humano no Telegram.' }])
-    } finally { setEnviando(false) }
+      setMensagens((m) => [
+        ...m,
+        { role: 'assistant', text: 'Erro de conexão. Tente novamente ou fale com nosso suporte humano no Telegram.' },
+      ])
+    } finally {
+      setEnviando(false)
+    }
+  }
+
+  function enviar(e?: React.FormEvent) {
+    e?.preventDefault()
+    if (!input.trim() || enviando) return
+    const texto = input
+    setInput('')
+    void sendText(texto)
+  }
+
+  function sugerir(texto: string) {
+    if (enviando) return
+    void sendText(texto)
   }
 
   return (
     <>
-      {/* Botao flutuante */}
+      {/* Botão flutuante */}
       <motion.button
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
@@ -76,7 +105,7 @@ export default function KiyaWidget() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-            className="fixed bottom-[calc(env(safe-area-inset-bottom)+9.5rem)] right-5 z-50 w-[92vw] max-w-sm h-[70vh] max-h-[600px] bg-white dark:bg-[#0F172A] rounded-[2rem] shadow-2xl border border-black/5 dark:border-white/10 overflow-hidden flex flex-col md:bottom-24"
+            className="fixed bottom-[calc(env(safe-area-inset-bottom)+9.5rem)] right-5 z-50 w-[92vw] max-w-sm h-[72vh] max-h-[620px] bg-white dark:bg-[#0F172A] rounded-[2rem] shadow-2xl border border-black/5 dark:border-white/10 overflow-hidden flex flex-col md:bottom-24"
           >
             <div className="bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-600 p-4 text-white flex items-center gap-3 relative overflow-hidden">
               <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-white/10" />
@@ -87,7 +116,7 @@ export default function KiyaWidget() {
               <div className="flex-1 relative z-10">
                 <div className="font-black text-sm">Kiya — Assistente KIYVO</div>
                 <div className="text-xs opacity-90 flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-200 animate-pulse" /> Online · Responde em segundos
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-200 animate-pulse" /> Online · Comprador e vendedor
                 </div>
               </div>
               <button onClick={() => setOpen(false)} className="p-1.5 rounded-lg hover:bg-white/20 relative z-10 transition">
@@ -104,16 +133,10 @@ export default function KiyaWidget() {
                   transition={{ type: 'spring', stiffness: 300, damping: 25 }}
                   className={`flex gap-2 ${m.role === 'user' ? 'flex-row-reverse' : ''}`}
                 >
-                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                    m.role === 'user' ? 'bg-[#2563EB]' : 'bg-gradient-to-br from-emerald-500 to-teal-500'
-                  }`}>
+                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${m.role === 'user' ? 'bg-[#2563EB]' : 'bg-gradient-to-br from-emerald-500 to-teal-500'}`}>
                     {m.role === 'user' ? <UserIcon size={13} className="text-white" /> : <Sparkles size={13} className="text-white" />}
                   </div>
-                  <div className={`max-w-[78%] rounded-xl px-3 py-2 text-xs leading-relaxed whitespace-pre-wrap ${
-                    m.role === 'user'
-                      ? 'bg-[#2563EB] text-white rounded-tr-sm shadow-md shadow-blue-500/20'
-                      : 'bg-slate-100 dark:bg-white/5 text-[#0F172A] dark:text-slate-100 rounded-tl-sm'
-                  }`}>
+                  <div className={`max-w-[78%] rounded-xl px-3 py-2 text-xs leading-relaxed whitespace-pre-wrap ${m.role === 'user' ? 'bg-[#2563EB] text-white rounded-tr-sm shadow-md shadow-blue-500/20' : 'bg-slate-100 dark:bg-white/5 text-[#0F172A] dark:text-slate-100 rounded-tl-sm'}`}>
                     {m.text}
                   </div>
                 </motion.div>
@@ -132,25 +155,62 @@ export default function KiyaWidget() {
               )}
             </div>
 
+            {/* Atalhos two-sided — sumem após a primeira interação */}
+            <AnimatePresence>
+              {mostrarAtalhos && !enviando && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="px-3 overflow-hidden"
+                >
+                  <div className="flex flex-wrap gap-1.5 pb-2">
+                    {QUICK.map((q) => (
+                      <button
+                        key={q.label}
+                        onClick={() => sugerir(q.text)}
+                        className="inline-flex items-center gap-1 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 text-[11px] font-bold px-2.5 py-1.5 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition"
+                      >
+                        <span>{q.emoji}</span> {q.label}
+                      </button>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             <form onSubmit={enviar} className="p-2 border-t border-black/5 dark:border-white/5 flex gap-2 bg-white dark:bg-[#0F172A]">
-              <input value={input} onChange={(e) => setInput(e.target.value)}
+              <input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
                 placeholder="Pergunte algo à Kiya..."
                 disabled={enviando}
-                className="flex-1 rounded-full bg-slate-100 dark:bg-white/5 px-4 py-2.5 text-xs text-[#0F172A] dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50 transition" />
-              <button type="submit" disabled={enviando || !input.trim()}
-                className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center hover:scale-105 active:scale-95 transition-transform disabled:opacity-50 shadow-lg shadow-emerald-500/30">
+                className="flex-1 rounded-full bg-slate-100 dark:bg-white/5 px-4 py-2.5 text-xs text-[#0F172A] dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50 transition"
+              />
+              <button
+                type="submit"
+                disabled={enviando || !input.trim()}
+                className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center hover:scale-105 active:scale-95 transition-transform disabled:opacity-50 shadow-lg shadow-emerald-500/30"
+              >
                 <Send size={14} />
               </button>
             </form>
             <div className="px-3 pb-2.5 flex items-center justify-between bg-white dark:bg-[#0F172A]">
               <button
-                onClick={() => { setOpen(false); window.location.href = '/copiloto' }}
+                onClick={() => {
+                  setOpen(false)
+                  window.location.href = '/copiloto'
+                }}
                 className="text-[10px] text-[#94A3B8] hover:text-emerald-500 transition font-bold"
               >
                 Chat completo →
               </button>
-              <a href="https://t.me/kiyvosuporte" target="_blank" rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400 font-bold hover:underline">
+              <a
+                href="https://t.me/kiyvosuporte"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400 font-bold hover:underline"
+              >
                 <Phone className="w-3 h-3" /> Humano (Telegram)
               </a>
             </div>

@@ -18,6 +18,7 @@ import { HomeDoisPublicos } from '@/components/home/HomeDoisPublicos'
 import { FeaturedProductsV2 } from '@/components/home/FeaturedProductsV2'
 import { HomeCategories } from '@/components/home/HomeCategories'
 import { HomeCompradores } from '@/components/home/HomeCompradores'
+import { HomeTrustBand } from '@/components/home/HomeTrustBand'
 import { RecentlyViewed } from '@/components/home/RecentlyViewed'
 import { TrendingNow } from '@/components/home/TrendingNow'
 import { DailyDeals } from '@/components/home/DailyDeals'
@@ -100,6 +101,7 @@ export default function HomePage() {
         <HomeHero />
         <div className="cv-auto"><HomeDoisPublicos /></div>
         <div className="cv-auto"><HomeCompradores /></div>
+        <div className="cv-auto"><HomeTrustBand /></div>
         <div className="cv-auto"><HomeNumeros /></div>
         <div className="cv-auto"><DailyDeals /></div>
         <div className="cv-auto"><TrendingNow /></div>

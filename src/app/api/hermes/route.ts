@@ -4,6 +4,7 @@
 // Comentários em PT-BR.
 import { NextRequest, NextResponse } from 'next/server'
 import { askAgent } from '@/lib/agents/brain'
+import { rateLimit } from '@/lib/security'
 
 export const dynamic = 'force-dynamic'
 
@@ -14,6 +15,13 @@ interface ReqBody {
 
 export async function POST(req: NextRequest) {
   try {
+    // Rate limit anti-abuse: 20 mensagens por IP por minuto.
+    const ip = req.headers.get('x-forwarded-for')?.split(',')[0] || req.headers.get('x-real-ip') || 'unknown'
+    const rl = rateLimit(ip, 20, 60000)
+    if (!rl.allowed) {
+      return NextResponse.json({ ok: false, error: 'Muitas mensagens. Aguarde um instante.' }, { status: 429 })
+    }
+
     const body = (await req.json().catch(() => ({}))) as ReqBody
     const msg = (body.message || '').trim()
     if (!msg) {
