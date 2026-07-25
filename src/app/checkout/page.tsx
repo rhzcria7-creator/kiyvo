@@ -80,8 +80,9 @@ export default function CheckoutPage() {
   const [pedidoIdSucesso, setPedidoIdSucesso] = useState<string>('')
   const [erro, setErro] = useState<string | null>(null)
   const [fraudResult, setFraudResult] = useState<FraudCheckResult | null>(null)
-  const [pixAguardando, setPixAguardando] = useState<{ pixKey: string; amount: number; orderId: string } | null>(null)
+  const [pixAguardando, setPixAguardando] = useState<{ pixKey: string; pixHolder?: string; amount: number; orderId: string } | null>(null)
   const [ativoEntregue, setAtivoEntregue] = useState<string | null>(null)
+  const [entregaManual, setEntregaManual] = useState(false)
 
   // Calcular totais
   const subtotal = total
@@ -204,7 +205,7 @@ export default function CheckoutPage() {
         })
         const j = await r.json().catch(() => null)
         if (j && j.manual_pix) {
-          setPixAguardando({ pixKey: String(j.pix_key), amount: Number(j.pix_amount), orderId: String(j.order_id) })
+          setPixAguardando({ pixKey: String(j.pix_key), pixHolder: j.pix_holder ? String(j.pix_holder) : undefined, amount: Number(j.pix_amount), orderId: String(j.order_id) })
           setLoading(false)
           return
         }
@@ -300,6 +301,7 @@ Obrigado por comprar na KIYVO! 🚀
       })
       const j = await r.json().catch(() => ({}))
       if (j.asset?.data) setAtivoEntregue(String(j.asset.data))
+      else setEntregaManual(true)
       setPixAguardando(null)
       setSucesso(true)
     } catch {
@@ -353,6 +355,23 @@ Obrigado por comprar na KIYVO! 🚀
               </p>
               <p className="text-xs text-emerald-100 mt-3">
                 Guarde estas credenciais em local seguro. Você também encontra este acesso na sua Biblioteca.
+              </p>
+            </motion.div>
+          )}
+          {entregaManual && !ativoEntregue && (
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.25 }}
+              className="bg-gradient-to-br from-amber-500 to-orange-600 rounded-3xl p-6 text-white shadow-xl text-left"
+            >
+              <div className="flex items-center gap-2 mb-3">
+                <CheckCircle2 className="w-5 h-5" />
+                <h3 className="font-display font-bold">Pagamento confirmado!</h3>
+              </div>
+              <p className="text-sm text-amber-50">
+                Seu pagamento PIX foi confirmado. A entrega deste produto é feita manualmente pelo vendedor —
+                você receberá o acesso direto no seu e-mail ou na sua Biblioteca em breve. Obrigado pela compra! 🚀
               </p>
             </motion.div>
           )}
@@ -416,6 +435,9 @@ Obrigado por comprar na KIYVO! 🚀
             <p className="font-mono text-sm font-bold text-[#0F172A] dark:text-white break-all select-all">
               {pixAguardando.pixKey}
             </p>
+            {pixAguardando.pixHolder && (
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-2">Titular: <strong>{pixAguardando.pixHolder}</strong></p>
+            )}
           </div>
           <button
             onClick={confirmarPix}

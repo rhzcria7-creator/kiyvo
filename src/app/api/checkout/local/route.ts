@@ -9,17 +9,26 @@ export const runtime = "nodejs";
 // ─────────────────────────────────────────────────────────────
 
 import { NextRequest, NextResponse } from 'next/server'
-import { getDb, findSession, findUserById, simpleId, persist } from '@/lib/localdb'
+import { getDb, findSession, findUserById, simpleId, persist, getSetting } from '@/lib/localdb'
 import { isSupabaseConfigured } from '@/lib/backend/detect'
 import { getBuyerBadgeDiscount } from '@/lib/badges'
 import { AFFILIATE } from '@/lib/affiliates/constants'
+import { getCatalogProductById } from '@/lib/catalog/serverLookup'
 
 const KD_POINTS_TO_BRL = 100 // 100 KD = R$1
 const MAX_KD_DISCOUNT_PCT = 0.5 // 50% máximo
 const CASHBACK_PCT = 0.15 // 15% de cashback em KD Points para plano grátis
 // Chave PIX REAL para receber dinheiro de verdade no modo demo/local.
+// Lida das configurações do painel (getSetting) ou da env KIYVO_PIX_KEY.
 // Se vazia, o pedido é entregue automaticamente (modo demonstração).
-const PIX_KEY = process.env.KIYVO_PIX_KEY || ''
+function resolvePixKey(): { key: string; holder: string } {
+  const fromSettings = getSetting('pix_key')
+  const fromEnv = process.env.KIYVO_PIX_KEY || ''
+  return {
+    key: fromSettings || fromEnv,
+    holder: getSetting('pix_holder'),
+  }
+}
 
 export async function POST(request: NextRequest) {
   // Apenas modo local
@@ -47,10 +56,40 @@ export async function POST(request: NextRequest) {
 
     const db = getDb()
 
-    // Encontrar produto
-    let product = null
-    if (productId) product = db.products.find((p) => p.id === productId)
-    if (!product && sku) product = db.products.find((p) => p.asset_data?.includes(sku.toUpperCase()))
+    // Encontrar produto (LocalDB primeiro, catálogo como fallback)
+    let product: import('@/lib/localdb').ProductRecord | null = null
+    if (productId) product = db.products.find((p) => p.id === productId) || null
+    if (!product && sku) product = db.products.find((p) => p.asset_data?.includes(sku.toUpperCase())) || null
+    // Fallback: produtos do catálogo (demo/gg/mega) que aparecem na home/busca/lojas.
+    // Assim QUALQUER produto do marketplace pode ser comprado (corrige o "resto nada").
+    if (!product && productId) {
+      const cat = getCatalogProductById(productId)
+      if (cat) {
+        product = {
+          id: cat.id,
+          seller_id: cat.vendor_id || 'catalog',
+          title: cat.titulo,
+          description: cat.descricao || cat.descricao_curta,
+          price: cat.preco,
+          original_price: cat.preco_de ?? undefined,
+          image: cat.imagem_capa || '',
+          category: cat.categoria,
+          category_slug: cat.categoria,
+          delivery_type: 'manual',
+          asset_data: null,
+          stock: 999,
+          sales: cat.total_vendas,
+          rating: cat.rating,
+          reviews: cat.total_reviews,
+          featured: cat.boost,
+          is_official: false,
+          is_boosted: false,
+          boost_ends_at: null,
+          ai_suspected: false,
+          created_at: cat.created_at,
+        }
+      }
+    }
     if (!product) return NextResponse.json({ error: 'Produto não encontrado' }, { status: 404 })
     if (product.stock <= 0 && !product.is_official) return NextResponse.json({ error: 'Produto sem estoque' }, { status: 400 })
 
@@ -106,9 +145,10 @@ export async function POST(request: NextRequest) {
     const orderId = simpleId()
     const now = new Date().toISOString()
 
-    // PIX manual real: se KIYVO_PIX_KEY estiver configurada, o pedido fica
-    // "aguardando pagamento" e o ativo só é liberado após a confirmação do PIX.
-    const manualPix = Boolean(PIX_KEY)
+    // PIX manual real: se houver chave PIX (painel ou env KIYVO_PIX_KEY), o
+    // pedido fica "aguardando pagamento" e o ativo só é liberado após a confirmação.
+    const pix = resolvePixKey()
+    const manualPix = Boolean(pix.key)
     const delivered = !manualPix && product.delivery_type === 'auto' && !!product.asset_data
 
     const order = {
@@ -204,7 +244,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         ok: true,
         manual_pix: true,
-        pix_key: PIX_KEY,
+        pix_key: pix.key,
+        pix_holder: pix.holder,
         pix_amount: total,
         order_id: orderId,
         order_number: orderNumber,

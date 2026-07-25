@@ -19,6 +19,7 @@ import { useKYC } from '@/lib/kyc/store'
 import { useRecent } from '@/lib/recent/store'
 import { useNotif } from '@/lib/notifications/store'
 import { useKD } from '@/lib/kd/store'
+import { productCoverDataUri } from '@/lib/svgArt'
 import { toast } from 'react-hot-toast'
 import { ProductCard } from '@/components/ProductCard'
 import { SimpleConfetti } from '@/components/ui/SimpleConfetti'
@@ -317,14 +318,13 @@ export function ProductPageClient({ slug, initialProduct }: { slug: string; init
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={product.imagem_capa} alt={product.titulo} className="w-full h-full object-cover" />
                 ) : (
-                  <motion.span
-                    initial={{ scale: 0.7, rotate: -4 }}
-                    animate={{ scale: 1, rotate: 0 }}
-                    transition={{ type: 'spring', stiffness: 180, delay: 0.2 }}
-                    className="text-[6rem] sm:text-[8rem] md:text-[10rem] drop-shadow-2xl"
-                  >
-                    {product.emoji}
-                  </motion.span>
+                  // Capa SVG gerada (gradiente + emoji + categoria) quando não há foto real.
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={productCoverDataUri({ title: product.titulo, emoji: product.emoji, categoria: product.categoria, seed: product.id || slug })}
+                    alt={product.titulo}
+                    className="w-full h-full object-cover"
+                  />
                 )}
               </div>
 
@@ -609,6 +609,10 @@ export function ProductPageClient({ slug, initialProduct }: { slug: string; init
                 )}
                 <p className="text-xs text-slate-500 mt-1">
                   À vista no PIX: <strong>R$ {(preco * 0.95).toFixed(2).replace('.', ',')}</strong> (5% de desconto)
+                </p>
+                <p className="text-[11px] text-slate-400 mt-1 flex items-center gap-1">
+                  <ShieldCheck className="w-3 h-3 text-emerald-500" />
+                  Taxa KIYVO de 8% + R$0,50 é descontada do vendedor — a menor do Brasil. Você paga só o preço à vista.
                 </p>
               </div>
 

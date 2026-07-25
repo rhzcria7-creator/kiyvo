@@ -14,6 +14,7 @@ import { DEMO_PRODUCTS } from '@/lib/catalog/demoProducts'
 import { GG_PRODUCTS } from '@/lib/catalog/ggmaxProducts'
 import { MEGA_PRODUCTS } from '@/lib/catalog/megaCatalog'
 import { ProductCard, type Product } from '@/components/ProductCard'
+import { vendorBannerDataUri, vendorAvatarDataUri } from '@/lib/svgArt'
 import { toast } from 'react-hot-toast'
 
 interface SellerDTO {
@@ -160,7 +161,6 @@ export default function LojaPage() {
   const bannerGradient = seller?.color
     ? `bg-gradient-to-br ${seller.color}`
     : 'bg-gradient-to-br from-brand-500 via-violet-600 to-fuchsia-600'
-  const initial = (seller?.name || seller?.username || '?').charAt(0).toUpperCase()
   const joinedYear = seller?.joined ? new Date(seller.joined).getFullYear() : ''
 
   const stats = useMemo(
@@ -226,10 +226,19 @@ export default function LojaPage() {
               <img src={seller.banner_url} alt="" className="w-full h-full object-cover" />
             </div>
           ) : (
-            <div className="absolute inset-0 opacity-25 pointer-events-none">
-              <div className="absolute -top-10 -right-10 w-60 h-60 rounded-full bg-white blur-3xl" />
-              <div className="absolute bottom-0 left-10 w-40 h-40 rounded-full bg-white/40 blur-2xl" />
-            </div>
+            <>
+              {/* Banner SVG gerado quando o vendedor não enviou um banner real */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={vendorBannerDataUri({ name: seller.name, seed: seller.handle })}
+                alt=""
+                className="h-40 sm:h-56 w-full object-cover"
+              />
+              <div className="absolute inset-0 opacity-25 pointer-events-none">
+                <div className="absolute -top-10 -right-10 w-60 h-60 rounded-full bg-white blur-3xl" />
+                <div className="absolute bottom-0 left-10 w-40 h-40 rounded-full bg-white/40 blur-2xl" />
+              </div>
+            </>
           )}
           <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-14 text-white" style={{ minHeight: seller.banner_url ? undefined : 120 }}>
             <div className="flex flex-col sm:flex-row items-start sm:items-end gap-5">
@@ -241,7 +250,13 @@ export default function LojaPage() {
                 ) : seller.logo ? (
                   <span>{seller.logo}</span>
                 ) : (
-                  <span className="font-black text-white/90">{initial}</span>
+                  // Avatar SVG gerado (iniciais + gradiente) quando não há foto real.
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={vendorAvatarDataUri({ name: seller.name, seed: seller.handle })}
+                    alt={seller.name}
+                    className="w-full h-full object-cover"
+                  />
                 )}
               </div>
 

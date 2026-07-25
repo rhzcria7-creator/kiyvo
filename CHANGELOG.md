@@ -1,5 +1,40 @@
 # CHANGELOG — Kiyvo
 
+## [12.12] — 2026-07-24 — DINHEIRO REAL (PIX) + MARKETPLACE COMPLETO + ARTES SVG
+
+### 💰 Receber dinheiro de verdade (sem Stripe)
+- **Chave PIX configurável pelo painel** (`/admin/pagamentos`): o operador cola a chave PIX
+  e o dinheiro cai na CONTA dele. Sem necessidade de redeploy nem variável de ambiente.
+- Configuração persistida no LocalDB (`getSetting`/`setSetting`) com fallback para `KIYVO_PIX_KEY`.
+- Novo endpoint `POST /api/admin/pix-settings` (admin) + `GET` que também lista os pedidos
+  aguardando PIX para cumprimento.
+- Novo endpoint `POST /api/admin/fulfill` para o operador marcar pedido como entregue (cumprimento manual).
+- Checkout (`/api/checkout/local`) usa a chave do painel/env; ao pagar, mostra a chave + titular e,
+  após confirmar, libera o ativo (entrega automática) ou sinaliza entrega manual.
+
+### 🛒 Marketplace completo (fim do "resto nada")
+- Checkout local agora resolve **qualquer produto do catálogo** (demo/gg/mega) via
+  `src/lib/catalog/serverLookup.ts`, não só os produtos do LocalDB. Todos os produtos da home,
+  busca e lojas ficam compráveis.
+- Catálogo sem ativo → entrega manual (vendedor envia acesso); com ativo → entrega automática.
+
+### 🎨 Artes SVG (fim do "visual de IA" / vazio)
+- `src/lib/svgArt.ts`: gerador determinístico de SVG para capas de produto, banners e avatares
+  de vendedor com a identidade KIYVO (gradientes, emoji, selo de categoria, iniciais).
+- Cards de produto (`ProductCard`) e página de produto (`ProductPageClient`) agora exibem capa
+  SVG quando não há foto real.
+- Lojas (`/loja/[handle]`) ganham banner SVG + avatar SVG gerados automaticamente.
+
+### 🛡️ Ajuste de segurança/UX
+- Rate limit de checkout subiu de 3 → 12 compras / 5 min por IP (comprador real não é travado,
+  abuso em massa continua throttlado).
+
+### 🧪 Testado em runtime
+- Compra de produto de catálogo (manual PIX) ✅
+- Confirmação de PIX → entrega manual ✅
+- Produto-teste (ChatGPT Plus via Outlook) → entrega automática de credenciais falsas + cashback KD ✅
+- Capas/banners/avatares SVG renderizando ✅
+
 ## [6.0.0] — 2026-07-17 — COLOSSO BRASIL: Cofre Digital + KYC + Gamificação
 
 ### 🔥 NOVAS FUNCIONALIDADES

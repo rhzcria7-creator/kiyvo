@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react'
 import { Star, Zap, Clock, Shield, ShoppingCart, CheckCircle2, Flame } from 'lucide-react'
 import { STORES } from '@/lib/catalog/stores'
 import { useBoost } from '@/lib/boost/store'
+import { productCoverDataUri } from '@/lib/svgArt'
 
 export interface Product {
   id: string
@@ -124,14 +125,14 @@ export function ProductCard({ produto, index = 0 }: { produto: Product; index?: 
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
             ) : (
-              <motion.div
-                initial={{ scale: 0.8, rotate: -6 }}
-                whileInView={{ scale: 1, rotate: 0 }}
-                transition={{ delay: Math.min(index * 0.04 + 0.1, 0.5), type: 'spring', stiffness: 200 }}
-                className="text-5xl sm:text-6xl md:text-7xl drop-shadow-lg filter"
-              >
-                {emoji}
-              </motion.div>
+              // Capa SVG gerada (gradiente + emoji + selo de categoria) quando não há foto real.
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={productCoverDataUri({ title: produto.titulo, emoji, categoria: produto.categoria, seed: produto.id })}
+                alt={produto.titulo}
+                loading="lazy"
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              />
             )}
           </div>
 

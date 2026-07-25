@@ -661,10 +661,12 @@ export function middleware(request: NextRequest) {
   }
 
   // 7. Rate limit de checkout/withdraw
+  // 12 compras a cada 5 min por IP — suficiente para um comprador real
+  // (carrinho, varios produtos) sem frustrar, mas ainda throttla abuso em massa.
   if (pathname.startsWith('/api/checkout') || pathname.startsWith('/api/v1/withdraw')) {
-    const coLimit = checkRateLimit(`checkout:${ip}`, 3, 300000)
+    const coLimit = checkRateLimit(`checkout:${ip}`, 12, 300000)
     if (!coLimit.allowed) {
-      return NextResponse.json({ error: 'Bloqueado por segurança. Tente em 5 minutos.' }, { status: 429 })
+      return NextResponse.json({ error: 'Muitas compras em pouco tempo. Aguarde alguns minutos e tente novamente.' }, { status: 429 })
     }
   }
 

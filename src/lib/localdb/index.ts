@@ -52,7 +52,7 @@ interface SessionRecord {
   expires_at: string
 }
 
-interface OrderRecord {
+export interface OrderRecord {
   id: string
   order_number: string
   buyer_id: string
@@ -76,7 +76,7 @@ interface OrderRecord {
   created_at: string
 }
 
-interface ProductRecord {
+export interface ProductRecord {
   id: string
   seller_id: string
   title: string
@@ -168,6 +168,9 @@ interface BoostRecord {
   created_at: string
 }
 
+// Configurações globais da plataforma (modo local/demo).
+// Usada para tornar o recebimento de dinheiro de verdade operável sem
+// precisar redeployar com variáveis de ambiente (ex.: chave PIX do operador).
 interface DB {
   users: UserRecord[]
   sessions: SessionRecord[]
@@ -178,6 +181,7 @@ interface DB {
   affiliateConversions: AffiliateConversion[]
   coupons: CouponRecord[]
   boosts: BoostRecord[]
+  settings: Record<string, string>
 }
 
 // Singleton global
@@ -441,6 +445,7 @@ function seedDatabase(): DB {
     affiliateConversions: [],
     coupons,
     boosts: [],
+    settings: {},
   }
 
   return db
@@ -677,6 +682,37 @@ export function deleteSession(token: string) {
   const db = getDb()
   db.sessions = db.sessions.filter((s) => s.token !== token)
   persist()
+}
+
+// ── CONFIGURAÇÕES GLOBAIS (modo local) ──────────────────────
+// Permite que o operador configure a chave PIX para receber
+// dinheiro de verdade sem precisar de variáveis de ambiente.
+export function getSetting(key: string): string {
+  const db = getDb()
+  return db.settings[key] ?? ''
+}
+
+export function setSetting(key: string, value: string): void {
+  const db = getDb()
+  if (value) db.settings[key] = value
+  else delete db.settings[key]
+  persist()
+}
+
+// Verifica se o token de sessão pertence a um administrador (modo local).
+export function isLocalAdminByToken(token: string | undefined | null): boolean {
+  if (!token) return false
+  const session = findSession(token)
+  if (!session) return false
+  const user = findUserById(session.user_id)
+  if (!user) return false
+  return Boolean(user.is_admin) || ['admin', 'ceo', 'cto', 'coo', 'founder'].includes(user.role)
+}
+
+// Lista pedidos por status (usado no painel para liberar entregas manuais).
+export function listOrdersByStatus(status: string): OrderRecord[] {
+  const db = getDb()
+  return db.orders.filter((o) => o.status === status)
 }
 
 export { simpleId, hashPassword, randomSalt }

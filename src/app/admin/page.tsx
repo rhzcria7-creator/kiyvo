@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Users, Package, DollarSign, AlertTriangle, TrendingUp, ShoppingBag, Star, Clock, Loader2, AlertCircle, RefreshCw } from 'lucide-react'
+import { Users, Package, DollarSign, AlertTriangle, TrendingUp, ShoppingBag, Star, Clock, Loader2, AlertCircle, RefreshCw, Wallet, QrCode } from 'lucide-react'
 import { PageTransition } from '@/components/shared/PageTransition'
 import { FadeInOnScroll, StaggerContainer, StaggerItem } from '@/components/animations'
 import Link from 'next/link'
@@ -202,6 +202,7 @@ export default function AdminPage() {
                 { href: '/admin/disputas', label: 'Disputas', icon: AlertTriangle, color: 'bg-red-50 text-red-600' },
                 { href: '/admin/verificacoes', label: 'Verificações KYC', icon: Star, color: 'bg-amber-50 text-amber-600' },
                 { href: '/admin/financeiro', label: 'Financeiro', icon: DollarSign, color: 'bg-green-50 text-green-600' },
+                { href: '/admin/pagamentos', label: 'Receber via PIX', icon: Wallet, color: 'bg-emerald-50 text-emerald-600' },
               ].map((link) => (
                 <Link key={link.href} href={link.href} className="flex items-center gap-3 p-3 rounded-xl hover:bg-surface-50 transition-colors group">
                   <div className={`w-9 h-9 rounded-lg ${link.color} flex items-center justify-center group-hover:opacity-80 transition-opacity`}>
