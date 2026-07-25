@@ -39,6 +39,8 @@ create table if not exists public.partner_catalog_imports (id uuid primary key d
 create table if not exists public.partner_catalog_items (id uuid primary key default gen_random_uuid(), import_id uuid not null references public.partner_catalog_imports(id) on delete cascade, external_id text, original_title text not null, display_title text, external_url text not null, price numeric(12,2), currency text default 'BRL', availability text default 'unknown', status text not null default 'draft', last_synced_at timestamptz, created_at timestamptz not null default now());
 create table if not exists public.vendor_api_keys (id uuid primary key default gen_random_uuid(), vendor_id uuid not null, label text not null, key_prefix text not null, secret_hash text not null, last_used_at timestamptz, revoked_at timestamptz, created_at timestamptz not null default now());
 create table if not exists public.vendor_webhooks (id uuid primary key default gen_random_uuid(), vendor_id uuid not null, url text not null, secret_hash text not null, events text[] not null default '{}', is_active boolean not null default true, created_at timestamptz not null default now());
+create index if not exists disputes_v001_buyer_status_idx on public.disputes_v001(buyer_id, status, opened_at desc);
+create index if not exists escrow_holds_release_idx on public.escrow_holds(status, available_at);
 
 -- Reserva uma key de forma concorrente segura. O valor nunca é retornado pelo SQL.
 create or replace function public.reserve_product_key(p_product_id uuid, p_order_id uuid, p_buyer_id uuid)
@@ -55,6 +57,9 @@ end; $$;
 alter table public.device_fingerprints enable row level security;
 alter table public.risk_events enable row level security;
 alter table public.risk_profiles enable row level security;
+alter table public.escrow_holds enable row level security;
+alter table public.ledger_accounts enable row level security;
+alter table public.ledger_postings enable row level security;
 alter table public.audit_logs_v001 enable row level security;
 alter table public.disputes_v001 enable row level security;
 alter table public.dispute_messages enable row level security;
