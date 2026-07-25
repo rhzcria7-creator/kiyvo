@@ -37,6 +37,46 @@ export type LoyaltyPlan = 'free' | 'basic' | 'pro' | 'plus'
 /** Plano do VENDEDOR — define taxas diferenciadas */
 export type SellerPlan = 'free' | 'starter' | 'pro' | 'business' | 'enterprise'
 
+/** Planos comerciais oficiais do KIYVO para a taxa de marketplace. */
+export type KiyvoSellerPlan = 'free' | 'plus' | 'pro' | 'vendor_pro'
+
+export interface KiyvoFeeCalculation {
+  feePercent: number
+  fixed: number
+  platformFee: number
+  sellerReceives: number
+  isFeeExempt: boolean
+}
+
+/**
+ * Calcula a taxa oficial sem teto. Free e Vendor Pro têm isenção nas primeiras 5 mil vendas.
+ * O valor é arredondado somente no resultado final para preservar centavos.
+ */
+export function calculateFee(
+  plan: KiyvoSellerPlan,
+  amount: number,
+  salesCount: number,
+): KiyvoFeeCalculation {
+  const safeAmount = Number.isFinite(amount) ? Math.max(0, amount) : 0
+  const safeSalesCount = Number.isFinite(salesCount) ? Math.max(0, Math.floor(salesCount)) : 0
+  const isFeeExempt = safeSalesCount < 5000 && (plan === 'free' || plan === 'vendor_pro')
+  const rules: Record<KiyvoSellerPlan, { percent: number; fixed: number }> = {
+    free: { percent: 0.08, fixed: 0.5 },
+    plus: { percent: 0.065, fixed: 0.4 },
+    pro: { percent: 0.05, fixed: 0.3 },
+    vendor_pro: { percent: 0.03, fixed: 0.2 },
+  }
+  const rule = rules[plan]
+  const platformFee = isFeeExempt ? 0 : Math.round((safeAmount * rule.percent + rule.fixed) * 100) / 100
+  return {
+    feePercent: isFeeExempt ? 0 : rule.percent * 100,
+    fixed: isFeeExempt ? 0 : rule.fixed,
+    platformFee,
+    sellerReceives: Math.max(0, Math.round((safeAmount - platformFee) * 100) / 100),
+    isFeeExempt,
+  }
+}
+
 /** Nível do vendedor — baseado em volume e reputação */
 export type SellerLevel = 'bronze' | 'silver' | 'gold' | 'platinum' | 'diamond' | 'master' | 'legend'
 

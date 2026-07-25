@@ -301,6 +301,8 @@ const PUBLIC_PREFIXES = [
   '/api/health',
   '/api/v1/coupons',
   '/api/v1/boost/pricing',
+  // Tokens de entrega são capacidades temporárias verificadas na própria rota.
+  '/api/v1/delivery/',
   '/api/auth/',   // TODAS as rotas de auth (login, signup, firebase, logout, me) são públicas — senão o próprio login é bloqueado
   '/api/agents/', // TODAS as APIs de agentes são públicas (aceitam anônimo com limite, auth tem mais cota)
   // Agentes individuais (cobertos pelo prefixo /api/agents/ — mantidos como comentário/legado)
@@ -688,10 +690,10 @@ export function middleware(request: NextRequest) {
         { status: 401 }
       )
     }
-    // Páginas: redirecionar para /login com ?next=
+    // Páginas: preserva a intenção no contrato público ?redirect=.
     const loginUrl = new URL('/login', request.url)
     if (pathname !== '/') {
-      loginUrl.searchParams.set('next', pathname)
+      loginUrl.searchParams.set('redirect', `${pathname}${request.nextUrl.search}`)
     }
     return NextResponse.redirect(loginUrl, { status: 307 })
   }
