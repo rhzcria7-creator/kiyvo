@@ -1,0 +1,4 @@
+// v0.0.1 — Eventos first-party com allowlist e amostragem de propriedades seguras.
+import { createAdminClient } from '@/lib/supabase/server'
+const allowedEvents = new Set(['product_view','add_to_cart','checkout_started','checkout_completed','search','wishlist_added','referral_opened','vendor_product_created'])
+export async function trackEvent(eventName: string, userId: string | null, properties: Record<string, string | number | boolean>): Promise<boolean> { if (!allowedEvents.has(eventName)) return false; const admin = createAdminClient(); if (!admin) return false; const safeProperties = Object.fromEntries(Object.entries(properties).slice(0, 20).map(([key, value]) => [key.slice(0, 60), typeof value === 'string' ? value.slice(0, 200) : value])); const { error } = await admin.from('analytics_events').insert({ user_id: userId, event_name: eventName, properties: safeProperties }); return !error }

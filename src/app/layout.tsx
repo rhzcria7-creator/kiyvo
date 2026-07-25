@@ -20,6 +20,7 @@ import { CartNotifier } from '@/components/cart/CartNotifier'
 import { KYCProvider } from '@/components/kyc/KYCProvider'
 import { PilotTrigger } from '@/components/ui/PilotTrigger'
 import { MobileNavBar } from '@/components/layout/MobileNavBar'
+import { PWARegistrar } from '@/components/PWARegistrar'
 
 const FlashSaleBar = dynamic(() => import('@/components/home/FlashSaleBar').then(m => m.FlashSaleBar), { ssr: false })
 const SecurityInit = dynamic(() => import('@/components/SecurityInit').then(m => m.SecurityInit), { ssr: false })
@@ -173,6 +174,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <MobileNavBar />
               <CartNotifier />
               <SecurityInit />
+              <PWARegistrar />
               <Toaster
                 position="top-right"
                 toastOptions={{
