@@ -301,6 +301,8 @@ const PUBLIC_PREFIXES = [
   '/api/health',
   '/api/v1/coupons',
   '/api/v1/boost/pricing',
+  // Avaliações publicadas podem ser lidas; POST exige sessão no handler.
+  '/api/v1/reviews/verified',
   // Tokens de entrega são capacidades temporárias verificadas na própria rota.
   '/api/v1/delivery/',
   '/api/auth/',   // TODAS as rotas de auth (login, signup, firebase, logout, me) são públicas — senão o próprio login é bloqueado
