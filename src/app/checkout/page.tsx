@@ -8,6 +8,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
+import toast from 'react-hot-toast'
 import {
   Lock, ShieldCheck, CreditCard, QrCode,
   CheckCircle2, Loader2, ArrowLeft, AlertTriangle, Tag,
@@ -79,6 +80,8 @@ export default function CheckoutPage() {
   const [pedidoIdSucesso, setPedidoIdSucesso] = useState<string>('')
   const [erro, setErro] = useState<string | null>(null)
   const [fraudResult, setFraudResult] = useState<FraudCheckResult | null>(null)
+  const [pixAguardando, setPixAguardando] = useState<{ pixKey: string; amount: number; orderId: string } | null>(null)
+  const [ativoEntregue, setAtivoEntregue] = useState<string | null>(null)
 
   // Calcular totais
   const subtotal = total
@@ -188,6 +191,30 @@ export default function CheckoutPage() {
     // Simula processamento do pagamento (Stripe real quando chaves estiverem no .env)
     await new Promise(r => setTimeout(r, 1800))
 
+    // Em modo demo/local, finaliza a compra de verdade no servidor (cria o pedido
+    // e entrega o ativo digital real, ex.: credenciais). Se KIYVO_PIX_KEY estiver
+    // configurada, o pedido fica aguardando o PIX manual e só libera após confirmação.
+    let ativoEntregueLocal: string | null = null
+    if (produtoId && produtoId !== 'demo') {
+      try {
+        const r = await fetch('/api/checkout/local', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ product_id: produtoId }),
+        })
+        const j = await r.json().catch(() => null)
+        if (j && j.manual_pix) {
+          setPixAguardando({ pixKey: String(j.pix_key), amount: Number(j.pix_amount), orderId: String(j.order_id) })
+          setLoading(false)
+          return
+        }
+        if (j && j.ok && j.asset?.data) ativoEntregueLocal = String(j.asset.data)
+      } catch {
+        ativoEntregueLocal = null
+      }
+    }
+    if (ativoEntregueLocal) setAtivoEntregue(ativoEntregueLocal)
+
     // GERA ARQUIVO DE ENTREGA (instruções + dados do pedido em data URL para download imediato)
     const pedidoId = 'KIY-' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).slice(2,5).toUpperCase()
     setPedidoIdSucesso(pedidoId)
@@ -237,7 +264,15 @@ Obrigado por comprar na KIYVO! 🚀
         gradient: produtoGradient,
         categoria: produtoCategoria,
         vendedor_nome: produtoVendedor,
-        arquivos: [{ nome: `${pedidoId}-acesso.txt`, url: fileUrl }],
+        arquivos: ativoEntregueLocal
+          ? [
+              { nome: `${pedidoId}-acesso.txt`, url: fileUrl },
+              {
+                nome: `${pedidoId}-credenciais.txt`,
+                url: URL.createObjectURL(new Blob([ativoEntregueLocal], { type: 'text/plain;charset=utf-8' })),
+              },
+            ]
+          : [{ nome: `${pedidoId}-acesso.txt`, url: fileUrl }],
       })
 
       // Dá KD Points de recompensa (5 KD por R$1 no valor FINAL)
@@ -253,6 +288,23 @@ Obrigado por comprar na KIYVO! 🚀
     setConfettiKey(k => k + 1)
     setLoading(false)
     setSucesso(true)
+  }
+
+  async function confirmarPix() {
+    if (!pixAguardando) return
+    try {
+      const r = await fetch('/api/checkout/local/confirm', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ order_id: pixAguardando.orderId }),
+      })
+      const j = await r.json().catch(() => ({}))
+      if (j.asset?.data) setAtivoEntregue(String(j.asset.data))
+      setPixAguardando(null)
+      setSucesso(true)
+    } catch {
+      toast.error('Erro ao confirmar o PIX. Tente novamente.')
+    }
   }
 
   const maxParcelas = Math.min(12, Math.max(1, Math.floor(totalFinal / 5)))
@@ -284,6 +336,26 @@ Obrigado por comprar na KIYVO! 🚀
           </motion.div>
           <h1 className="text-2xl sm:text-3xl font-black text-[#0F172A] dark:text-white mb-2">Compra confirmada! 🎉</h1>
           <p className="text-slate-600 dark:text-slate-400 mb-6">Seu acesso a <strong>{produtoNome}</strong> já está liberado na sua biblioteca.</p>
+
+          {ativoEntregue && (
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.25 }}
+              className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-3xl p-6 text-white shadow-xl shadow-emerald-500/30 text-left"
+            >
+              <div className="flex items-center gap-2 mb-3">
+                <Sparkles className="w-5 h-5" />
+                <h3 className="font-display font-bold">Seus dados de acesso</h3>
+              </div>
+              <p className="font-mono text-sm break-all bg-surface-900/30 backdrop-blur rounded-2xl p-4 border border-white/20">
+                {ativoEntregue}
+              </p>
+              <p className="text-xs text-emerald-100 mt-3">
+                Guarde estas credenciais em local seguro. Você também encontra este acesso na sua Biblioteca.
+              </p>
+            </motion.div>
+          )}
           <div className="bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-4 text-left mb-4 space-y-2 text-sm">
             <div className="flex justify-between items-center"><span className="text-slate-500">Pedido</span><span className="font-mono font-black text-[#0F172A] dark:text-white text-xs">#{pedidoIdSucesso || 'KIY-' + Date.now().toString(36).toUpperCase()}</span></div>
             <div className="flex justify-between"><span className="text-slate-500">Produto</span><span className="font-bold text-[#0F172A] dark:text-white text-right max-w-[60%] truncate">{produtoNome}</span></div>
@@ -315,6 +387,43 @@ Obrigado por comprar na KIYVO! 🚀
             <Link href="/" className="bg-[#0F172A] hover:bg-black text-white rounded-full py-3 font-bold text-sm text-center">Ir para o início</Link>
             <Link href="/library" className="border-2 border-slate-200 dark:border-slate-700 text-[#0F172A] dark:text-white rounded-full py-3 font-bold text-sm text-center">Minha biblioteca</Link>
           </div>
+        </motion.div>
+      </div>
+    )
+  }
+
+  // Tela de aguardo de PIX manual (dinheiro real via chave PIX configurada)
+  if (pixAguardando) {
+    return (
+      <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0B0F1A] flex items-center justify-center px-4 py-10">
+        <motion.div
+          initial={{ scale: 0.96, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="bg-white dark:bg-[#111827] rounded-[2rem] p-6 sm:p-10 max-w-md w-full text-center border border-slate-100 dark:border-slate-800 shadow-2xl"
+        >
+          <div className="w-20 h-20 bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-6">
+            <QrCode className="w-10 h-10" />
+          </div>
+          <h1 className="text-2xl font-black text-[#0F172A] dark:text-white mb-2">Pague via PIX</h1>
+          <p className="text-slate-600 dark:text-slate-300 mb-1">
+            Valor: <strong className="text-emerald-600 dark:text-emerald-400">R$ {pixAguardando.amount.toFixed(2).replace('.', ',')}</strong>
+          </p>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
+            Transfira para a chave PIX abaixo e confirme para receber seu produto.
+          </p>
+          <div className="bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-4 mb-4">
+            <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-1">Chave PIX</p>
+            <p className="font-mono text-sm font-bold text-[#0F172A] dark:text-white break-all select-all">
+              {pixAguardando.pixKey}
+            </p>
+          </div>
+          <button
+            onClick={confirmarPix}
+            className="w-full bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded-full py-3.5 font-black text-sm shadow-lg shadow-emerald-500/30"
+          >
+            Já efetuei o PIX
+          </button>
+          <p className="text-[11px] text-slate-400 mt-3">Após confirmar, o acesso é liberado na hora.</p>
         </motion.div>
       </div>
     )

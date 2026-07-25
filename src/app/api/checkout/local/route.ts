@@ -17,6 +17,9 @@ import { AFFILIATE } from '@/lib/affiliates/constants'
 const KD_POINTS_TO_BRL = 100 // 100 KD = R$1
 const MAX_KD_DISCOUNT_PCT = 0.5 // 50% máximo
 const CASHBACK_PCT = 0.15 // 15% de cashback em KD Points para plano grátis
+// Chave PIX REAL para receber dinheiro de verdade no modo demo/local.
+// Se vazia, o pedido é entregue automaticamente (modo demonstração).
+const PIX_KEY = process.env.KIYVO_PIX_KEY || ''
 
 export async function POST(request: NextRequest) {
   // Apenas modo local
@@ -103,7 +106,10 @@ export async function POST(request: NextRequest) {
     const orderId = simpleId()
     const now = new Date().toISOString()
 
-    const delivered = product.delivery_type === 'auto' && !!product.asset_data
+    // PIX manual real: se KIYVO_PIX_KEY estiver configurada, o pedido fica
+    // "aguardando pagamento" e o ativo só é liberado após a confirmação do PIX.
+    const manualPix = Boolean(PIX_KEY)
+    const delivered = !manualPix && product.delivery_type === 'auto' && !!product.asset_data
 
     const order = {
       id: orderId,
@@ -120,7 +126,7 @@ export async function POST(request: NextRequest) {
       badge_discount_pct: badgeDiscountPct,
       platform_fee: platformFee,
       affiliate_code: buyer.referred_by,
-      status: delivered ? 'delivered' as const : 'paid' as const,
+      status: manualPix ? ('pending_payment' as const) : (delivered ? ('delivered' as const) : ('paid' as const)),
       payment_method: 'pix' as const,
       payment_id: 'local-' + simpleId().slice(0, 8),
       asset: delivered ? { type: 'key', data: product.asset_data! } : null,
@@ -193,6 +199,18 @@ export async function POST(request: NextRequest) {
     buyer.badges = newBadges
 
     persist()
+
+    if (manualPix) {
+      return NextResponse.json({
+        ok: true,
+        manual_pix: true,
+        pix_key: PIX_KEY,
+        pix_amount: total,
+        order_id: orderId,
+        order_number: orderNumber,
+        payment_method: 'pix_manual',
+      })
+    }
 
     return NextResponse.json({
       ok: true,

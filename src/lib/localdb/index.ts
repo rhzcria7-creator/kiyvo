@@ -67,7 +67,7 @@ interface OrderRecord {
   badge_discount_pct: number
   platform_fee: number
   affiliate_code: string | null
-  status: 'pending' | 'paid' | 'delivered' | 'cancelled' | 'in_dispute'
+  status: 'pending' | 'pending_payment' | 'paid' | 'delivered' | 'cancelled' | 'in_dispute'
   payment_method: 'pix' | 'credit_card' | 'boleto' | 'kd_points'
   payment_id: string | null
   asset: { type: string; data: string } | null
@@ -390,6 +390,35 @@ function seedDatabase(): DB {
     ai_suspected: false,
     created_at: now,
   }))
+
+  // Produto-teste: demonstra a ENTREGA REAL de um ativo digital (credenciais falsas
+  // de uma conta Outlook com "ChatGPT Plus mensal ativo"). Usado para validar o
+  // fluxo de entrega do marketplace no modo demo.
+  products.push({
+    id: '00000000-0000-4000-8000-000000000200',
+    seller_id: '00000000-0000-4000-8000-000000000001',
+    title: 'ChatGPT Plus 1 Mês — Acesso via Outlook',
+    description:
+      'Acesso mensal ativo do ChatGPT Plus entregue via conta Outlook. Entrega automática e imediata após a confirmação do pagamento.',
+    price: 39.9,
+    original_price: 99.9,
+    image: '',
+    category: 'software',
+    category_slug: 'software',
+    delivery_type: 'auto',
+    asset_data:
+      'OUTLOOK: chatgpt.plus.oficial@outlook.com | SENHA: Kiwv0-Pls#2025! | ChatGPT Plus MENSAL ATIVO (renova todo dia 1º). Guarde estes dados com segurança.',
+    stock: 999,
+    sales: 1240,
+    rating: 4.8,
+    reviews: 320,
+    featured: true,
+    is_official: true,
+    is_boosted: false,
+    boost_ends_at: null,
+    ai_suspected: false,
+    created_at: now,
+  })
 
   // Cupons padrão
   const coupons: CouponRecord[] = [
