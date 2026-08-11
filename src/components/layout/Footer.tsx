@@ -89,15 +89,14 @@ const COLS = [
 
 export function Footer() {
   return (
-    <footer className="bg-[#0B0F1A] text-white/70 pt-20 pb-8">
+    <footer className="bg-[#090C16] text-[#FAF7F2]/70 pt-20 pb-8 border-t border-earth-800/20">
       <div className="max-w-7xl mx-auto px-6">
         {/* Top row: logo + newsletter */}
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8 pb-12 border-b border-white/10">
           <div className="max-w-sm">
-            <KiyvoLogoSvg size={36} variant="full" className="text-white" />
-            <p className="mt-4 text-sm leading-relaxed text-white/50">
-              O marketplace de tudo que é digital. Compre, venda e ganhe pontos.
-              Feito por brasileiros, para brasileiros.
+            <KiyvoLogoSvg size={36} variant="full" className="text-[#FAF7F2]" />
+            <p className="mt-4 text-sm leading-relaxed text-[#FAF7F2]/50 font-display">
+              O marketplace premium de produtos e infoprodutos digitais. Design luxuoso, moderno e minimalista com a maior proteção do Brasil.
             </p>
           </div>
           <div>

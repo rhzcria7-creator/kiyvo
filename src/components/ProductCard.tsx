@@ -82,10 +82,10 @@ export function ProductCard({ produto, index = 0 }: { produto: Product; index?: 
       <Link
         href={href}
         aria-label={produto.titulo}
-        className={`group relative flex flex-col h-full bg-white dark:bg-[#111827] rounded-[1.25rem] sm:rounded-[2rem] border overflow-hidden hover:shadow-2xl hover:shadow-brand-500/15 dark:hover:shadow-brand-500/25 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 active:scale-[0.98] ${
+        className={`group relative flex flex-col h-full bg-white dark:bg-[#0E1321] rounded-[1.5rem] sm:rounded-[2rem] border overflow-hidden hover:shadow-2xl hover:shadow-earth-500/10 dark:hover:shadow-brand-500/15 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-earth-500 active:scale-[0.98] ${
           boosted
-            ? 'border-amber-300 dark:border-amber-500/50 shadow-lg shadow-amber-500/10 hover:shadow-amber-500/20 hover:border-amber-400'
-            : 'border-slate-100 dark:border-slate-800 hover:border-brand-200 dark:hover:border-brand-800'
+            ? 'border-amber-400 dark:border-amber-500/50 shadow-lg shadow-amber-500/10 hover:shadow-amber-500/20 hover:border-amber-400'
+            : 'border-earth-100 dark:border-white/10 hover:border-earth-300 dark:hover:border-brand-800'
         }`}
       >
         {boosted && (
@@ -180,7 +180,7 @@ export function ProductCard({ produto, index = 0 }: { produto: Product; index?: 
         {/* Corpo */}
         <div className="p-3 sm:p-4 md:p-5 flex flex-col flex-1">
           {catLabel && (
-            <span className="inline-flex self-start text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-brand-600 dark:text-brand-400 bg-brand-500/10 px-2 py-0.5 rounded-full mb-2">
+            <span className="inline-flex self-start text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-earth-700 dark:text-brand-300 bg-earth-100 dark:bg-brand-500/10 px-2.5 py-0.5 rounded-full mb-2">
               {catLabel}
             </span>
           )}
@@ -223,14 +223,14 @@ export function ProductCard({ produto, index = 0 }: { produto: Product; index?: 
               </p>
             )}
             {produto.vendedor_nome && (
-              <p className="mt-1.5 text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 font-medium truncate flex items-center gap-1">
+              <p className="mt-1.5 text-[10px] sm:text-[11px] text-earth-700 dark:text-[#FAF7F2]/60 font-medium truncate flex items-center gap-1">
                 por{' '}
                 {(() => {
                   const handle = findStoreHandle(produto.store_id || produto.vendor_id, produto.vendedor_nome)
                   const verified = produto.verificado || STORES.some(s => s.name === produto.vendedor_nome && s.verified)
                   const content = (
                     <>
-                      <span className="text-slate-700 dark:text-slate-300 font-bold hover:text-brand-600">{produto.vendedor_nome}</span>
+                      <span className="text-earth-800 dark:text-[#FAF7F2] font-bold hover:text-earth-600 dark:hover:text-brand-400">{produto.vendedor_nome}</span>
                       {verified && <CheckCircle2 className="w-3 h-3 text-brand-500 fill-brand-500 flex-shrink-0" />}
                     </>
                   )

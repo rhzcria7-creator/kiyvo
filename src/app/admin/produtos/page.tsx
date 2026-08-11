@@ -79,22 +79,26 @@ export default function AdminProdutosPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-            <h1 className="font-display font-extrabold text-2xl text-surface-900 dark:text-white">
-              Gerenciar Produtos
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="h-1 w-6 bg-earth-500 rounded-full" />
+              <p className="text-[10px] font-black uppercase tracking-widest text-earth-650">Painel de Controle</p>
+            </div>
+            <h1 className="font-display font-black text-2xl sm:text-3xl text-earth-950 dark:text-white tracking-tight">
+              Gerenciamento de Produtos
             </h1>
-            <p className="text-surface-500 dark:text-surface-400 text-sm mt-1">
-              {loading ? 'Carregando...' : `${filtered.length} produtos`}
+            <p className="text-earth-500 dark:text-white/40 text-xs sm:text-sm font-semibold mt-1">
+              {loading ? 'Carregando registros...' : `${filtered.length} infoprodutos e licenças catalogados`}
             </p>
           </motion.div>
           <div className="flex items-center gap-2">
             <div className="relative">
-              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-surface-400" />
+              <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-earth-400" />
               <input
                 type="text"
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                placeholder="Buscar produto ou vendedor..."
-                className="input-base pl-9 text-sm w-56 sm:w-64"
+                placeholder="Filtrar por título ou vendedor..."
+                className="w-56 sm:w-64 bg-white dark:bg-[#0E1321] text-xs font-bold text-earth-950 dark:text-white rounded-xl pl-10 pr-4 py-2.5 border border-earth-100 dark:border-white/10 outline-none focus:border-earth-300"
               />
             </div>
             <button
@@ -136,31 +140,31 @@ export default function AdminProdutosPage() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-surface-100 dark:border-surface-800">
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">Produto</th>
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">Vendedor</th>
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">Preço</th>
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">Vendas</th>
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">Status</th>
-                    <th className="text-right px-5 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">Ações</th>
+                  <tr className="border-b border-earth-100/60 dark:border-white/10 bg-earth-50/50 dark:bg-white/5">
+                    <th className="text-left px-5 py-3 text-[10px] font-black text-earth-600 dark:text-white/40 uppercase tracking-widest">Produto</th>
+                    <th className="text-left px-5 py-3 text-[10px] font-black text-earth-600 dark:text-white/40 uppercase tracking-widest">Vendedor</th>
+                    <th className="text-left px-5 py-3 text-[10px] font-black text-earth-600 dark:text-white/40 uppercase tracking-widest">Preço</th>
+                    <th className="text-left px-5 py-3 text-[10px] font-black text-earth-600 dark:text-white/40 uppercase tracking-widest">Vendas</th>
+                    <th className="text-left px-5 py-3 text-[10px] font-black text-earth-600 dark:text-white/40 uppercase tracking-widest">Status</th>
+                    <th className="text-right px-5 py-3 text-[10px] font-black text-earth-600 dark:text-white/40 uppercase tracking-widest">Ações</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-surface-100 dark:divide-surface-800">
                   {filtered.map((product, i) => (
                     <motion.tr
                       key={product.id}
-                      initial={{ opacity: 0, y: 10 }}
+                      initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.03 }}
-                      className="hover:bg-surface-50/50 dark:hover:bg-surface-800/50"
+                      transition={{ delay: i * 0.02 }}
+                      className="hover:bg-earth-50/30 dark:hover:bg-white/5 border-b border-earth-50/50 dark:border-white/5"
                     >
                       <td className="px-5 py-3">
-                        <p className="text-sm font-semibold text-surface-900 dark:text-white">{product.title}</p>
-                        <p className="text-xs text-surface-400">{product.category_name || '—'}</p>
+                        <p className="text-xs sm:text-sm font-black text-earth-900 dark:text-white">{product.title}</p>
+                        <p className="text-[10px] font-bold text-earth-400 uppercase tracking-wider mt-0.5">{product.category_name || '—'}</p>
                       </td>
-                      <td className="px-5 py-3 text-sm text-surface-700 dark:text-surface-300">{product.seller_name || '—'}</td>
-                      <td className="px-5 py-3 text-sm font-medium text-surface-900 dark:text-white">{formatPrice(Number(product.price) || 0)}</td>
-                      <td className="px-5 py-3 text-sm text-surface-700 dark:text-surface-300">{product.sales_count || 0}</td>
+                      <td className="px-5 py-3 text-xs sm:text-sm font-bold text-earth-700 dark:text-white/60">{product.seller_name || '—'}</td>
+                      <td className="px-5 py-3 text-xs sm:text-sm font-black text-earth-950 dark:text-white">{formatPrice(Number(product.price) || 0)}</td>
+                      <td className="px-5 py-3 text-xs sm:text-sm font-bold text-earth-600 dark:text-white/60">{product.sales_count || 0}</td>
                       <td className="px-5 py-3">
                         <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-semibold ${statusColors[product.status] || statusColors.under_review}`}>
                           {statusLabels[product.status] || product.status}

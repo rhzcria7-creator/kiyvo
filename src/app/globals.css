@@ -32,15 +32,15 @@
   }
 
   body {
-    @apply bg-[#FAFAFA] text-[#0F172A] font-body transition-colors duration-300;
+    @apply bg-[#FAF7F2] text-[#1E293B] font-body transition-colors duration-300;
   }
 
   .dark body {
-    @apply bg-[#0B0F1A] text-white;
+    @apply bg-[#070A13] text-[#F3ECE0];
   }
 
   ::selection {
-    @apply bg-brand-600 text-white;
+    @apply bg-earth-600 text-white;
   }
 
   .dark ::selection {
@@ -113,10 +113,10 @@
 
   /* ── Card base ────────────────────────────────────────── */
   .card-base {
-    @apply bg-white rounded-2xl border border-surface-200/60 shadow-card transition-all duration-300;
+    @apply bg-white rounded-3xl border border-earth-100/60 shadow-card transition-all duration-300;
   }
   .dark .card-base {
-    @apply bg-surface-900 border-surface-700/60 shadow-dark-card;
+    @apply bg-[#0E1321] border-white/10 shadow-dark-card;
   }
 
   /* ── Card elevado (hover interativo) ──────────────────── */

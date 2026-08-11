@@ -1,0 +1,20 @@
+
+> kiyvo@1.0.0 dev
+> next dev
+
+  ▲ Next.js 14.2.29
+  - Local:        http://localhost:3000
+
+ ✓ Starting...
+ ✓ Ready in 2.5s
+ ○ Compiling /src/middleware ...
+ ✓ Compiled /src/middleware in 1226ms (129 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (106kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (253kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+ ○ Compiling /buscar ...
+ ✓ Compiled /buscar in 13.2s (1691 modules)
+ GET /buscar 200 in 15152ms
+ ✓ Compiled in 1986ms (840 modules)
+ ○ Compiling /api/v1/products ...
+ ✓ Compiled /api/v1/products in 7.1s (910 modules)
+ ✓ Compiled (978 modules)
