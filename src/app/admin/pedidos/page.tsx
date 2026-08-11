@@ -96,20 +96,24 @@ export default function AdminPedidosPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-            <h1 className="font-display font-extrabold text-2xl text-surface-900 dark:text-white">
-              Gerenciar Pedidos
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="h-1 w-6 bg-earth-500 rounded-full" />
+              <p className="text-[10px] font-black uppercase tracking-widest text-earth-650">Painel de Controle</p>
+            </div>
+            <h1 className="font-display font-black text-2xl sm:text-3xl text-earth-950 dark:text-white tracking-tight">
+              Gerenciamento de Pedidos
             </h1>
-            <p className="text-surface-500 dark:text-surface-400 text-sm mt-1">
-              {loading ? 'Carregando...' : `${orders.length} pedidos`}
+            <p className="text-earth-500 dark:text-white/40 text-xs sm:text-sm font-semibold mt-1">
+              {loading ? 'Carregando transações...' : `${orders.length} pedidos de custódia e escrow`}
             </p>
           </motion.div>
           <button
             onClick={handleRefresh}
             disabled={loading || refreshing}
-            className="btn-secondary inline-flex items-center gap-2 px-4 py-2 text-sm self-start sm:self-auto disabled:opacity-50"
+            className="btn-secondary inline-flex items-center gap-2 px-5 py-2.5 text-xs font-black uppercase tracking-wider self-start sm:self-auto disabled:opacity-50"
             aria-label="Atualizar lista"
           >
-            <RefreshCw size={16} className={refreshing ? 'animate-spin' : ''} />
+            <RefreshCw size={14} className={refreshing ? 'animate-spin' : ''} />
             Atualizar
           </button>
         </div>
@@ -150,26 +154,26 @@ export default function AdminPedidosPage() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-surface-100 dark:border-surface-800">
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">
+                  <tr className="border-b border-earth-100/60 dark:border-white/10 bg-earth-50/50 dark:bg-white/5">
+                    <th className="text-left px-5 py-3 text-[10px] font-black text-earth-600 dark:text-white/40 uppercase tracking-widest">
                       Pedido
                     </th>
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">
+                    <th className="text-left px-5 py-3 text-[10px] font-black text-earth-600 dark:text-white/40 uppercase tracking-widest">
                       Comprador
                     </th>
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">
+                    <th className="text-left px-5 py-3 text-[10px] font-black text-earth-600 dark:text-white/40 uppercase tracking-widest">
                       Vendedor
                     </th>
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">
+                    <th className="text-left px-5 py-3 text-[10px] font-black text-earth-600 dark:text-white/40 uppercase tracking-widest">
                       Produto
                     </th>
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">
+                    <th className="text-left px-5 py-3 text-[10px] font-black text-earth-600 dark:text-white/40 uppercase tracking-widest">
                       Valor
                     </th>
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">
+                    <th className="text-left px-5 py-3 text-[10px] font-black text-earth-600 dark:text-white/40 uppercase tracking-widest">
                       Status
                     </th>
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">
+                    <th className="text-left px-5 py-3 text-[10px] font-black text-earth-600 dark:text-white/40 uppercase tracking-widest">
                       Data
                     </th>
                   </tr>
@@ -178,36 +182,36 @@ export default function AdminPedidosPage() {
                   {orders.map((order, i) => (
                     <motion.tr
                       key={order.id}
-                      initial={{ opacity: 0, y: 10 }}
+                      initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.03 }}
-                      className="hover:bg-surface-50/50 dark:hover:bg-surface-800/50 transition-colors"
+                      transition={{ delay: i * 0.02 }}
+                      className="hover:bg-earth-50/30 dark:hover:bg-white/5 border-b border-earth-50/50 dark:border-white/5 transition-colors"
                     >
-                      <td className="px-5 py-3 text-sm font-mono font-semibold text-surface-900 dark:text-white">
+                      <td className="px-5 py-3 text-xs sm:text-sm font-mono font-black text-earth-900 dark:text-white">
                         {order.order_number || order.id.slice(0, 10)}
                       </td>
-                      <td className="px-5 py-3 text-sm text-surface-700 dark:text-surface-300">
+                      <td className="px-5 py-3 text-xs sm:text-sm font-semibold text-earth-700 dark:text-white/60">
                         {order.buyer_name || '—'}
                       </td>
-                      <td className="px-5 py-3 text-sm text-surface-700 dark:text-surface-300">
+                      <td className="px-5 py-3 text-xs sm:text-sm font-semibold text-earth-700 dark:text-white/60">
                         {order.seller_name || '—'}
                       </td>
-                      <td className="px-5 py-3 text-sm text-surface-700 dark:text-surface-300 max-w-xs truncate">
+                      <td className="px-5 py-3 text-xs sm:text-sm font-bold text-earth-700 dark:text-white/60 max-w-xs truncate">
                         {order.product_title || '—'}
                       </td>
-                      <td className="px-5 py-3 text-sm font-semibold text-surface-900 dark:text-white">
+                      <td className="px-5 py-3 text-xs sm:text-sm font-black text-earth-950 dark:text-white">
                         {formatPrice(Number(order.subtotal) || 0)}
                       </td>
                       <td className="px-5 py-3">
                         <span
-                          className={`inline-block px-2.5 py-1 rounded-full text-xs font-semibold ${
+                          className={`inline-block px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
                             statusColors[order.status] || statusColors.pending
                           }`}
                         >
                           {statusLabels[order.status] || order.status}
                         </span>
                       </td>
-                      <td className="px-5 py-3 text-sm text-surface-500 dark:text-surface-400">
+                      <td className="px-5 py-3 text-xs font-semibold text-earth-400 dark:text-white/40">
                         {order.created_at ? formatDate(order.created_at) : '—'}
                       </td>
                     </motion.tr>

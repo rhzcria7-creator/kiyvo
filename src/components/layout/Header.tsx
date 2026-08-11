@@ -69,8 +69,8 @@ export function Header() {
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           scrolled
-            ? 'bg-white/95 dark:bg-[#0B0F1A]/95 backdrop-blur-xl border-b border-black/5 dark:border-white/10 shadow-sm'
-            : 'bg-white/70 dark:bg-[#0B0F1A]/50 backdrop-blur-md'
+            ? 'bg-[#FAF7F2]/95 dark:bg-[#070A13]/95 backdrop-blur-xl border-b border-earth-100 dark:border-white/10 shadow-sm'
+            : 'bg-[#FAF7F2]/80 dark:bg-[#070A13]/60 backdrop-blur-md'
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -82,25 +82,25 @@ export function Header() {
 
             {/* Desktop Nav — 4 links essenciais só */}
             <nav className="hidden md:flex items-center gap-0.5">
-              <Link href="/buscar" className="px-3.5 py-2 text-sm font-semibold text-[#475569] dark:text-white/70 hover:text-[#0F172A] dark:hover:text-white rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition">
+              <Link href="/buscar" className="px-3.5 py-2 text-sm font-semibold text-earth-800 dark:text-[#F3ECE0]/70 hover:text-earth-900 dark:hover:text-white rounded-full hover:bg-earth-100/50 dark:hover:bg-white/10 transition">
                 Explorar
               </Link>
               <Link href="/ofertas" className="px-3.5 py-2 text-sm font-semibold text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 rounded-full hover:bg-red-50 dark:hover:bg-red-900/20 transition inline-flex items-center gap-1">
                 <Flame size={14} /> Ofertas
               </Link>
-              <Link href="/lojas" className="px-3.5 py-2 text-sm font-semibold text-[#475569] dark:text-white/70 hover:text-[#0F172A] dark:hover:text-white rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition">
+              <Link href="/lojas" className="px-3.5 py-2 text-sm font-semibold text-earth-800 dark:text-[#F3ECE0]/70 hover:text-earth-900 dark:hover:text-white rounded-full hover:bg-earth-100/50 dark:hover:bg-white/10 transition">
                 Lojas
               </Link>
-              <Link href="/trafego-pago" className="px-3.5 py-2 text-sm font-semibold text-[#475569] dark:text-white/70 hover:text-[#0F172A] dark:hover:text-white rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition inline-flex items-center gap-1">
+              <Link href="/trafego-pago" className="px-3.5 py-2 text-sm font-semibold text-earth-800 dark:text-[#F3ECE0]/70 hover:text-earth-900 dark:hover:text-white rounded-full hover:bg-earth-100/50 dark:hover:bg-white/10 transition inline-flex items-center gap-1">
                 <Megaphone size={14}/> Tráfego
               </Link>
-              <Link href="/agentes" className="px-3.5 py-2 text-sm font-semibold text-[#475569] dark:text-white/70 hover:text-[#0F172A] dark:hover:text-white rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition inline-flex items-center gap-1">
-                <Bot size={14}/> Agentes <span className="text-[10px] font-black bg-brand-100 dark:bg-brand-500/20 text-brand-700 dark:text-brand-300 px-1.5 py-0.5 rounded-full">200+</span>
+              <Link href="/agentes" className="px-3.5 py-2 text-sm font-semibold text-earth-800 dark:text-[#F3ECE0]/70 hover:text-earth-900 dark:hover:text-white rounded-full hover:bg-earth-100/50 dark:hover:bg-white/10 transition inline-flex items-center gap-1">
+                <Bot size={14}/> Agentes <span className="text-[10px] font-black bg-earth-200 dark:bg-brand-500/20 text-earth-800 dark:text-brand-300 px-1.5 py-0.5 rounded-full">200+</span>
               </Link>
-              <Link href="/freelance" className="px-3.5 py-2 text-sm font-semibold text-[#475569] dark:text-white/70 hover:text-[#0F172A] dark:hover:text-white rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition inline-flex items-center gap-1">
+              <Link href="/freelance" className="px-3.5 py-2 text-sm font-semibold text-earth-800 dark:text-[#F3ECE0]/70 hover:text-earth-900 dark:hover:text-white rounded-full hover:bg-earth-100/50 dark:hover:bg-white/10 transition inline-flex items-center gap-1">
                 <Briefcase size={14}/> Freela
               </Link>
-              <Link href="/copiloto" className="px-3.5 py-2 text-sm font-bold text-brand-700 dark:text-brand-300 bg-brand-50 dark:bg-brand-500/15 hover:bg-brand-100 dark:hover:bg-brand-500/25 rounded-full transition inline-flex items-center gap-1.5">
+              <Link href="/copiloto" className="px-3.5 py-2.5 text-sm font-bold text-brand-700 dark:text-brand-300 bg-brand-50 dark:bg-brand-500/15 hover:bg-brand-100 dark:hover:bg-brand-500/25 rounded-full transition inline-flex items-center gap-1.5">
                 <Sparkles size={14}/> Copiloto <span className="text-[10px] font-black bg-brand-600 text-white px-1.5 py-0.5 rounded-full">IA</span>
               </Link>
             </nav>

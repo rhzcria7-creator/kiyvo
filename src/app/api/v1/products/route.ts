@@ -80,6 +80,13 @@ export async function GET(request: NextRequest) {
     const categoria = (searchParams.get('categoria') || '').trim()
     const tipo = (searchParams.get('tipo') || '').trim()
     const ordenar = searchParams.get('ordenar') || 'destaque'
+
+    // Filtros avançados
+    const minPrice = parseFloat(searchParams.get('min_price') || '0')
+    const maxPrice = parseFloat(searchParams.get('max_price') || '9999999')
+    const minRating = parseFloat(searchParams.get('min_rating') || '0')
+    const entrega = (searchParams.get('entrega') || '').trim() // 'auto' | 'all'
+
     const offset = (page - 1) * limit
 
     const now = Date.now()
@@ -123,11 +130,26 @@ export async function GET(request: NextRequest) {
         (p.vendedor_nome || '').toLowerCase().includes(busca)
       )
     }
-    if (categoria && categoria !== 'todos') {
+    if (categoria && categoria !== 'todos' && categoria !== '') {
       filtrados = filtrados.filter((p) => (p.categoria || '') === categoria)
     }
-    if (tipo && tipo !== 'todos') {
+    if (tipo && tipo !== 'todos' && tipo !== '') {
       filtrados = filtrados.filter((p) => (p.tipo || '') === tipo)
+    }
+
+    // Aplicar filtros avançados
+    if (minPrice > 0) {
+      filtrados = filtrados.filter((p) => (p.preco || 0) >= minPrice)
+    }
+    if (maxPrice < 9999999) {
+      filtrados = filtrados.filter((p) => (p.preco || 0) <= maxPrice)
+    }
+    if (minRating > 0) {
+      filtrados = filtrados.filter((p) => (p.rating || 0) >= minRating)
+    }
+    if (entrega === 'auto') {
+      // Filtrar onde entrega é automática ou tipo é digital e tem estoque/auto-entrega
+      filtrados = filtrados.filter((p) => p.entrega_automatica !== false && p.tipo !== 'servico')
     }
 
     switch (ordenar) {
